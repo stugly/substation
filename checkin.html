@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Argus</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link rel="icon" href="data:,">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="spinner">
+        <div class="loader"></div>
+        <div>กำลังประมวลผล...</div>
+    </div>
+
+    <div class="header">
+        <h2>Argus</h2>
+    </div>
+
+    <div class="container">
+        <div id="bindSection" style="display:none;">
+            <div class="card">
+                <h3>ลงทะเบียน</h3>
+                <label>เลือกชื่อของคุณ</label>
+                <select id="userSelect"></select>
+                <label>รหัสพนักงาน (UID)</label>
+                <input id="UID" type="password" inputmode="numeric" placeholder="กรอกรหัสพนักงานเพื่อยืนยัน">
+                <button onclick="confirmBind()">ยืนยันผูกบัญชี</button>
+            </div>
+        </div>
+
+        <div id="mainSection" style="display:none;">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img id="profileImg" src="" style="width:45px; height:45px; border-radius:50%; display:none;">
+                    <div id="welcome" style="font-weight:600;"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <label>ตำแหน่งของคุณ</label>
+                <div id="map"></div>
+                <button style="background:#007bff;" onclick="moveToCurrent()">📍 อัปเดตตำแหน่ง</button>
+            </div>
+
+            <div class="card">
+                <label>สถานีไฟฟ้า</label>
+                <select id="stationSelect"></select>
+                <label>ประเภทงาน</label>
+                <select id="jobSelect"></select>
+                <label>หมายเหตุ</label>
+                <input id="note" placeholder="บันทึกเพิ่มเติม...">
+                <button id="checkinBtn" onclick="confirmCheckin()" disabled>✅ บันทึก Check-in</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="checkin.js"></script>
+</body>
+</html>

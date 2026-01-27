@@ -1,0 +1,188 @@
+/* 1. Global Variables & Base Styles */
+:root { 
+    --line-green: #06C755; 
+    --dark-green: #05a346; 
+    --bg-color: #f0f2f5; 
+    --text-main: #333; 
+    --text-sub: #666; 
+}
+
+body { 
+    font-family: 'Kanit', sans-serif; 
+    margin: 0; 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+}
+
+/* บังคับ Font Kanit ให้กับทุกองค์ประกอบที่อาจมี Font พื้นฐานของระบบ */
+button, input, select, textarea {
+    font-family: 'Kanit', sans-serif !important;
+}
+
+/* 2. Header & Containers */
+.header { 
+    background: var(--line-green); 
+    color: white; 
+    padding: 20px 15px; 
+    text-align: center; 
+    border-radius: 0 0 20px 20px; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+}
+.header h2 { margin: 0; font-size: 20px; }
+
+.container { padding: 15px; }
+
+.card { 
+    background: white; 
+    border-radius: 16px; 
+    padding: 20px; 
+    margin-bottom: 15px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+}
+
+/* 3. Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label, label { 
+    display: block; 
+    font-size: 1.1em; 
+    font-weight: 600; 
+    margin-bottom: 8px; 
+    color: var(--text-main); 
+}
+
+select, input[type="text"] { 
+    width: 100%; 
+    height: 48px; 
+    background: #f9f9f9; 
+    border: 1.5px solid #eee; 
+    border-radius: 10px; 
+    padding: 0 12px; 
+    font-size: 16px; 
+    margin-bottom: 15px; 
+    box-sizing: border-box; 
+    color: var(--text-main);
+}
+
+/* 4. Buttons */
+button { 
+    width: 100%; 
+    height: 52px; 
+    background: var(--line-green); 
+    color: white; 
+    border: none; 
+    border-radius: 12px; 
+    font-size: 17px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+button:active { transform: scale(0.98); background: var(--dark-green); }
+button:disabled { background: #ccc; cursor: not-allowed; }
+
+/* เฉพาะปุ่มรอง (อัปเดตตำแหน่ง) */
+.btn-secondary {
+    background-color: #6c757d; 
+    height: 44px;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+/* เฉพาะปุ่มหลัก (บันทึก Check-in) */
+#checkinBtn {
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
+}
+
+/* 5. Weather Selector (Circle Buttons) */
+.weather-selector {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    background-color: transparent; 
+    padding: 10px 0;
+}
+
+.weather-selector input[type="radio"] {
+    display: none;
+}
+
+.weather-option {
+    width: 45px;      
+    height: 45px;     
+    line-height: 41px; /* จัดกึ่งกลางตัวเลข */
+    flex: none;       
+    text-align: center;
+    border-radius: 50%; 
+    background-color: #fff;
+    color: var(--text-sub);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #eee;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.weather-selector input[type="radio"]:checked + .weather-option {
+    background-color: var(--line-green); 
+    color: #fff;
+    border-color: var(--line-green);
+    box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3);
+    transform: scale(1.1);
+}
+
+/* 6. Map & Spinner */
+#map { 
+    height: 220px; 
+    border-radius: 12px; 
+    margin-bottom: 10px; 
+    border: 1px solid #eee; 
+    z-index: 1; 
+}
+
+#spinner { 
+    position: fixed; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(255,255,255,0.8); 
+    display: none; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 9999; 
+}
+
+.loader { 
+    border: 4px solid #f3f3f3; 
+    border-top: 4px solid var(--line-green); 
+    border-radius: 50%; 
+    width: 40px; height: 40px; 
+    animation: spin 1s linear infinite; 
+    margin-bottom: 10px; 
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* 7. Scrollable & Utilities */
+.scrollable-card {
+    max-height: 350px; 
+    overflow-y: auto;
+    margin-top: 10px;
+    scrollbar-width: thin;
+}
+.scrollable-card::-webkit-scrollbar { width: 5px; }
+.scrollable-card::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+#currentDateText {
+    font-size: 0.85em;
+    color: var(--text-sub);
+    font-weight: normal;
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checkpoint Mobile</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link rel="icon" href="data:,">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="spinner">
+        <div class="loader"></div>
+        <div>กำลังประมวลผล...</div>
+    </div>
+
+    <div class="header">
+        <h2>Argus</h2>
+    </div>
+
+    <div class="container">
+        <div id="bindSection" style="display:none;">
+            <div class="card">
+                <h3>ลงทะเบียน</h3>
+                <label>เลือกชื่อของคุณ</label>
+                <select id="userSelect"></select>
+                <label>รหัสพนักงาน</label>
+                <input id="UID" type="password" inputmode="numeric" placeholder="กรอกรหัสพนักงานเพื่อยืนยัน">
+                <button onclick="confirmBind()">ยืนยันผูกบัญชี</button>
+            </div>
+        </div>
+
+        <div id="mainSection" style="display:none;">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img id="profileImg" src="" style="width:45px; height:45px; border-radius:50%; display:none;">
+                    <div id="welcome" style="font-weight:600;"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <label class="form-label">ตำแหน่งของคุณ</label>
+                <div id="map"></div>
+                <button type="button" class="btn-secondary" onclick="moveToCurrent()">
+                    🔄 อัปเดตตำแหน่ง
+                </button>
+            </div>
+
+            <div class="card">
+                <label class="form-label">สถานีไฟฟ้า</label>
+                <select id="stationSelect"></select>
+                <label class="form-label">ประเภทงาน</label>
+                <select id="jobSelect"></select>
+                <div style="margin-bottom: 15px;">
+                <div class="form-group">
+                <label class="form-label">สภาพอากาศ</label>
+                <div class="weather-selector">
+                    <input type="radio" id="w1" name="weather" value="1" checked>
+                    <label for="w1" class="weather-option">1</label>
+            
+                    <input type="radio" id="w2" name="weather" value="2">
+                    <label for="w2" class="weather-option">2</label>
+            
+                    <input type="radio" id="w3" name="weather" value="3">
+                    <label for="w3" class="weather-option">3</label>
+            
+                    <input type="radio" id="w4" name="weather" value="4">
+                    <label for="w4" class="weather-option">4</label>
+            
+                    <input type="radio" id="w5" name="weather" value="5">
+                    <label for="w5" class="weather-option">5</label>
+                </div>
+                <small style="color: #999; font-size: 11px; margin-top: 5px; display: block;">
+                    (1: แจ่มใส, 5: ฝนฟ้าคะนอง)
+                </small>
+                </div>
+                </div></div>
+                <div class="form-group">
+    <label class="form-label">หมายเหตุ</label>
+    <input type="text" id="note" placeholder="บันทึกรายละเอียดเพิ่มเติม (ถ้ามี)...">
+</div>
+
+<button id="checkinBtn" onclick="confirmCheckin()">
+    ✅ บันทึก Check-in
+</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="checkin.js"></script>
+</body>
+</html>
