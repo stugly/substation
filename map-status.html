@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Live Station Status Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Kanit', sans-serif; background: #f0f2f5; }
+        #fullMap { height: 100vh; width: 100%; }
+        
+        .station-label {
+            background: white; border-radius: 6px; padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-left: 6px solid #28a745; width: 150px;
+        }
+        .label-sid { font-weight: 600; color: #28a745; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-bottom: 5px; }
+        .label-user { color: #333; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .label-time { color: #666; font-size: 11px; font-weight: normal; float: right; }
+        
+        /* สถานะพิเศษ */
+        .is-late { border-left-color: #fbc02d; background: #fffde7; }
+        .is-offline { border-left-color: #9e9e9e; background: #fdfdfd; opacity: 0.9; }
+        
+        /* ลบพื้นหลังเริ่มต้นของ DivIcon */
+        .leaflet-div-icon { background: transparent !important; border: none !important; }
+    </style>
+</head>
+<body>
+    <div id="fullMap"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="map-status.js"></script>
+</body>
+</html>
