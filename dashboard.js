@@ -238,11 +238,11 @@ function renderUnitStatusList(fullCheckins) {
             const diffHours = (now - lastTime) / (1000 * 60 * 60);
             if (isDayTimeType) {
                 if (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800) {
-                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e"; statusMsg = " (นอกเวลา)";
+                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e"; statusMsg = "";
                 } else { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
             } else {
                 if (diffHours <= 8) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
-                else if (diffHours <= 16) { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; statusMsg = " (รอเปลี่ยนกะ)"; }
+                else if (diffHours <= 16) { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; statusMsg = ""; }
             }
         }
 
