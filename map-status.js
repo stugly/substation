@@ -3,89 +3,177 @@ const targetSIDs = ["NTB", "TSA", "KCD", "PPA", "TRA", "KBB", "BKO", "PKA", "PKB
 
 let map;
 let labelLayer;
+let initialBounds = [];
 
+// 1. เริ่มต้นแผนที่
 async function initMap() {
-    map = L.map('fullMap').setView([13.8, 100.5], 7);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-    labelLayer = L.layerGroup().addTo(map);
+    try {
+        showSpinner(true); 
+        map = L.map('fullMap', { zoomControl: false }).setView([13.8, 100.5], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        labelLayer = L.layerGroup().addTo(map);
 
-    await fetchData();
-    // อัปเดตข้อมูลทุก 1 นาที
-    setInterval(fetchData, 60000);
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        await fetchData();
+        setInterval(fetchData, 60000); 
+    } catch (err) {
+        console.error("Map Init Error:", err);
+        showSpinner(false);
+    }
 }
 
+// 2. ดึงข้อมูลจาก API
 async function fetchData() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
-        if (data) render(data.allStations, data.checkins);
-    } catch (e) {
-        console.error("Data fetch failed:", e);
+        if (data && data.allStations) {
+            renderPoints(data.allStations, data.checkins || []);
+        }
+    } catch (e) { 
+        console.error("Fetch Error:", e); 
+    } finally {
+        showSpinner(false); 
     }
 }
 
-function render(stations, checkins) {
+// 3. วาดจุดและการ์ดสถานะ
+function renderPoints(stations, checkins) {
+    if (!labelLayer) return;
     labelLayer.clearLayers();
     const now = new Date();
-    const bounds = [];
+    initialBounds = [];
+    const cleanSIDs = targetSIDs.map(s => s.trim().toUpperCase());
 
-    // กรองเฉพาะสถานีเป้าหมายและมีพิกัด
-    const displayStations = stations.filter(st => 
-        targetSIDs.includes(st.SName) && !isNaN(parseFloat(st.Lat))
-    );
+    stations.forEach((st, i) => {
+        const sName = (st.SName || "").toString().toUpperCase();
+        const sID = (st.SID || st.ID || "").toString().toUpperCase();
+        const matchedSID = cleanSIDs.find(t => sID === t || sName.includes(t));
 
-    displayStations.forEach((st, i) => {
-        const lat = parseFloat(st.Lat);
-        const lon = parseFloat(st.Lon);
+        if (matchedSID) {
+            const lat = parseFloat(st.Lat);
+            const lon = parseFloat(st.Lon);
+            if (isNaN(lat) || isNaN(lon)) return;
 
-        const logs = checkins.filter(cp => cp.sid === st.SName && (cp.job || "").includes("เข้าปฏิบัติงานกะ"));
-        const lastIn = logs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
+            const logs = checkins.filter(cp => {
+                const cpSid = (cp.sid || "").toString().toUpperCase();
+                return (cpSid === sName || cpSid.includes(matchedSID)) && (cp.job || "").includes("เข้า");
+            });
+            const lastIn = logs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
 
-        // --- คำนวณการเยื้อง (Offset) กระจายตัวเป็นวงกลม ---
-        const angle = (i / displayStations.length) * (2 * Math.PI);
-        const dist = 0.12; // ระยะห่างของเส้นลาก
-        const labelLat = lat + (Math.sin(angle) * dist);
-        const labelLon = lon + (Math.cos(angle) * dist);
+            if (lastIn) {
+                const cDate = new Date(lastIn.time);
+                const isToday = cDate.toDateString() === now.toDateString();
+                const diffH = (now - cDate) / 3600000;
+                const isLate = isToday && diffH > 8;
 
-        let labelClass = "station-label";
-        let content = `<div class="label-sid">${st.SName}</div><div style="color:#999">ไม่มีข้อมูล</div>`;
+                let statusClass = ""; 
+                let bgStyle = ""; 
+                let fontStyle = "font-family: 'Kanit', sans-serif !important;";
 
-        if (lastIn) {
-            const checkDate = new Date(lastIn.time);
-            const diffHours = (now - checkDate) / (1000 * 60 * 60);
-            const isToday = checkDate.toDateString() === now.toDateString();
-            const timeStr = checkDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                if (!isToday) {
+                    statusClass = "is-offline";
+                } else if (isLate) {
+                    statusClass = "is-late";
+                } else {
+                    statusClass = "";
+                    bgStyle = "background-color: #e8f5e9 !important;"; 
+                }
 
-            if (isToday && diffHours > 8) labelClass += " is-late";
-            else if (!isToday) labelClass += " is-offline";
+                const sidColor = (isToday && !isLate) ? 'var(--line-green)' : (isToday ? 'var(--warning-yellow)' : 'var(--offline-gray)');
+                const dateStr = cDate.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
+                const timeStr = cDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                const rawTel = lastIn.tel ? lastIn.tel.toString().trim() : '';
+                const telLink = rawTel.replace(/-/g,'');
 
-            content = `
-                <div class="label-sid">${st.SName} <span class="label-time">${timeStr} น.</span></div>
-                <div class="label-user">👤 ${lastIn.userName}</div>
-            `;
+                const content = `
+                    <div class="station-label ${statusClass}" style="${fontStyle} ${bgStyle}">
+                        <div class="label-header" style="${fontStyle} border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 5px; padding-bottom: 3px;">
+                            <b class="label-sid" style="color:${sidColor}; ${fontStyle}">${matchedSID}</b>
+                            <span class="zoom-icon" onclick="zoomToPoint(${lat}, ${lon})" style="cursor:pointer; margin-left:8px;">🔍</span>
+                            <span class="label-date" style="margin-left:auto; ${fontStyle} font-size: 11px;">${dateStr}</span>
+                        </div>
+                        <div class="label-body" style="${fontStyle} display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div class="label-info" style="${fontStyle} display: flex; flex-direction: column;">
+                                <span class="label-user" style="${fontStyle} font-size: 13px; font-weight: 500;">👤 ${lastIn.userName}</span>
+                                ${rawTel ? `
+                                    <a href="tel:${telLink}" class="btn-call" style="text-decoration:none; ${fontStyle} font-size: 12px; color: var(--line-green); margin-top: 2px; display: block; font-weight: 400;">
+                                        📞 ${rawTel}
+                                    </a>` : ''}
+                            </div>
+                            <div class="label-time" style="${fontStyle} font-size: 13px; font-weight: 600; color: #444; margin-left: 10px;">${timeStr} น.</div>
+                        </div>
+                    </div>`;
+
+                // คำนวณตำแหน่งวางการ์ดแบบกระจายรอบจุด (ย้ายมาประกาศที่เดียว)
+                const angle = (i / targetSIDs.length) * (2 * Math.PI);
+                const offset = 0.04; 
+                const lLat = lat + (Math.sin(angle) * offset);
+                const lLon = lon + (Math.cos(angle) * offset);
+
+                // 1. เส้นเชื่อม (ชัดเจนขึ้น)
+                L.polyline([[lat, lon], [lLat, lLon]], { 
+                    color: '#444', 
+                    weight: 1.5, 
+                    dashArray: '5, 5', 
+                    opacity: 0.8,
+                    interactive: false 
+                }).addTo(labelLayer);
+                
+                // 2. จุด Marker พิกัดจริง (เน้นขอบ)
+                L.circleMarker([lat, lon], { 
+                    radius: 5, 
+                    color: '#ffffff', 
+                    fillColor: '#28a745', 
+                    fillOpacity: 1,
+                    weight: 2
+                }).addTo(labelLayer);
+                
+                // 3. วาดการ์ดข้อมูล
+                const marker = L.marker([lLat, lLon], {
+                    icon: L.divIcon({ 
+                        className: 'custom-div-icon', 
+                        html: content, 
+                        iconSize: null, 
+                        iconAnchor: [0, 0] 
+                    })
+                }).addTo(labelLayer);
+
+                // เพิ่ม Interaction เล็กน้อยให้การ์ดไม่บังกันเอง
+                marker.on('mouseover', function() {
+                    this.getElement().style.zIndex = "1000";
+                });
+                marker.on('mouseout', function() {
+                    this.getElement().style.zIndex = "auto";
+                });
+
+                initialBounds.push([lat, lon], [lLat, lLon]);
+            }
         }
-
-        // 1. วาดจุด Marker จริง
-        L.circleMarker([lat, lon], { radius: 5, color: '#28a745', fillOpacity: 1 }).addTo(labelLayer);
-
-        // 2. วาดเส้นเชื่อม (Polyline)
-        L.polyline([[lat, lon], [labelLat, labelLon]], { 
-            color: '#999', weight: 1.5, dashArray: '5, 5', opacity: 0.6 
-        }).addTo(labelLayer);
-
-        // 3. วาด Label
-        L.marker([labelLat, labelLon], {
-            icon: L.divIcon({
-                html: `<div class="${labelClass}">${content}</div>`,
-                iconSize: [150, 60],
-                iconAnchor: [75, 30]
-            })
-        }).addTo(labelLayer);
-
-        bounds.push([lat, lon], [labelLat, labelLon]);
     });
+    if (initialBounds.length > 0) resetZoom();
+}
 
-    if (bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
+// 4. ฟังก์ชันควบคุม Spinner
+function showSpinner(show) {
+    const spinner = document.getElementById('spinner');
+    if (spinner) {
+        spinner.style.display = show ? 'flex' : 'none';
+    }
+}
+
+// 5. ฟังก์ชันอื่นๆ
+function resetZoom() { if (map && initialBounds.length > 0) map.fitBounds(initialBounds, { padding: [60, 60] }); }
+function zoomToPoint(lat, lon) { if (map) map.setView([lat, lon], 16); }
+
+function updateClock() {
+    const d = document.getElementById('currentDate');
+    const t = document.getElementById('currentTime');
+    const now = new Date();
+    if (d) d.innerText = now.toLocaleDateString('th-TH');
+    if (t) t.innerText = now.toLocaleTimeString('th-TH');
 }
 
 document.addEventListener("DOMContentLoaded", initMap);

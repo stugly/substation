@@ -1,168 +1,114 @@
-const SHEET_USERS = "Users";
-const SHEET_STATIONS = "Stations";
-const SHEET_CHECKPOINTS = "Checkpoints";
-const SHEET_JOBS = "Jobs";
+const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
+const targetSIDs = ["NTB", "TSA", "KCD", "PPA", "TRA", "KBB", "BKO", "PKA", "PKB", "PAT", "KMA", "KBA", "PKD", "KNA", "WSA", "TMG", "KTM"];
 
-/**
- * 1. รองรับการดึงข้อมูลแบบ GET (สำหรับ Dashboard ในอนาคต)
- */
-function doGet(e) {
-  const data = getReportData();
-  return output(data);
-}
+let map;
+let labelLayer;
+let initialBounds = [];
 
-/**
- * 2. รองรับการส่งข้อมูลแบบ POST (จาก LIFF และ GitHub Pages)
- */
-function doPost(e) {
-  let data;
-  
-  // ตรวจสอบวิธีที่ข้อมูลถูกส่งมา (JSON หรือ Form-data)
-  if (e.postData && e.postData.contents) {
-    try {
-      data = JSON.parse(e.postData.contents);
-    } catch (err) {
-      data = e.parameter;
-    }
-  } else {
-    data = e.parameter;
-  }
-
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // ระบบ Routing ตาม Action
-  try {
-    if (data.action == "checkUser") return output(checkUser(data, ss));
-    if (data.action == "bindUser") return output(bindUser(data, ss));
-    if (data.action == "getNearbyStations") return output(getNearbyStations(data, ss));
-    if (data.action == "getJobs") return output(getJobs(ss));
-    if (data.action == "checkin") return output(checkin(data, ss));
+async function initMap() {
+    map = L.map('fullMap', { zoomControl: false }).setView([13.8, 100.5], 7);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
     
-    return output({status: "ERROR", message: "ไม่พบ Action ที่ระบุ"});
-  } catch (error) {
-    return output({status: "ERROR", message: "Server Error: " + error.toString()});
-  }
+    labelLayer = L.layerGroup().addTo(map);
+    
+    updateClock();
+    setInterval(updateClock, 1000);
+    
+    await fetchData();
+    setInterval(fetchData, 60000); // Auto Refresh ทุก 1 นาที
 }
 
-/**
- * 3. ฟังก์ชันส่งออก JSON (สำคัญมาก: ช่วยแก้ปัญหา CORS)
- */
-function output(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function updateClock() {
+    const now = new Date();
+    const dateEl = document.getElementById('currentDate');
+    const timeEl = document.getElementById('currentTime');
+    if(dateEl) dateEl.innerText = now.toLocaleDateString('th-TH');
+    if(timeEl) timeEl.innerText = now.toLocaleTimeString('th-TH');
 }
 
-// --- ฟังก์ชันการทำงานภายใน ---
-
-function checkUser(data, ss) {
-  const sh = ss.getSheetByName(SHEET_USERS);
-  const values = sh.getDataRange().getValues();
-  const header = values.shift();
-  const idxUID = header.indexOf("UID"), 
-        idxLID = header.indexOf("LINE_UserID"), 
-        idxLName = header.indexOf("LINE_Name"),
-        idxName = header.indexOf("Name");
-
-  for (let i = 0; i < values.length; i++) {
-    if (values[i][idxLID] == data.lineUserId) {
-      // อัปเดตชื่อ LINE ถ้ามีการเปลี่ยนแปลง
-      if (values[i][idxLName] != data.lineName) {
-        sh.getRange(i + 2, idxLName + 1).setValue(data.lineName);
-      }
-      return { status: "FOUND", user: { UID: values[i][idxUID], Name: values[i][idxName] } };
-    }
-  }
-
-  // ถ้าไม่เจอ ให้ส่งรายชื่อพนักงานที่ยังไม่ได้ผูกบัญชีไปให้เลือก
-  let freeUsers = values.filter(r => !r[idxLID]).map(r => ({ UID: r[idxUID], Name: r[idxName] }));
-  return { status: "NEED_BIND", freeUsers: freeUsers };
+function resetZoom() {
+    if (initialBounds.length > 0) map.fitBounds(initialBounds, { padding: [80, 80] });
 }
 
-function bindUser(data, ss) {
-  const sh = ss.getSheetByName(SHEET_USERS);
-  const values = sh.getDataRange().getValues();
-  const header = values[0];
-  const idxUID = header.indexOf("UID"), 
-        idxLID = header.indexOf("LINE_UserID"), 
-        idxLName = header.indexOf("LINE_Name");
-
-  const inputUID = data.uid.toString().trim();
-  for (let i = 1; i < values.length; i++) {
-    if (values[i][idxUID].toString().trim() === inputUID) {
-      if (values[i][idxLID]) return { status: "ALREADY", message: "รหัสนี้ถูกผูกไปแล้ว" };
-      sh.getRange(i + 1, idxLID + 1).setValue(data.lineUserId);
-      sh.getRange(i + 1, idxLName + 1).setValue(data.lineName);
-      return { status: "OK" };
-    }
-  }
-  return { status: "NOTFOUND", message: "ไม่พบรหัสพนักงานในระบบ" };
+async function fetchData() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        if (data && data.allStations) {
+            renderPoints(data.allStations, data.checkins || []);
+        }
+    } catch (e) { console.error("Fetch failed:", e); }
 }
 
-function getNearbyStations(data, ss) {
-  const sh = ss.getSheetByName(SHEET_STATIONS);
-  const values = sh.getDataRange().getValues();
-  const header = values.shift();
-  const idxSID = header.indexOf("SID"), 
-        idxName = header.indexOf("SName"), 
-        idxUnit = header.indexOf("Unit"),
-        idxLat = header.indexOf("Latitude"), 
-        idxLon = header.indexOf("Longitude"), 
-        idxRad = header.indexOf("Radius_m");
+function renderPoints(stations, checkins) {
+    labelLayer.clearLayers();
+    const now = new Date();
+    initialBounds = [];
+    const cleanSIDs = targetSIDs.map(s => s.trim().toUpperCase());
 
-  let stations = [];
-  values.forEach(r => {
-    const dist = calcDistance(data.lat, data.lon, r[idxLat], r[idxLon]);
-    if (dist <= r[idxRad]) {
-      stations.push({ SID: r[idxSID], SName: r[idxName], Unit: r[idxUnit] || "-", distance: Math.round(dist) });
-    }
-  });
-  
-  if (stations.length == 0) return { status: "ERROR", message: "ไม่อยู่ในรัศมีสถานีใดๆ" };
-  stations.sort((a, b) => a.distance - b.distance);
-  return { status: "OK", stations: stations };
+    stations.forEach((st, i) => {
+        const fullSName = (st.SName || "").toUpperCase();
+        const sID = (st.SID || st.ID || "").toUpperCase();
+        const matched = cleanSIDs.find(t => sID === t || fullSName.includes(t));
+
+        if (matched) {
+            const lat = parseFloat(st.Lat);
+            const lon = parseFloat(st.Lon);
+            if (isNaN(lat) || isNaN(lon)) return;
+
+            const logs = checkins.filter(cp => {
+                const cpSid = (cp.sid || "").toUpperCase();
+                return (cpSid === fullSName || cpSid.includes(matched)) && (cp.job || "").includes("เข้า");
+            });
+            const lastIn = logs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
+
+            // --- Logic กระจาย Card ไม่ให้ทับกัน ---
+            const angle = (i / cleanSIDs.length) * (2 * Math.PI);
+            const dist = 0.15; // ระยะห่างเส้นโยง
+            const lLat = lat + (Math.sin(angle) * dist);
+            const lLon = lon + (Math.cos(angle) * dist);
+
+            let labelClass = "station-label";
+            let content = `<div class="label-header"><b class="label-sid">${matched}</b><span class="label-date">Offline</span></div>`;
+
+            if (lastIn) {
+                const cDate = new Date(lastIn.time);
+                const isToday = cDate.toDateString() === now.toDateString();
+                const diffH = (now - cDate) / (3600000);
+                const isLate = isToday && diffH > 8;
+
+                if (isToday) { if (isLate) labelClass += " is-late"; } 
+                else { labelClass += " is-offline"; }
+
+                const sColor = (isToday && !isLate) ? '#28a745' : (isToday ? '#fbc02d' : '#616161');
+                const tel = lastIn.tel ? lastIn.tel.toString().trim() : '';
+
+                content = `
+                    <div class="label-header">
+                        <b class="label-sid" style="color:${sColor}">${matched}</b>
+                        <span class="zoom-icon" onclick="map.setView([${lat},${lon}], 14)">🔍</span>
+                        <span class="label-date">${cDate.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit'})}</span>
+                    </div>
+                    <div class="label-body">
+                        <div class="label-info">
+                            <span class="label-user">👤 ${lastIn.userName}</span>
+                            ${tel ? `<a href="tel:${tel.replace(/-/g,'')}" class="btn-call">📞 ${tel}</a>` : ''}
+                        </div>
+                        <span class="label-time">${cDate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</span>
+                    </div>`;
+            }
+
+            // วาดจุด, เส้นโยง และ Card
+            L.circleMarker([lat, lon], { radius: 5, color: '#28a745', fillOpacity: 1 }).addTo(labelLayer);
+            L.polyline([[lat, lon], [lLat, lLon]], { color: '#bbb', weight: 1, dashArray: '4,4' }).addTo(labelLayer);
+            L.marker([lLat, lLon], {
+                icon: L.divIcon({ html: `<div class="${labelClass}">${content}</div>`, iconSize: null, iconAnchor: [0, 0] })
+            }).addTo(labelLayer);
+
+            initialBounds.push([lat, lon], [lLat, lLon]);
+        }
+    });
+    if (initialBounds.length > 0) resetZoom();
 }
 
-function getJobs(ss) {
-  const sh = ss.getSheetByName(SHEET_JOBS);
-  const values = sh.getDataRange().getValues();
-  values.shift();
-  return { status: "OK", jobs: values.map(r => r[0]).filter(j => j) };
-}
-
-function checkin(data, ss) {
-  const shCP = ss.getSheetByName(SHEET_CHECKPOINTS);
-  const shUsers = ss.getSheetByName(SHEET_USERS);
-  const users = shUsers.getDataRange().getValues();
-  const idxUID = users[0].indexOf("UID"), idxLID = users[0].indexOf("LINE_UserID");
-
-  let uid = "";
-  for(let i=1; i<users.length; i++) {
-    if(users[i][idxLID] == data.lineUserId) { uid = users[i][idxUID]; break; }
-  }
-
-  if (!uid) return { status: "ERROR", message: "ไม่พบข้อมูลการลงทะเบียน" };
-
-  shCP.appendRow([
-    "CP-" + Date.now(), new Date(), uid, data.lineUserId, 
-    data.SID, data.Job, data.Note || "-", data.Unit, data.lat, data.lon
-  ]);
-  return { status: "OK", message: "✅ บันทึกสำเร็จ" };
-}
-
-function calcDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
-function getReportData() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const cp = ss.getSheetByName(SHEET_CHECKPOINTS).getDataRange().getValues();
-  const st = ss.getSheetByName(SHEET_STATIONS).getDataRange().getValues();
-  cp.shift(); st.shift();
-  return { 
-    checkins: cp.map(r => ({ id: r[0], time: r[1], uid: r[2], job: r[5], lat: r[8], lon: r[9] })),
-    units: [...new Set(st.map(r => r[2]))].filter(u => u)
-  };
-}
+document.addEventListener("DOMContentLoaded", initMap);

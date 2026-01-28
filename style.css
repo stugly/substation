@@ -1,10 +1,14 @@
-/* 1. Global Variables & Base Styles */
+/* ============================================================
+   1. GLOBAL VARIABLES & BASE STYLES
+   ============================================================ */
 :root { 
     --line-green: #06C755; 
     --dark-green: #05a346; 
     --bg-color: #f0f2f5; 
     --text-main: #333; 
     --text-sub: #666; 
+    --warning-yellow: #fbc02d;
+    --offline-gray: #9e9e9e;
 }
 
 body { 
@@ -14,12 +18,14 @@ body {
     color: var(--text-main); 
 }
 
-/* บังคับ Font Kanit ให้กับทุกองค์ประกอบที่อาจมี Font พื้นฐานของระบบ */
+/* บังคับ Font Kanit ให้กับทุก Input และ Button */
 button, input, select, textarea {
     font-family: 'Kanit', sans-serif !important;
 }
 
-/* 2. Header & Containers */
+/* ============================================================
+   2. LAYOUT COMPONENTS (Header, Containers, Cards)
+   ============================================================ */
 .header { 
     background: var(--line-green); 
     color: white; 
@@ -28,9 +34,10 @@ button, input, select, textarea {
     border-radius: 0 0 20px 20px; 
     box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
 }
-.header h2 { margin: 0; font-size: 20px; }
 
-.container { padding: 15px; }
+.container { 
+    padding: 15px; 
+}
 
 .card { 
     background: white; 
@@ -40,164 +47,109 @@ button, input, select, textarea {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
 }
 
-/* 3. Form Elements */
-.form-group {
-    margin-bottom: 20px;
+/* ============================================================
+   3. STATION LABELS (Map Markers & Status Cards)
+   ============================================================ */
+.custom-div-icon {
+    background: transparent !important;
+    border: none !important;
 }
 
-.form-label, label { 
-    display: block; 
-    font-size: 1.1em; 
-    font-weight: 600; 
-    margin-bottom: 8px; 
-    color: var(--text-main); 
+.station-label {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border-left: 5px solid var(--line-green);
+    min-width: 180px; 
+    max-width: 250px; 
+    width: max-content; 
+    pointer-events: auto;
+    transition: transform 0.2s ease;
 }
 
-select, input[type="text"] { 
-    width: 100%; 
-    height: 48px; 
-    background: #f9f9f9; 
-    border: 1.5px solid #eee; 
-    border-radius: 10px; 
-    padding: 0 12px; 
-    font-size: 16px; 
-    margin-bottom: 15px; 
-    box-sizing: border-box; 
-    color: var(--text-main);
+.station-label:hover { 
+    transform: translateY(-3px); 
 }
 
-/* 4. Buttons */
-button { 
-    width: 100%; 
-    height: 52px; 
-    background: var(--line-green); 
-    color: white; 
-    border: none; 
-    border-radius: 12px; 
-    font-size: 17px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: 0.2s; 
+/* สถานะสีพิเศษบนแผนที่ */
+.is-late { 
+    border-left-color: var(--warning-yellow) !important; 
+    background: #fff9c4 !important; 
+}
+
+.is-offline { 
+    border-left-color: var(--offline-gray) !important; 
+    background: #f5f5f5 !important; 
+}
+
+/* โครงสร้างภายใน Label */
+.label-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    letter-spacing: 0.3px;
+    margin-bottom: 4px;
 }
 
-button:active { transform: scale(0.98); background: var(--dark-green); }
-button:disabled { background: #ccc; cursor: not-allowed; }
-
-/* เฉพาะปุ่มรอง (อัปเดตตำแหน่ง) */
-.btn-secondary {
-    background-color: #6c757d; 
-    height: 44px;
-    font-size: 15px;
-    margin-bottom: 12px;
+.label-sid { 
+    font-weight: 600; 
+    font-size: 14px; 
+    color: var(--line-green);
+    margin: 0;
 }
 
-/* เฉพาะปุ่มหลัก (บันทึก Check-in) */
-#checkinBtn {
-    font-size: 18px;
-    box-shadow: 0 4px 15px rgba(6, 199, 85, 0.3);
+.label-date { 
+    font-size: 11px; 
+    color: #888; 
 }
 
-/* 5. Weather Selector (Circle Buttons) */
-.weather-selector {
+.label-body {
     display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    background-color: transparent; 
-    padding: 10px 0;
+    justify-content: space-between;
+    align-items: flex-end; 
+    margin-top: 6px;
 }
 
-.weather-selector input[type="radio"] {
-    display: none;
+.label-user { 
+    font-size: 12.5px; 
+    color: #333; 
+    font-weight: 400; 
 }
 
-.weather-option {
-    width: 45px;      
-    height: 45px;     
-    line-height: 41px; /* จัดกึ่งกลางตัวเลข */
-    flex: none;       
-    text-align: center;
-    border-radius: 50%; 
-    background-color: #fff;
-    color: var(--text-sub);
-    font-size: 18px;
-    font-weight: bold;
+.label-time {
+    font-size: 12px;
+    color: #555;
+    font-weight: 600; 
+}
+
+.btn-call {
+    font-weight: 400 !important;
+    letter-spacing: 0.2px;
+    text-decoration: none;
+    color: var(--line-green);
+}
+
+.zoom-icon {
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: 2px solid #eee;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-left: 5px;
+    color: #888;
+    font-size: 14px;
 }
 
-.weather-selector input[type="radio"]:checked + .weather-option {
-    background-color: var(--line-green); 
-    color: #fff;
-    border-color: var(--line-green);
-    box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3);
-    transform: scale(1.1);
-}
-
-/* 6. Map & Spinner */
-#map { 
-    height: 220px; 
-    border-radius: 12px; 
-    margin-bottom: 10px; 
-    border: 1px solid #eee; 
-    z-index: 1; 
-}
-
-#spinner { 
-    position: fixed; 
-    top: 0; left: 0; right: 0; bottom: 0; 
-    background: rgba(255,255,255,0.8); 
-    display: none; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    z-index: 9999; 
-}
-
-.loader { 
-    border: 4px solid #f3f3f3; 
-    border-top: 4px solid var(--line-green); 
-    border-radius: 50%; 
-    width: 40px; height: 40px; 
-    animation: spin 1s linear infinite; 
-    margin-bottom: 10px; 
-}
-
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-/* 7. Scrollable & Utilities */
-.scrollable-card {
-    max-height: 350px; 
-    overflow-y: auto;
-    margin-top: 10px;
-    scrollbar-width: thin;
-}
-.scrollable-card::-webkit-scrollbar { width: 5px; }
-.scrollable-card::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
-
-#currentDateText {
-    font-size: 0.85em;
-    color: var(--text-sub);
-    font-weight: normal;
-}
-
+/* ============================================================
+   4. DASHBOARD TABLES (Log Views)
+   ============================================================ */
 .table-card { 
     background: white; 
     border-radius: 12px; 
-    overflow-x: auto; /* รองรับมือถือถ้าตารางกว้างเกินไป */
+    overflow-x: auto; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
 }
 
 table { 
     width: 100%; 
     border-collapse: collapse; 
-    min-width: 500px; /* ป้องกันตารางบีบตัวจนอ่านไม่ออกในมือถือ */
+    min-width: 500px; 
 }
 
 th { 
@@ -217,23 +169,199 @@ td {
     vertical-align: middle;
 }
 
-tr:hover { background-color: #fafafa; } /* ไฮไลท์แถวเมื่อเอาเมาส์ชี้ */
+tr:hover { 
+    background-color: #fafafa; 
+}
 
-.custom-div-icon {
-    background: transparent;
-    border: none;
+/* ============================================================
+   5. FORM ELEMENTS (Check-in Form)
+   ============================================================ */
+.form-group { 
+    margin-bottom: 20px; 
 }
-.station-label {
+
+.form-label { 
+    display: block; 
+    font-size: 1.1em; 
+    font-weight: 600; 
+    margin-bottom: 8px; 
+}
+
+select, input[type="text"], input[type="date"] { 
+    width: 100%; height: 48px; 
+    background: #f9f9f9; 
+    border: 1.5px solid #eee; 
+    border-radius: 10px; 
+    padding: 0 12px; 
+    font-size: 16px; 
+    box-sizing: border-box; 
+    color: var(--text-main); 
+    margin-bottom: 10px;
+}
+
+/* Weather Selector (Radio Circle Buttons) */
+.weather-selector {
+    display: flex; 
+    justify-content: space-around;
+    padding: 10px 0; 
+    gap: 10px;
+}
+
+.weather-option {
+    width: 45px; height: 45px; 
+    line-height: 41px;
+    text-align: center; 
+    border-radius: 50%; 
+    background-color: #fff; 
+    border: 2px solid #eee;
+    color: var(--text-sub); 
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.weather-selector input[type="radio"]:checked + .weather-option {
+    background-color: var(--line-green); 
+    color: #fff;
+    border-color: var(--line-green); 
+    transform: scale(1.1);
+}
+
+/* ============================================================
+   6. BUTTONS & ACTIONS
+   ============================================================ */
+button { 
+    width: 100%; height: 52px; 
+    background: var(--line-green); 
+    color: white; 
+    border: none; 
+    border-radius: 12px; 
+    font-size: 17px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: 0.2s;
+}
+
+button:active { 
+    transform: scale(0.98); 
+    background: var(--dark-green); 
+}
+
+/* ============================================================
+   7. MAP, OVERLAYS & CONTROLS
+   ============================================================ */
+#map, #fullMap { 
+    height: 300px; 
+    border-radius: 12px; 
+    margin-bottom: 10px; 
+    z-index: 1; 
+}
+
+#fullMap { 
+    height: 100vh; 
+    border-radius: 0; 
+    margin: 0; 
+}
+
+/* แถบสถานะด้านบนบนแผนที่ */
+.top-status-bar {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     background: white;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 2px 2px 12px rgba(0,0,0,0.15);
-    border-left: 6px solid #28a745;
-    width: 140px;
-    pointer-events: auto;
+    padding: 8px 20px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-weight: 600;
+    color: var(--line-green);
+    display: flex;
+    gap: 15px;
+    border: 1px solid #eee;
 }
-.is-late { border-left-color: #ffc107; background: #fffde7; }
-.is-offline { border-left-color: #9e9e9e; opacity: 0.8; }
-.label-sid { font-weight: bold; font-size: 15px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
-.label-user { font-size: 13px; color: #444; }
-.label-time { font-size: 11px; font-weight: normal; color: #666; }
+
+/* ส่วนควบคุมบนแผนที่ */
+.map-controls {
+    position: absolute;
+    bottom: 25px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ctrl-btn {
+    background: white;
+    border: 1px solid #e0e0e0; /* เส้นขอบบางๆ */
+    width: 45px;
+    height: 45px;
+    border-radius: 12px; /* โค้งมนเหมือน Card */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    color: var(--line-green); /* ไอคอนสีเขียว */
+    font-size: 22px;
+    transition: all 0.2s ease;
+}
+
+.ctrl-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+/* ============================================================
+   8. UTILITIES (Loaders, Scrolls)
+   ============================================================ */
+.loader { 
+    border: 4px solid #f3f3f3; 
+    border-top: 4px solid var(--line-green); 
+    border-radius: 50%; 
+    width: 40px; 
+    height: 40px; 
+    animation: spin 1s linear infinite; 
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+.scrollable-card {
+    max-height: 400px; 
+    overflow-y: auto;
+}
+
+/* แถบเวลาหน้า Map แบบเรียบๆ มุมขวาบน */
+/* สไตล์เฉพาะหน้า Map: วางมุมขวาบนแบบเรียบง่าย */
+.map-time-overlay {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* ให้อยู่เหนือแผนที่ */
+    
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* จัดตัวอักษรชิดขวา */
+    pointer-events: none; /* ไม่ให้ขวางการลากแผนที่ */
+}
+
+.map-time-overlay #currentDate {
+    font-size: 13px;
+    color: var(--text-sub);
+    font-weight: 400;
+}
+
+.map-time-overlay #currentTime {
+    font-size: 22px;
+    color: var(--line-green);
+    font-weight: 600;
+    margin-top: 2px;
+    letter-spacing: 1px;
+}
+
