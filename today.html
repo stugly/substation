@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today Status Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container { padding: 15px; max-width: 100%; margin: auto; box-sizing: border-box; }
+        
+        /* Spinner */
+        #spinner {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85); z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; font-family: 'Kanit', sans-serif;
+        }
+        .loader {
+            border: 5px solid #f3f3f3; border-top: 5px solid #28a745; border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- สไตล์ Tab / Accordion --- */
+        .accordion-item {
+            background: white; border-radius: 12px; margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #eee;
+        }
+
+        .accordion-header {
+            padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between;
+            align-items: center; transition: background 0.3s; position: relative;
+        }
+
+        /* สีที่คั่นหนังสือ (Left Border) */
+        .type-daytime { border-left: 10px solid #28a745; background: #f1f8e9; }
+        .type-patrol { border-left: 10px solid #007bff; background: #e3f2fd; }
+        .type-etc { border-left: 10px solid #fd7e14; background: #fff3e0; }
+
+        .accordion-header h3 {
+            margin: 0; font-family: 'Kanit'; font-weight: 600; font-size: 1.2em; color: #333;
+        }
+
+        .accordion-content {
+            padding: 20px; display: block; /* เริ่มต้นให้แสดงผล */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .accordion-content.hidden { display: none; }
+
+        .toggle-icon { transition: transform 0.3s; font-size: 1.2em; color: #666; }
+        .rotate { transform: rotate(180deg); }
+
+        /* การจัดเรียงการ์ดภายใน */
+        #unitCheckinToday, #patrolListContainer, #ETCListContainer {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px; width: 100%;
+        }
+
+        .scrollable-card { max-height: none !important; overflow: visible !important; }
+        #map, #logTable, .filter-bar, #startDate, #endDate, #searchInput { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="spinner">
+        <div class="loader"></div>
+        <div style="color: #333; font-weight: 400;">กำลังประมวลผล...</div>
+    </div>
+
+    <div class="header">
+        <div class="container" style="padding-bottom: 5px;">
+            <div class="card" style="text-align: center; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div id="clockDisplay" style="font-family: 'Kanit'; font-weight: 600; color: #28a745; font-size: 1.5em;">🕒 --:--:--</div>
+                <div style="font-size: 0.9em; color: #888;">Live Status Monitoring</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="accordion-item">
+            <div class="accordion-header type-daytime" onclick="toggleSection('unitCheckinToday', this)">
+                <h3><i class="fa-solid fa-sun" style="margin-right: 10px;"></i> หน่วยปฏิบัติงาน / Day Time</h3>
+                <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="unitCheckinToday-parent" class="accordion-content">
+                <div id="unitCheckinToday" class="scrollable-card">กำลังโหลด...</div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header type-patrol" onclick="toggleSection('patrolListContainer', this)">
+                <h3><i class="fa-solid fa-route" style="margin-right: 10px;"></i> งาน Patrol</h3>
+                <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="patrolListContainer-parent" class="accordion-content">
+                <div id="patrolListContainer" class="scrollable-card">กำลังโหลด...</div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header type-etc" onclick="toggleSection('ETCListContainer', this)">
+                <h3><i class="fa-solid fa-ellipsis-h" style="margin-right: 10px;"></i> งานอื่นๆ</h3>
+                <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            </div>
+            <div id="ETCListContainer-parent" class="accordion-content">
+                <div id="ETCListContainer" class="scrollable-card">กำลังโหลด...</div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+        <input type="date" id="startDate" style="display:none">
+        <input type="date" id="endDate" style="display:none">
+        <input type="text" id="searchInput" style="display:none">
+        <table><tbody id="logTable"></tbody></table>
+    </div>
+
+    <script>
+        // ฟังก์ชันสำหรับ ย่อ-ขยาย
+        function toggleSection(containerId, header) {
+            const content = document.getElementById(containerId + '-parent');
+            const icon = header.querySelector('.toggle-icon');
+            
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate');
+        }
+    </script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="dashboard.js?v=1.3"></script>
+</body>
+</html>

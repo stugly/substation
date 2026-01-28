@@ -18,9 +18,7 @@ async function initDashboard() {
     }
 
     try {
-        // --- แสดง Spinner ก่อนเริ่มดึงข้อมูล ---
         showSpinner(true);
-
         const response = await fetch(API_URL, { method: "GET", redirect: "follow" });
         const data = await response.json();
 
@@ -32,19 +30,13 @@ async function initDashboard() {
     } catch (error) { 
         console.error("Dashboard Load Error:", error); 
     } finally {
-        // --- ปิด Spinner เมื่อทำงานเสร็จทุกกรณี ---
         showSpinner(false);
     }
 }
 
-/**
- * ฟังก์ชันแสดง/ซ่อน Spinner (ใช้ร่วมกับ HTML ที่คุณเพิ่ม)
- */
 function showSpinner(show) {
     const spinner = document.getElementById('spinner');
-    if (spinner) {
-        spinner.style.display = show ? 'flex' : 'none';
-    }
+    if (spinner) spinner.style.display = show ? 'flex' : 'none';
 }
 
 /**
@@ -77,16 +69,12 @@ function renderCheckinLogs(checkins) {
     const tableBody = document.getElementById("logTable");
     if (tableBody) {
         tableBody.innerHTML = "";
-        
         const sTerm = document.getElementById('searchInput')?.value || "";
         const startDate = document.getElementById('startDate')?.value || "";
         const endDate = document.getElementById('endDate')?.value || "";
         
         let displayData = [...checkins].reverse();
-        
-        if (!sTerm && !startDate && !endDate) {
-            displayData = displayData.slice(0, 50);
-        }
+        if (!sTerm && !startDate && !endDate) displayData = displayData.slice(0, 50);
 
         displayData.forEach((cp) => {
             const dateObj = new Date(cp.time);
@@ -155,7 +143,6 @@ function applyFilters() {
         } else if (endDate) {
             matchDate = (checkinDateStr <= endDate);
         }
-
         return matchText && matchDate;
     });
 
@@ -164,7 +151,8 @@ function applyFilters() {
 }
 
 function updateStats(checkins) {
-    renderUnitStatusList(checkins);
+    // สำหรับ Card สถานะ ให้ใช้ข้อมูลทั้งหมดเพื่อให้ครอบคลุมรอยต่อวัน
+    renderUnitStatusList(allCheckins);
 
     const patrolItems = checkins.filter(cp => {
         const jobName = (cp.job || "").toString().toLowerCase();
@@ -180,75 +168,90 @@ function updateStats(checkins) {
 }
 
 /**
- * Card 1: สถานะหน่วยงาน (KBA, KBB...)
+ * Card 1: สถานะหน่วยงาน 1-15 และ Day Time (Logic 24 ชม.)
  */
-function renderUnitStatusList(checkins) {
+function renderUnitStatusList(fullCheckins) {
     const container = document.getElementById("unitCheckinToday");
     if (!container) return;
     container.innerHTML = "";
     
     const now = new Date();
+    const currentTimeValue = now.getHours() * 100 + now.getMinutes();
+    const isWeekend = [0, 6].includes(now.getDay());
 
-    let statusData = targetSIDs.map(sid => {
-        const logs = checkins.filter(cp => {
-        const jobName = (cp.job || "").toString().trim();
-        // ตรวจสอบว่ามีคำว่า "เข้าปฏิบัติงานกะ" หรือ "Day Time" (แบบไม่สนตัวพิมพ์เล็ก/ใหญ่)
-        return cp.sid === sid && (
-        jobName.includes("เข้าปฏิบัติงานกะ") || 
-        jobName.toLowerCase().includes("day time")
-    );
-});
+    const prioritySIDs = ["NTB", "TSA", "KCD", "PPA", "TRA", "KBB", "BKO", "PKA", "PKB", "PAT", "KMA", "KBA", "PKD", "KNA", "WSA", "TMG", "KTM"];
+
+    let currentPriority = 1;
+
+    prioritySIDs.forEach((sid) => {
+        let displayNo = currentPriority.toString();
+        let isDayTimeType = (sid === "TMG" || sid === "KTM");
+        if (sid === "BKO") { displayNo = "7-8"; currentPriority = 8; }
+
+        // ดึงข้อมูลล่าสุดของ SID นี้ (รองรับ Keyword ทั้งกะปกติและ Day Time)
+        const logs = fullCheckins.filter(cp => {
+            const isMatchSID = cp.sid === sid;
+            const jobText = (cp.job || "").toString().toLowerCase();
+            const isWorkJob = jobText.includes("ปฏิบัติงาน") || jobText.includes("day time");
+            return isMatchSID && isWorkJob;
+        });
         const lastIn = logs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
-        return { sid, lastIn };
-    });
+        
+        let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f", statusMsg = "";
 
-    statusData.sort((a, b) => (b.lastIn ? new Date(b.lastIn.time).getTime() : 0) - (a.lastIn ? new Date(a.lastIn.time).getTime() : 0));
+        if (lastIn) {
+            const lastTime = new Date(lastIn.time);
+            const diffHours = (now - lastTime) / (1000 * 60 * 60);
 
-    statusData.forEach(item => {
-        const row = document.createElement("div");
-        row.style.cssText = "padding:10px; margin-bottom:6px; border-radius:8px; border-left: 5px solid #28a745; text-align:left; font-family: 'Kanit'; box-shadow: 0 1px 3px rgba(0,0,0,0.05);";
-
-        if (item.lastIn) {
-            const checkinDate = new Date(item.lastIn.time);
-            const isToday = (checkinDate.getFullYear() === now.getFullYear() && checkinDate.getMonth() === now.getMonth() && checkinDate.getDate() === now.getDate());
-            const diffInHours = (now - checkinDate) / (1000 * 60 * 60);
-            const isLate = diffInHours > 8;
-
-            const dateStr = checkinDate.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
-            const timeStr = checkinDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            const telLink = item.lastIn.tel ? item.lastIn.tel.toString().replace(/-/g, '') : '';
-
-            if (isToday) {
-                if (isLate) {
-                    row.style.background = "#fff9c4"; 
-                    row.style.borderLeftColor = "#fbc02d";
-                } else {
-                    row.style.background = "#e8f5e9"; 
-                    row.style.borderLeftColor = "#28a745";
+            if (isDayTimeType) {
+                // --- Logic Day Time ---
+                if (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800) {
+                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e";
+                    statusMsg = " (นอกเวลา)";
+                } else if (diffHours <= 16) {
+                    bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
                 }
             } else {
-                row.style.background = "#f5f5f5"; 
-                row.style.borderLeftColor = "#9e9e9e";
+                // --- Logic หน่วย 1-15 ---
+                if (diffHours <= 8) {
+                    bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
+                } else if (diffHours <= 16) {
+                    bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d";
+                    statusMsg = " (รอเปลี่ยนกะ)";
+                }
             }
+        }
 
-            row.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <b style="color:${isToday && !isLate ? '#28a745' : (isToday ? '#fbc02d' : '#616161')}; font-size:14px;">${item.sid}</b>
-                    <span style="font-size:11px; color:#888;">${dateStr}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-                        <span style="font-size:12px; color:#333; white-space:nowrap;">👤 ${item.lastIn.userName}</span>
-                        ${item.lastIn.tel ? `<a href="tel:${telLink}" style="text-decoration:none; color:#28a745; font-size:11px;">📞 โทร</a>` : ''}
+        const badgeWidth = isDayTimeType ? "85px" : (displayNo === "7-8" ? "45px" : "30px");
+        const card = document.createElement("div");
+        card.style.cssText = `position:relative; padding:15px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); font-family:'Kanit'; margin:15px 10px; min-width:280px; flex: 1 1 300px;`;
+
+        if (lastIn) {
+            const timeStr = new Date(lastIn.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = new Date(lastIn.time).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+            card.innerHTML = `
+                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; padding:0 5px;">${displayNo}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-left:15px;">
+                    <b style="font-size:1.1em; color:#333;">${sid}${statusMsg}</b>
+                    <div style="text-align:right;">
+                        <span style="font-weight:600; color:#444; display:block;">${timeStr} น.</span>
+                        <small style="font-size:10px; color:#888;">${dateStr}</small>
                     </div>
-                    <span style="font-size:12px; color:#444; font-weight:600; min-width:fit-content; margin-left:10px;">${timeStr} น.</span>
+                </div>
+                <div style="padding-left:15px;">
+                    <div style="font-size:13px; color:#555; margin-bottom:4px;">👤 ${lastIn.userName}</div>
+                    <div style="font-size:12px; color:${borderColor};"><i class="fa-solid fa-mobile-screen-button"></i> ${lastIn.tel || '-'}</div>
                 </div>`;
         } else {
-            row.style.background = "#ffffff";
-            row.style.borderLeftColor = "#eee";
-            row.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><b style="color:#ccc; font-size:14px;">${item.sid}</b><span style="color:#ccc; font-size:11px;">ไม่มีข้อมูล</span></div>`;
+            card.innerHTML = `
+                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; padding:0 5px;">${displayNo}</div>
+                <div style="padding-left:15px;">
+                    <b style="color:${borderColor}; font-size:1.1em;">${sid}</b>
+                    <div style="font-size:12px; color:${borderColor}; margin-top:5px; font-weight:600;">⚠️ ไม่พบข้อมูลสดใหม่</div>
+                </div>`;
         }
-        container.appendChild(row);
+        container.appendChild(card);
+        currentPriority++; 
     });
 }
 
@@ -264,10 +267,9 @@ function renderSimpleCardList(containerId, items) {
         return;
     }
     const now = new Date();
-
     [...items].sort((a, b) => new Date(b.time) - new Date(a.time)).forEach(item => {
         const checkinDate = new Date(item.time);
-        const isToday = (checkinDate.getFullYear() === now.getFullYear() && checkinDate.getMonth() === now.getMonth() && checkinDate.getDate() === now.getDate());
+        const isToday = checkinDate.toDateString() === now.toDateString();
         const dateStr = checkinDate.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
         const timeStr = checkinDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
         
@@ -275,9 +277,7 @@ function renderSimpleCardList(containerId, items) {
         const detailText = item.note || "-";
 
         const row = document.createElement("div");
-        row.style.cssText = "padding:10px; margin-bottom:6px; border-radius:8px; border-left: 5px solid #28a745; text-align:left; font-family: 'Kanit'; box-shadow: 0 1px 3px rgba(0,0,0,0.05);";
-        row.style.background = isToday ? "#e8f5e9" : "#f5f5f5";
-        row.style.borderLeftColor = isToday ? "#28a745" : "#9e9e9e";
+        row.style.cssText = `padding:10px; margin-bottom:6px; border-radius:8px; border-left: 5px solid ${isToday ? '#28a745' : '#9e9e9e'}; text-align:left; font-family: 'Kanit'; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: ${isToday ? '#e8f5e9' : '#f5f5f5'};`;
 
         row.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -291,10 +291,7 @@ function renderSimpleCardList(containerId, items) {
                 </div>
                 <span style="font-size:12px; color:#444; font-weight:600; min-width:fit-content; margin-left:10px;">${timeStr} น.</span>
             </div>
-            ${containerId === 'ETCListContainer' ? `
-                <div style="font-size:10px; color:#666; margin-top:3px; border-top: 1px dashed #ddd; padding-top:2px; font-style:italic;">
-                    📝 ${detailText}
-                </div>` : ''} 
+            ${containerId === 'ETCListContainer' ? `<div style="font-size:10px; color:#666; margin-top:3px; border-top: 1px dashed #ddd; padding-top:2px; font-style:italic;">📝 ${detailText}</div>` : ''} 
         `;
         container.appendChild(row);
     });
@@ -305,7 +302,6 @@ function renderSimpleCardList(containerId, items) {
  */
 document.addEventListener("DOMContentLoaded", () => {
     startLiveClock();
-    
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     
@@ -326,11 +322,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function resetFilters() {
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
     if (document.getElementById('searchInput')) document.getElementById('searchInput').value = "";
     if (document.getElementById('startDate')) document.getElementById('startDate').value = today;
     if (document.getElementById('endDate')) document.getElementById('endDate').value = today;
-    
     applyFilters();
     if (map) map.setView([13.75, 100.52], 7);
 }
@@ -339,10 +333,8 @@ function startLiveClock() {
     function updateClock() {
         const now = new Date();
         const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
-        const dateStr = now.toLocaleDateString('th-TH', dateOptions);
-        const timeStr = now.toLocaleTimeString('th-TH', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const clockEl = document.getElementById("clockDisplay");
-        if (clockEl) clockEl.innerHTML = `📅 ${dateStr} | 🕒 ${timeStr} น.`;
+        if (clockEl) clockEl.innerHTML = `📅 ${now.toLocaleDateString('th-TH', dateOptions)} | 🕒 ${now.toLocaleTimeString('th-TH', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} น.`;
     }
     setInterval(updateClock, 1000);
     updateClock();
