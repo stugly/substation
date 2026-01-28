@@ -220,31 +220,58 @@ function renderUnitStatusList(fullCheckins) {
         else { displayLabel = unitCounter.toString(); unitCounter++; }
 
         const filteredLogs = fullCheckins.filter(cp => {
-            const cTime = new Date(cp.time);
-            const jobText = (cp.job || "").toString().toLowerCase();
-            const isMatch = cp.sid === sid && (jobText.includes("ปฏิบัติงาน") || jobText.includes("day time")) && cTime <= now;
-            if (isDayTimeType) {
-                const dStr = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
-                return isMatch && dStr === targetDateStr;
-            }
-            return isMatch;
-        });
+    const cTime = new Date(cp.time);
+    const jobText = (cp.job || "").toString().toLowerCase();
+    const isMatch = cp.sid === sid && 
+        (jobText.includes("ปฏิบัติงาน") || jobText.includes("day time")) && 
+        cTime <= now;
+
+    const dStr = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
+
+    // ---- Day Time ใช้เงื่อนไขเดิม (ห้ามแก้)
+    if (isDayTimeType) {
+        return isMatch && dStr === targetDateStr;
+    }
+
+    // ---- สถานีปกติ
+    // ถ้าเวลาปัจจุบัน >= 08:00 → เอาเฉพาะ check-in วันนี้
+    if (currentTimeValue >= 800) {
+        return isMatch && dStr === targetDateStr;
+    }
+
+    // ถ้าก่อน 08:00 → ยังอนุญาตให้ใช้ของเมื่อวานต่อได้
+    return isMatch;
+});
+
 
         const lastIn = filteredLogs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
-        let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f", statusMsg = "";
+        let bgColor = "#ffcdd2";      // แดง = default = ไม่พบ check-in
+let borderColor = "#d32f2f";
+let badgeColor = "#d32f2f";
+let statusMsg = "";
 
-        if (lastIn) {
-            const lastTime = new Date(lastIn.time);
-            const diffHours = (now - lastTime) / (1000 * 60 * 60);
-            if (isDayTimeType) {
-                if (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800) {
-                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e"; statusMsg = "";
-                } else { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
-            } else {
-                if (diffHours <= 8) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
-                else if (diffHours <= 16) { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; statusMsg = ""; }
-            }
+if (lastIn) {
+
+    // กรณี Day Time (TMG, KTM) ยังใช้เงื่อนไขเวลางาน / นอกเวลางานได้
+    if (isDayTimeType) {
+        if (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800) {
+            bgColor = "#f5f5f5";  
+            borderColor = "#9e9e9e";
+            badgeColor = "#9e9e9e";
+        } else {
+            bgColor = "#e8f5e9";  
+            borderColor = "#28a745";
+            badgeColor = "#28a745";
         }
+    } 
+    // สถานีปกติ → แค่มี check-in ก็ถือว่าปกติทันที
+    else {
+        bgColor = "#e8f5e9";  
+        borderColor = "#28a745";
+        badgeColor = "#28a745";
+    }
+}
+
 
         const card = document.createElement("div");
         card.style.cssText = `position:relative; padding:15px 15px 15px 25px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); font-family:'Kanit'; margin:18px 10px; min-width:280px; flex: 1 1 300px;`;
