@@ -1,6 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 let map;
 let allCheckins = []; 
+let allStationsData = []; // สำหรับเก็บชื่อสถานีเต็ม
 let currentMarkers = L.featureGroup();
 let stationLayers = L.layerGroup(); 
 
@@ -22,7 +23,12 @@ async function initDashboard() {
         const response = await fetch(API_URL, { method: "GET", redirect: "follow" });
         const data = await response.json();
 
-        if (data.allStations && map) renderAllStations(data.allStations);
+        // เก็บข้อมูลสถานีลงตัวแปรกลางก่อนเริ่มทำงานส่วนอื่น
+        if (data.allStations) {
+            allStationsData = data.allStations; 
+            if (map) renderAllStations(data.allStations);
+        }
+
         if (data.checkins) {
             allCheckins = data.checkins; 
             applyFilters(); 
@@ -61,7 +67,7 @@ function renderAllStations(stations) {
 }
 
 /**
- * 3. แสดงจุดเช็คอินพนักงาน (ตาราง + แผนที่)
+ * 3. ตารางประวัติ (Log Table)
  */
 function renderCheckinLogs(checkins) {
     if (!map) return;
@@ -84,7 +90,7 @@ function renderCheckinLogs(checkins) {
 
             let jobBadgeColor = "#6c757d"; 
             const jobText = (cp.job || "").toString();
-            if (jobText.includes("เข้าปฏิบัติงานกะ")) jobBadgeColor = "#28a745";
+            if (jobText.includes("ปฏิบัติงาน")) jobBadgeColor = "#28a745";
             else if (jobText.toLowerCase().includes("patrol")) jobBadgeColor = "#007bff";
             else if (jobText.includes("บำรุงรักษา")) jobBadgeColor = "#fd7e14";
 
@@ -101,7 +107,7 @@ function renderCheckinLogs(checkins) {
                 </td>
                 <td>
                     <div style="font-weight: 600;">${cp.userName}</div>
-                    ${cp.tel ? `<a href="tel:${telForLink}" style="text-decoration:none; font-size:11px; color:#28a745;">📞 ${cp.tel}</a>` : ''}
+                    ${cp.tel ? `<div style="font-size:11px; color:#28a745;">📞 ${cp.tel}</div>` : ''}
                 </td>
             </tr>`;
             tableBody.innerHTML += row;
@@ -114,11 +120,10 @@ function renderCheckinLogs(checkins) {
             }
         });
     }
-    if (currentMarkers.getLayers().length > 0) map.fitBounds(currentMarkers.getBounds().pad(0.1));
 }
 
 /**
- * 4. ระบบ Filter
+ * 4. ระบบ Filter และ Update Stats
  */
 function applyFilters() {
     const sTerm = document.getElementById('searchInput')?.value.toLowerCase() || "";
@@ -126,11 +131,8 @@ function applyFilters() {
     const endDate = document.getElementById('endDate')?.value;
 
     const filtered = allCheckins.filter(cp => {
-        const d = new Date(cp.time || cp.timestamp);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const checkinDateStr = `${y}-${m}-${day}`; 
+        const d = new Date(cp.time);
+        const checkinDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; 
 
         const matchText = (cp.userName || "").toLowerCase().includes(sTerm) || 
                           (cp.stationName || "").toLowerCase().includes(sTerm);
@@ -151,191 +153,240 @@ function applyFilters() {
 }
 
 function updateStats(checkins) {
-    // สำหรับ Card สถานะ ให้ใช้ข้อมูลทั้งหมดเพื่อให้ครอบคลุมรอยต่อวัน
+    const isTestMode = document.getElementById("isTestMode")?.checked;
+    const testDateStr = document.getElementById("testDate")?.value;
+    
+    let targetDate;
+    if (isTestMode && testDateStr) {
+        targetDate = testDateStr; 
+    } else {
+        const now = new Date();
+        targetDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    // กรองข้อมูลเฉพาะ "วันที่ตรงกับเป้าหมาย" เท่านั้น
+    const todayData = allCheckins.filter(cp => {
+        const d = new Date(cp.time);
+        const dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return dStr === targetDate;
+    });
+
+    // Tab 1: สถานะหน่วยงาน
     renderUnitStatusList(allCheckins);
 
-    const patrolItems = checkins.filter(cp => {
-        const jobName = (cp.job || "").toString().toLowerCase();
-        return jobName.includes("patrol");
-    });
-    renderSimpleCardList("patrolListContainer", patrolItems);
+    // Tab 2: งาน Patrol (ตัด Note)
+    const patrolItems = todayData.filter(cp => (cp.job || "").toLowerCase().includes("patrol"));
+    renderPatrolCardList("patrolListContainer", patrolItems, "#007bff"); 
 
-    const etcItems = checkins.filter(cp => {
-        const jobName = (cp.job || "").toString().trim();
-        return jobName === "งานอื่นๆ"; 
+    // Tab 3: งานอื่นๆ (คง Note)
+    const etcItems = todayData.filter(cp => {
+        const job = (cp.job || "").toString();
+        const jobLower = job.toLowerCase();
+        const isWork = job.includes("ปฏิบัติงาน") || jobLower.includes("day time");
+        const isPatrol = jobLower.includes("patrol");
+        return !isWork && !isPatrol;
     });
-    renderSimpleCardList("ETCListContainer", etcItems);
+    renderETCCardList("ETCListContainer", etcItems, "#fd7e14");
 }
 
 /**
- * Card 1: สถานะหน่วยงาน 1-15 และ Day Time (Logic 24 ชม.)
+ * Tab 1: สถานะหน่วยงาน (ปรับสีเบอร์โทรตามสถานะขอบการ์ด)
  */
 function renderUnitStatusList(fullCheckins) {
     const container = document.getElementById("unitCheckinToday");
     if (!container) return;
     container.innerHTML = "";
     
-    const now = new Date();
+    const isTestMode = document.getElementById("isTestMode")?.checked;
+    const testDate = document.getElementById("testDate")?.value;
+    const testTime = document.getElementById("testTime")?.value;
+
+    let now = isTestMode && testDate && testTime ? new Date(`${testDate}T${testTime}:00`) : new Date();
+    const targetDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const currentTimeValue = now.getHours() * 100 + now.getMinutes();
     const isWeekend = [0, 6].includes(now.getDay());
 
-    const prioritySIDs = ["NTB", "TSA", "KCD", "PPA", "TRA", "KBB", "BKO", "PKA", "PKB", "PAT", "KMA", "KBA", "PKD", "KNA", "WSA", "TMG", "KTM"];
+    let unitCounter = 1;
 
-    let currentPriority = 1;
-
-    prioritySIDs.forEach((sid) => {
-        let displayNo = currentPriority.toString();
+    targetSIDs.forEach((sid) => {
+        const stationInfo = allStationsData.find(s => s.SID === sid);
+        const displayName = stationInfo ? stationInfo.SName : sid;
         let isDayTimeType = (sid === "TMG" || sid === "KTM");
-        if (sid === "BKO") { displayNo = "7-8"; currentPriority = 8; }
+        let displayLabel = "";
+        let badgeWidth = "45px";
 
-        // ดึงข้อมูลล่าสุดของ SID นี้ (รองรับ Keyword ทั้งกะปกติและ Day Time)
-        const logs = fullCheckins.filter(cp => {
-            const isMatchSID = cp.sid === sid;
+        if (isDayTimeType) { displayLabel = "Day Time"; badgeWidth = "85px"; }
+        else if (sid === "BKO") { displayLabel = "7-8"; unitCounter = 8; }
+        else { displayLabel = unitCounter.toString(); unitCounter++; }
+
+        const filteredLogs = fullCheckins.filter(cp => {
+            const cTime = new Date(cp.time);
             const jobText = (cp.job || "").toString().toLowerCase();
-            const isWorkJob = jobText.includes("ปฏิบัติงาน") || jobText.includes("day time");
-            return isMatchSID && isWorkJob;
+            const isMatch = cp.sid === sid && (jobText.includes("ปฏิบัติงาน") || jobText.includes("day time")) && cTime <= now;
+            if (isDayTimeType) {
+                const dStr = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
+                return isMatch && dStr === targetDateStr;
+            }
+            return isMatch;
         });
-        const lastIn = logs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
-        
+
+        const lastIn = filteredLogs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
         let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f", statusMsg = "";
 
         if (lastIn) {
             const lastTime = new Date(lastIn.time);
             const diffHours = (now - lastTime) / (1000 * 60 * 60);
-
             if (isDayTimeType) {
-                // --- Logic Day Time ---
                 if (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800) {
-                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e";
-                    statusMsg = " (นอกเวลา)";
-                } else if (diffHours <= 16) {
-                    bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
-                }
+                    bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e"; statusMsg = " (นอกเวลา)";
+                } else { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
             } else {
-                // --- Logic หน่วย 1-15 ---
-                if (diffHours <= 8) {
-                    bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
-                } else if (diffHours <= 16) {
-                    bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d";
-                    statusMsg = " (รอเปลี่ยนกะ)";
-                }
+                if (diffHours <= 8) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
+                else if (diffHours <= 16) { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; statusMsg = " (รอเปลี่ยนกะ)"; }
             }
         }
 
-        const badgeWidth = isDayTimeType ? "85px" : (displayNo === "7-8" ? "45px" : "30px");
         const card = document.createElement("div");
-        card.style.cssText = `position:relative; padding:15px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); font-family:'Kanit'; margin:15px 10px; min-width:280px; flex: 1 1 300px;`;
+        card.style.cssText = `position:relative; padding:15px 15px 15px 25px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); font-family:'Kanit'; margin:18px 10px; min-width:280px; flex: 1 1 300px;`;
 
         if (lastIn) {
-            const timeStr = new Date(lastIn.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            const dateStr = new Date(lastIn.time).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+            const d = new Date(lastIn.time);
+            const telClean = lastIn.tel ? lastIn.tel.toString().replace(/-/g, '') : '';
+            
             card.innerHTML = `
-                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; padding:0 5px;">${displayNo}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-left:15px;">
-                    <b style="font-size:1.1em; color:#333;">${sid}${statusMsg}</b>
-                    <div style="text-align:right;">
-                        <span style="font-weight:600; color:#444; display:block;">${timeStr} น.</span>
-                        <small style="font-size:10px; color:#888;">${dateStr}</small>
+                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; z-index:10;">${displayLabel}</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; row-gap: 8px;">
+                    <div style="grid-column: 1; grid-row: 1; text-align: left;">
+                        <b style="font-size: 1.1em; color: #333;">${displayName}${statusMsg}</b>
                     </div>
-                </div>
-                <div style="padding-left:15px;">
-                    <div style="font-size:13px; color:#555; margin-bottom:4px;">👤 ${lastIn.userName}</div>
-                    <div style="font-size:12px; color:${borderColor};"><i class="fa-solid fa-mobile-screen-button"></i> ${lastIn.tel || '-'}</div>
+                    <div style="grid-column: 2; grid-row: 1; text-align: right;">
+                        <b style="font-size: 1.1em; color: #444;">${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.</b>
+                    </div>
+                    <div style="grid-column: 1; grid-row: 2; text-align: left; font-size: 13px; color: #555;">
+                        👤 ${lastIn.userName}
+                        ${lastIn.tel ? `<a href="tel:${telClean}" style="color: ${borderColor}; text-decoration: none; font-weight: 600; margin-left: 5px;"><i class="fa-solid fa-mobile-screen-button"></i> ${lastIn.tel}</a>` : ''}
+                    </div>
+                    <div style="grid-column: 2; grid-row: 2; text-align: right; font-size: 11px; color: #888;">
+                        ${d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}
+                    </div>
                 </div>`;
         } else {
             card.innerHTML = `
-                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; padding:0 5px;">${displayNo}</div>
-                <div style="padding-left:15px;">
-                    <b style="color:${borderColor}; font-size:1.1em;">${sid}</b>
-                    <div style="font-size:12px; color:${borderColor}; margin-top:5px; font-weight:600;">⚠️ ไม่พบข้อมูลสดใหม่</div>
+                <div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap; z-index:10;">${displayLabel}</div>
+                <div style="padding-left:10px;">
+                    <b style="color:${borderColor}; font-size:1.1em;">${displayName}${statusMsg}</b>
+                    <div style="font-size:12px; color:${borderColor}; margin-top:5px; font-weight:600;">⚠️ ไม่พบข้อมูลที่เลือก</div>
                 </div>`;
         }
         container.appendChild(card);
-        currentPriority++; 
     });
 }
 
 /**
- * Card 2 & 3: Patrol และ งานอื่นๆ
+ * Tab 2: Patrol (น้ำเงิน)
  */
-function renderSimpleCardList(containerId, items) {
+function renderPatrolCardList(containerId, items, themeColor) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = "";
-    if (items.length === 0) {
-        container.innerHTML = `<div style="color:#999; padding:20px; text-align:center; font-size:14px;">ไม่มีข้อมูล</div>`;
-        return;
-    }
-    const now = new Date();
-    [...items].sort((a, b) => new Date(b.time) - new Date(a.time)).forEach(item => {
-        const checkinDate = new Date(item.time);
-        const isToday = checkinDate.toDateString() === now.toDateString();
-        const dateStr = checkinDate.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
-        const timeStr = checkinDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        
-        const telLink = item.tel ? item.tel.toString().replace(/-/g, '') : '';
-        const detailText = item.note || "-";
+    container.innerHTML = items.length === 0 ? `<div style="padding:20px; text-align:center; color:#999;">ไม่มีงาน Patrol</div>` : "";
 
-        const row = document.createElement("div");
-        row.style.cssText = `padding:10px; margin-bottom:6px; border-radius:8px; border-left: 5px solid ${isToday ? '#28a745' : '#9e9e9e'}; text-align:left; font-family: 'Kanit'; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: ${isToday ? '#e8f5e9' : '#f5f5f5'};`;
+    items.sort((a,b) => new Date(b.time) - new Date(a.time)).forEach(item => {
+        const d = new Date(item.time);
+        const telClean = item.tel ? item.tel.toString().replace(/-/g, '') : '';
+        const stationInfo = allStationsData.find(s => s.SID === item.sid);
+        const displayName = stationInfo ? stationInfo.SName : (item.stationName || item.sid);
 
-        row.innerHTML = `
+        const card = document.createElement("div");
+        card.style.cssText = `padding:15px; background:#f0f7ff; border-radius:12px; border-left:6px solid ${themeColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:15px 10px; font-family:'Kanit'; flex: 1 1 300px;`;
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <b style="font-size:1.1em; color:#333; flex:1;">${displayName}</b>
+                <b style="font-size:1.1em; color:#444; margin-left:10px;">${d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.</b>
+            </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <b style="color:${isToday ? '#28a745' : '#616161'}; font-size:14px;">${item.sid || item.stationName}</b>
-                <span style="font-size:11px; color:#888;">${dateStr}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
-                    <span style="font-size:12px; color:#333; white-space:nowrap;">👤 ${item.userName}</span>
-                    ${item.tel ? `<a href="tel:${telLink}" style="text-decoration:none; color:#28a745; font-size:11px;">📞 โทร</a>` : ''}
+                <div style="font-size:13px; color:#555;">
+                    👤 ${item.userName} 
+                    ${item.tel ? `<a href="tel:${telClean}" style="color:${themeColor}; text-decoration:none; margin-left:5px; font-weight:600;"><i class="fa-solid fa-mobile-screen-button"></i> ${item.tel}</a>` : ''}
                 </div>
-                <span style="font-size:12px; color:#444; font-weight:600; min-width:fit-content; margin-left:10px;">${timeStr} น.</span>
-            </div>
-            ${containerId === 'ETCListContainer' ? `<div style="font-size:10px; color:#666; margin-top:3px; border-top: 1px dashed #ddd; padding-top:2px; font-style:italic;">📝 ${detailText}</div>` : ''} 
-        `;
-        container.appendChild(row);
+                <small style="font-size:11px; color:#888;">${d.toLocaleDateString('th-TH', {day:'numeric', month:'short'})}</small>
+            </div>`;
+        container.appendChild(card);
     });
 }
 
 /**
- * 5. Event Listeners & Live Clock
+ * Tab 3: งานอื่นๆ (ส้ม)
  */
+function renderETCCardList(containerId, items, themeColor) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = items.length === 0 ? `<div style="padding:20px; text-align:center; color:#999;">ไม่มีงานอื่น</div>` : "";
+
+    items.sort((a,b) => new Date(b.time) - new Date(a.time)).forEach(item => {
+        const d = new Date(item.time);
+        const telClean = item.tel ? item.tel.toString().replace(/-/g, '') : '';
+        const stationInfo = allStationsData.find(s => s.SID === item.sid);
+        const displayName = stationInfo ? stationInfo.SName : (item.stationName || item.sid);
+
+        const card = document.createElement("div");
+        card.style.cssText = `padding:15px; background:#fffaf5; border-radius:12px; border-left:6px solid ${themeColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:15px 10px; font-family:'Kanit'; flex: 1 1 300px;`;
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <b style="font-size:1.1em; color:#333; flex:1;">${displayName}</b>
+                <b style="font-size:1.1em; color:#444; margin-left:10px;">${d.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'})} น.</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-size:13px; color:#555;">
+                    👤 ${item.userName} 
+                    ${item.tel ? `<a href="tel:${telClean}" style="color:${themeColor}; text-decoration:none; margin-left:5px; font-weight:600;"><i class="fa-solid fa-mobile-screen-button"></i> ${item.tel}</a>` : ''}
+                </div>
+                <small style="font-size:11px; color:#888;">${d.toLocaleDateString('th-TH', {day:'numeric', month:'short'})}</small>
+            </div>
+            <div style="font-size:11px; color:#666; padding-top:8px; border-top:1px dashed #ccc;">📝 ${item.note || '-'}</div>`;
+        container.appendChild(card);
+    });
+}
+
+
+
+/**
+ * 7. อื่นๆ (Clock / Filter)
+ */
+function toggleTestSettings() {
+    const panel = document.getElementById('testSettings');
+    if(panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyManualTest() { applyFilters(); }
+
+function startLiveClock() {
+    function update() {
+        const now = new Date();
+        const el = document.getElementById("clockDisplay");
+        if (el) el.innerHTML = `📅 ${now.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' })} | 🕒 ${now.toLocaleTimeString('th-TH', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} น.`;
+    }
+    setInterval(update, 1000);
+    update();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     startLiveClock();
     const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    
-    const sInput = document.getElementById('startDate');
-    const eInput = document.getElementById('endDate');
-    const searchInput = document.getElementById('searchInput');
-
-    if(sInput) sInput.value = todayStr;
-    if(eInput) eInput.value = todayStr;
-    
-    searchInput?.addEventListener("input", applyFilters);
-    sInput?.addEventListener("change", applyFilters);
-    eInput?.addEventListener("change", applyFilters);
-    
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if(document.getElementById('startDate')) document.getElementById('startDate').value = today;
+    if(document.getElementById('endDate')) document.getElementById('endDate').value = today;
+    document.getElementById('searchInput')?.addEventListener("input", applyFilters);
+    document.getElementById('startDate')?.addEventListener("change", applyFilters);
+    document.getElementById('endDate')?.addEventListener("change", applyFilters);
     initDashboard();
 });
 
 function resetFilters() {
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const today = new Date().toISOString().split('T')[0];
     if (document.getElementById('searchInput')) document.getElementById('searchInput').value = "";
     if (document.getElementById('startDate')) document.getElementById('startDate').value = today;
     if (document.getElementById('endDate')) document.getElementById('endDate').value = today;
     applyFilters();
     if (map) map.setView([13.75, 100.52], 7);
-}
-
-function startLiveClock() {
-    function updateClock() {
-        const now = new Date();
-        const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
-        const clockEl = document.getElementById("clockDisplay");
-        if (clockEl) clockEl.innerHTML = `📅 ${now.toLocaleDateString('th-TH', dateOptions)} | 🕒 ${now.toLocaleTimeString('th-TH', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} น.`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 }

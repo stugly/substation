@@ -130,5 +130,20 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="dashboard.js?v=1.3"></script>
+
+    <div id="testPanel" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: 'Kanit', sans-serif;">
+    <button onclick="toggleTestSettings()" style="background: #333; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+        <i class="fa-solid fa-gear"></i>
+    </button>
+    <div id="testSettings" style="display: none; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin-bottom: 10px; width: 220px; border: 1px solid #ddd;">
+        <h6 style="margin: 0 0 10px 0; color: #d32f2f;">🛠 Manual Test Mode</h6>
+        <label style="font-size: 12px; display: block; margin-bottom: 5px;">
+            <input type="checkbox" id="isTestMode" onchange="applyManualTest()"> เปิดใช้งาน Test
+        </label>
+        <input type="date" id="testDate" style="width: 100%; margin-bottom: 8px; font-size: 12px;" onchange="applyManualTest()">
+        <input type="time" id="testTime" style="width: 100%; font-size: 12px;" onchange="applyManualTest()">
+        <p style="font-size: 10px; color: #888; margin-top: 8px; line-height: 1.2;">*ใช้เพื่อทดสอบสีของการ์ดตามช่วงเวลาที่จำลอง</p>
+    </div>
+</div>
 </body>
 </html>
