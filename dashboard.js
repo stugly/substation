@@ -216,7 +216,7 @@ function renderUnitStatusList(fullCheckins) {
         let badgeWidth = "45px";
 
         if (isDayTimeType) { displayLabel = "Day Time"; badgeWidth = "85px"; }
-        else if (sid === "BKO") { displayLabel = "7-8"; unitCounter = 8; }
+        else if (sid === "BKO") { displayLabel = "7-8"; unitCounter = 9; }
         else { displayLabel = unitCounter.toString(); unitCounter++; }
 
         const filteredLogs = fullCheckins.filter(cp => {
