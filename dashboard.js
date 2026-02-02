@@ -117,72 +117,103 @@ function renderUnitStatusList(fullCheckins) {
         const displayName = stationInfo ? stationInfo.SName : sid;
         let isDayTimeType = (sid === "TMG" || sid === "KTM");
         
-        let displayLabel = "";
-        if (isDayTimeType) { displayLabel = "Day Time"; }
-        else if (sid === "BKO") { displayLabel = "7-8"; unitCounter = 9; }
-        else { displayLabel = unitCounter.toString(); unitCounter++; }
+        let displayLabel = sid === "BKO" ? "7-8" : (isDayTimeType ? "Day Time" : unitCounter.toString());
+        if (sid === "BKO") unitCounter = 9; else if (!isDayTimeType) unitCounter++;
 
-        // กำหนดกะตามช่วงเวลาปัจจุบัน
-        let shiftName = (currentTimeHM >= 730 && currentTimeHM <= 1529) ? "เข้าปฏิบัติงานกะ 2" : "เข้าปฏิบัติงานกะ 3";
+        // --- 1. ตัดสินใจว่าจะแสดง "กะไหน" (Current Target Shift) ---
+        let targetShift = "";
+        let isTransition = false; // สถานะรอยต่อ
 
-        const filteredLogs = fullCheckins.filter(cp => {
-            const cTime = new Date(cp.time);
-            const jobText = (cp.job || "").toString();
-            const logHM = cTime.getHours() * 100 + cTime.getMinutes();
-            const logDate = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
-
-            if (cp.sid !== sid) return false;
-            if (isDayTimeType) return jobText === "Day Time" && logDate === todayStr && cTime <= now;
-
-            if (shiftName === "เข้าปฏิบัติงานกะ 2") {
-                return jobText === "เข้าปฏิบัติงานกะ 2" && logDate === todayStr && logHM >= 730 && logHM <= 1529 && cTime <= now;
-            } else {
-                const isTodayShift3 = logDate === todayStr && logHM >= 1530;
-                const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-                const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-                const isYesterdayShift3 = logDate === yesterdayStr && logHM >= 1530;
-                const isTodayEarlyShift3 = logDate === todayStr && logHM <= 729;
-                return jobText === "เข้าปฏิบัติงานกะ 3" && (isTodayShift3 || isYesterdayShift3 || isTodayEarlyShift3) && cTime <= now;
-            }
-        });
-
-        const lastIn = filteredLogs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
-        let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f";
-
-        if (lastIn) {
-            const checkTime = new Date(lastIn.time);
-            const chkHM = checkTime.getHours() * 100 + checkTime.getMinutes();
-            if (isDayTimeType) {
-                bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
-            } else {
-                const jobName = (lastIn.job || "").toString();
-                if (jobName === "เข้าปฏิบัติงานกะ 2") {
-                    if (chkHM >= 730 && chkHM <= 800) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
-                    else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
-                } else if (jobName === "เข้าปฏิบัติงานกะ 3") {
-                    if (chkHM >= 1530 && chkHM <= 1600) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
-                    else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
-                }
-            }
+        if (currentTimeHM < 800) { 
+            // ก่อน 8.00 น. ให้พยายามดู "กะ 2 วันนี้" ถ้ายังไม่มี ให้ถอยไปดู "กะ 3 เมื่อวาน"
+            targetShift = "กะ2_หรือ_กะ3เมื่อวาน";
+            isTransition = true;
+        } else if (currentTimeHM >= 800 && currentTimeHM < 1500) {
+            targetShift = "เข้าปฏิบัติงานกะ 2";
+        } else if (currentTimeHM >= 1500 && currentTimeHM < 1600) {
+            // ช่วง 15.00 - 16.00 น. ให้ดู "กะ 3 วันนี้" ถ้ายังไม่มี ให้ถอยไปดู "กะ 2 วันนี้"
+            targetShift = "กะ3_หรือ_กะ2วันนี้";
+            isTransition = true;
+        } else {
+            targetShift = "เข้าปฏิบัติงานกะ 3";
         }
 
+        // --- 2. Filter หาข้อมูล ---
+        const getShiftLogs = (shiftName, dateStr, minHM, maxHM) => {
+            return fullCheckins.filter(cp => {
+                const cTime = new Date(cp.time);
+                const logHM = cTime.getHours() * 100 + cTime.getMinutes();
+                const logDate = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
+                return cp.sid === sid && cp.job === shiftName && logDate === dateStr && logHM >= minHM && logHM <= maxHM && cTime <= now;
+            });
+        };
+
+        let displayLog = null;
+        const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+        if (isDayTimeType) {
+            displayLog = getShiftLogs("Day Time", todayStr, 0, 2359)[0];
+        } else if (targetShift === "กะ2_หรือ_กะ3เมื่อวาน") {
+            // ลองหา กะ 2 วันนี้ก่อน (7.00 - 8.00)
+            const logsG2 = getShiftLogs("เข้าปฏิบัติงานกะ 2", todayStr, 700, 800);
+            if (logsG2.length > 0) displayLog = logsG2[0];
+            else {
+                // ถ้าไม่มี ให้ไปดึง กะ 3 ของเมื่อวานมาโชว์ (15.00 - 23.00)
+                const logsG3Prev = getShiftLogs("เข้าปฏิบัติงานกะ 3", yesterdayStr, 1500, 2300);
+                displayLog = logsG3Prev.sort((a,b) => new Date(b.time) - new Date(a.time))[0];
+            }
+        } else if (targetShift === "กะ3_หรือ_กะ2วันนี้") {
+            // ลองหา กะ 3 วันนี้ก่อน (15.00 - 16.00)
+            const logsG3 = getShiftLogs("เข้าปฏิบัติงานกะ 3", todayStr, 1500, 1600);
+            if (logsG3.length > 0) displayLog = logsG3[0];
+            else {
+                // ถ้าไม่มี ให้เอา กะ 2 ของวันนี้มาโชว์ (7.00 - 15.00)
+                const logsG2Today = getShiftLogs("เข้าปฏิบัติงานกะ 2", todayStr, 700, 1500);
+                displayLog = logsG2Today.sort((a,b) => new Date(b.time) - new Date(a.time))[0];
+            }
+        } else if (targetShift === "เข้าปฏิบัติงานกะ 2") {
+            displayLog = getShiftLogs("เข้าปฏิบัติงานกะ 2", todayStr, 700, 1500).sort((a,b) => new Date(b.time) - new Date(a.time))[0];
+        } else {
+            displayLog = getShiftLogs("เข้าปฏิบัติงานกะ 3", todayStr, 1500, 2300).sort((a,b) => new Date(b.time) - new Date(a.time))[0];
+        }
+
+        // --- 3. Logic สี ---
+        let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f";
+        let statusText = "⚠️ รอลงเวลา";
+
+        if (displayLog) {
+            const chkTime = new Date(displayLog.time);
+            const chkHM = chkTime.getHours() * 100 + chkTime.getMinutes();
+            const jobName = displayLog.job;
+
+            if (isDayTimeType) {
+                bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
+            } else if (jobName === "เข้าปฏิบัติงานกะ 2") {
+                if (chkHM >= 700 && chkHM <= 800) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
+                else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
+            } else if (jobName === "เข้าปฏิบัติงานกะ 3") {
+                if (chkHM >= 1500 && chkHM <= 1600) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
+                else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
+            }
+            statusText = jobName;
+        }
+
+        // --- 4. Render Card ---
         const card = document.createElement("div");
         card.style.cssText = `position:relative; padding:15px 15px 15px 25px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:18px 10px; min-width:280px; flex: 1 1 300px;`;
-        const badgeWidth = isDayTimeType ? "85px" : "45px";
         
-        if (lastIn) {
-            const d = new Date(lastIn.time);
-            // 🚩 คืนค่าเบอร์โทรและ Link โทรออก
-            const telLink = lastIn.tel ? `<a href="tel:${lastIn.tel.toString().replace(/-/g,'')}" style="color:${borderColor};text-decoration:none;font-weight:600;margin-left:5px;">📞 ${lastIn.tel}</a>` : '';
-            
-            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div>
+        if (displayLog) {
+            const d = new Date(displayLog.time);
+            const telLink = displayLog.tel ? `<a href="tel:${displayLog.tel.toString().replace(/-/g,'')}" style="color:${borderColor};text-decoration:none;font-weight:600;margin-left:5px;">📞 ${displayLog.tel}</a>` : '';
+            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${isDayTimeType?'85px':'45px'}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div>
                 <div style="display:grid; grid-template-columns:1fr auto; row-gap:8px;">
                     <div><b>${displayName}</b></div><div style="text-align:right;"><b>${d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</b></div>
-                    <div style="font-size:13px;color:#555;">👤 ${lastIn.userName} ${telLink}</div>
+                    <div style="font-size:13px;color:#555;">👤 ${displayLog.userName} ${telLink}</div>
                     <div style="text-align:right;font-size:11px;color:#888;">${d.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</div>
                 </div>`;
         } else {
-            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div><b style="color:${borderColor};">${displayName}</b><br><small style="color:${borderColor};font-weight:600;">⚠️ รอลงเวลา (${shiftName === "เข้าปฏิบัติงานกะ 2" ? "กะ 2" : "กะ 3"})</small>`;
+            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${isDayTimeType?'85px':'45px'}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div><b style="color:${borderColor};">${displayName}</b><br><small style="color:${borderColor};font-weight:600;">⚠️ ${statusText}</small>`;
         }
         container.appendChild(card);
     });
