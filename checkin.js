@@ -1,7 +1,7 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
+let profile, map, marker, currentLat, currentLon, nearbyStationsData = [], globalJobConfigs = [];
 window.stationMarkers = []; 
 
 async function main() {
@@ -27,7 +27,7 @@ async function main() {
             document.getElementById("welcome").innerText = "สวัสดี, " + data.user.Name;
             document.getElementById("mainSection").style.display = "block";
             initMap(); 
-            loadJobs();
+            loadJobs(); // 🚩 จะโหลด Job พร้อมเงื่อนไขเวลามาเก็บไว้
         } else {
             const sel = document.getElementById("userSelect");
             sel.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
@@ -67,14 +67,11 @@ function moveToCurrent() {
 
 async function loadStations() {
     try {
-        // ดึงข้อมูลสถานีทั้งหมดจาก API
         const response = await fetch(`${API_URL}?action=getAllStations&t=${new Date().getTime()}`);
         const data = await response.json();
-        
         const sel = document.getElementById("stationSelect");
         if (!sel) return;
 
-        // ล้างหมุดเก่า
         if (window.stationMarkers) {
             window.stationMarkers.forEach(m => map.removeLayer(m));
         }
@@ -85,7 +82,6 @@ async function loadStations() {
         nearbyStationsData = stations;
         let inRangeCount = 0;
 
-        // --- ย้าย Logic การวนลูปมาไว้ข้างในนี้ ---
         stations.forEach(st => {
             const sLat = parseFloat(st.Lat);
             const sLon = parseFloat(st.Lon);
@@ -93,17 +89,11 @@ async function loadStations() {
 
             if (!isNaN(sLat) && !isNaN(sLon)) {
                 const distMeters = map.distance([currentLat, currentLon], [sLat, sLon]);
-                
-                let distDisplayText = distMeters < 1000 
-                    ? `${Math.round(distMeters)} ม.` 
-                    : `${(distMeters / 1000).toFixed(2)} กม.`;
+                let distDisplayText = distMeters < 1000 ? `${Math.round(distMeters)} ม.` : `${(distMeters / 1000).toFixed(2)} กม.`;
 
-                // ปักหมุดสถานี
-                const m = L.marker([sLat, sLon]).addTo(map)
-                           .bindPopup(`<b>${st.SName}</b><br>ห่าง: ${distDisplayText}`);
+                const m = L.marker([sLat, sLon]).addTo(map).bindPopup(`<b>${st.SName}</b><br>ห่าง: ${distDisplayText}`);
                 window.stationMarkers.push(m);
 
-                // ตรวจสอบระยะเช็คอิน
                 if (distMeters <= radius) {
                     inRangeCount++;
                     let o = document.createElement("option"); 
@@ -111,9 +101,7 @@ async function loadStations() {
                     o.text = `${st.SName} (${distDisplayText})`; 
                     sel.appendChild(o);
 
-                    const c = L.circle([sLat, sLon], {
-                        radius: radius, color: '#28a745', fillOpacity: 0.1, weight: 1
-                    }).addTo(map);
+                    const c = L.circle([sLat, sLon], { radius: radius, color: '#28a745', fillOpacity: 0.1, weight: 1 }).addTo(map);
                     window.stationMarkers.push(c);
                 }
             }
@@ -125,37 +113,62 @@ async function loadStations() {
         } else {
             document.getElementById("checkinBtn").disabled = false;
         }
-
-    } catch (error) {
-        console.error("Load Stations Error:", error);
-    }
+    } catch (error) { console.error("Load Stations Error:", error); }
 }
 
+/**
+ * 🚩 โหลดรายการ Job พร้อมเงื่อนไขเวลาจาก Sheet "JobConfig"
+ */
 async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: "getJobs" }) 
+            body: JSON.stringify({ action: "getJobConfigs" }) 
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
-        if (sel) {
-            sel.innerHTML = "";
-            data.jobs.forEach(j => { 
-                let o = document.createElement("option"); o.text = j; sel.appendChild(o); 
+        if (sel && data.status === "OK") {
+            globalJobConfigs = data.configs; // เก็บค่าไว้เช็คตอนกดบันทึก
+            sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
+            data.configs.forEach(j => { 
+                let o = document.createElement("option"); 
+                o.value = j.name; 
+                o.text = j.name; 
+                sel.appendChild(o); 
             });
         }
     } catch (e) { console.error("Load Jobs Error", e); }
 }
 
+/**
+ * 🚩 บันทึก Check-in พร้อมตรวจสอบเงื่อนไขเวลา
+ */
 async function confirmCheckin() {
+    const selectedJobName = document.getElementById("jobSelect").value;
     const selectedSID = document.getElementById("stationSelect").value;
     const station = nearbyStationsData.find(s => s.SID == selectedSID);
+    
+    if (!selectedJobName) { alert("กรุณาเลือกประเภทงาน"); return; }
     if (!selectedSID || selectedSID.includes("❌")) return;
 
-    // ดึงค่าสภาพอากาศที่เลือก (1-5)
-    const weather = document.querySelector('input[name="weather"]:checked').value;
+    // --- ตรวจสอบเงื่อนไขเวลา ---
+    const now = new Date();
+    const currentHM = (now.getHours() * 100) + now.getMinutes();
+    const config = globalJobConfigs.find(c => c.name === selectedJobName);
 
+    if (config) {
+        const startParts = config.start.split(":");
+        const endParts = config.end.split(":");
+        const startHM = (parseInt(startParts[0]) * 100) + parseInt(startParts[1]);
+        const endHM = (parseInt(endParts[0]) * 100) + parseInt(endParts[1]);
+
+        if (currentHM < startHM || currentHM > endHM) {
+            alert(`⚠️ ไม่สามารถบันทึกได้\nสำหรับงาน "${selectedJobName}"\nโปรด Check-in ระหว่าง ${config.start} - ${config.end} น.`);
+            return; // ❌ หยุดการทำงาน
+        }
+    }
+
+    const weather = document.querySelector('input[name="weather"]:checked').value;
     toggleSpinner(true);
     try {
         const res = await fetch(API_URL, {
@@ -164,9 +177,9 @@ async function confirmCheckin() {
                 action: "checkin", 
                 lineUserId: profile.userId, 
                 SID: selectedSID,
-                Job: document.getElementById("jobSelect").value, 
+                Job: selectedJobName, 
                 Note: document.getElementById("note").value,
-                Weather: weather, // <--- ส่งค่าอากาศไป
+                Weather: weather,
                 Unit: station ? station.Unit : "-", 
                 lat: currentLat, 
                 lon: currentLon
