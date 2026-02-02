@@ -1,7 +1,7 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [], globalJobConfigs = [];
+let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
 window.stationMarkers = []; 
 
 async function main() {
@@ -27,7 +27,7 @@ async function main() {
             document.getElementById("welcome").innerText = "สวัสดี, " + data.user.Name;
             document.getElementById("mainSection").style.display = "block";
             initMap(); 
-            loadJobs(); // 🚩 จะโหลด Job พร้อมเงื่อนไขเวลามาเก็บไว้
+            loadJobs(); // 🚩 เรียกโหลดรายการงาน
         } else {
             const sel = document.getElementById("userSelect");
             sel.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
@@ -117,31 +117,33 @@ async function loadStations() {
 }
 
 /**
- * 🚩 โหลดรายการ Job พร้อมเงื่อนไขเวลาจาก Sheet "JobConfig"
+ * 🚩 โหลดรายการ Job แบบปกติ (ใช้ Action "getJobs")
  */
 async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: "getJobConfigs" }) 
+            body: JSON.stringify({ action: "getJobs" }) 
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
         if (sel && data.status === "OK") {
-            globalJobConfigs = data.configs; // เก็บค่าไว้เช็คตอนกดบันทึก
             sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
-            data.configs.forEach(j => { 
+            data.jobs.forEach(j => { 
                 let o = document.createElement("option"); 
-                o.value = j.name; 
-                o.text = j.name; 
+                o.value = j; 
+                o.text = j; 
                 sel.appendChild(o); 
             });
         }
-    } catch (e) { console.error("Load Jobs Error", e); }
+    } catch (e) { 
+        console.error("Load Jobs Error", e); 
+        alert("โหลดรายการงานไม่สำเร็จ กรุณาลองใหม่");
+    }
 }
 
 /**
- * 🚩 บันทึก Check-in พร้อมตรวจสอบเงื่อนไขเวลา
+ * 🚩 บันทึก Check-in แบบปกติ (ไม่มีการเช็คเงื่อนไขเวลา)
  */
 async function confirmCheckin() {
     const selectedJobName = document.getElementById("jobSelect").value;
@@ -151,25 +153,9 @@ async function confirmCheckin() {
     if (!selectedJobName) { alert("กรุณาเลือกประเภทงาน"); return; }
     if (!selectedSID || selectedSID.includes("❌")) return;
 
-    // --- ตรวจสอบเงื่อนไขเวลา ---
-    const now = new Date();
-    const currentHM = (now.getHours() * 100) + now.getMinutes();
-    const config = globalJobConfigs.find(c => c.name === selectedJobName);
-
-    if (config) {
-        const startParts = config.start.split(":");
-        const endParts = config.end.split(":");
-        const startHM = (parseInt(startParts[0]) * 100) + parseInt(startParts[1]);
-        const endHM = (parseInt(endParts[0]) * 100) + parseInt(endParts[1]);
-
-        if (currentHM < startHM || currentHM > endHM) {
-            alert(`⚠️ ไม่สามารถบันทึกได้\nสำหรับงาน "${selectedJobName}"\nโปรด Check-in ระหว่าง ${config.start} - ${config.end} น.`);
-            return; // ❌ หยุดการทำงาน
-        }
-    }
-
     const weather = document.querySelector('input[name="weather"]:checked').value;
     toggleSpinner(true);
+    
     try {
         const res = await fetch(API_URL, {
             method: "POST",
