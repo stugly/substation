@@ -1,7 +1,7 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [], globalJobConfigs = [];
+let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
 window.stationMarkers = []; 
 
 async function main() {
@@ -119,26 +119,27 @@ async function loadStations() {
 /**
  * 🚩 โหลดรายการ Job แบบปกติ (ใช้ Action "getJobs")
  */
-// ในไฟล์ checkin.js
 async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: "getJobConfigs" }) // เปลี่ยนจาก getJobs เป็น getJobConfigs
+            body: JSON.stringify({ action: "getJobs" }) 
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
         if (sel && data.status === "OK") {
-            globalJobConfigs = data.configs; // เก็บค่าเวลาไว้เช็คตอนกดบันทึก
             sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
-            data.configs.forEach(j => { 
+            data.jobs.forEach(j => { 
                 let o = document.createElement("option"); 
-                o.value = j.name; 
-                o.text = j.name; 
+                o.value = j; 
+                o.text = j; 
                 sel.appendChild(o); 
             });
         }
-    } catch (e) { console.error("Load Jobs Error", e); }
+    } catch (e) { 
+        console.error("Load Jobs Error", e); 
+        alert("โหลดรายการงานไม่สำเร็จ กรุณาลองใหม่");
+    }
 }
 
 /**
