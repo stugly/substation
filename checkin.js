@@ -119,27 +119,26 @@ async function loadStations() {
 /**
  * 🚩 โหลดรายการ Job แบบปกติ (ใช้ Action "getJobs")
  */
+// ในไฟล์ checkin.js
 async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: "getJobs" }) 
+            body: JSON.stringify({ action: "getJobConfigs" }) // เปลี่ยนจาก getJobs เป็น getJobConfigs
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
         if (sel && data.status === "OK") {
+            globalJobConfigs = data.configs; // เก็บค่าเวลาไว้เช็คตอนกดบันทึก
             sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
-            data.jobs.forEach(j => { 
+            data.configs.forEach(j => { 
                 let o = document.createElement("option"); 
-                o.value = j; 
-                o.text = j; 
+                o.value = j.name; 
+                o.text = j.name; 
                 sel.appendChild(o); 
             });
         }
-    } catch (e) { 
-        console.error("Load Jobs Error", e); 
-        alert("โหลดรายการงานไม่สำเร็จ กรุณาลองใหม่");
-    }
+    } catch (e) { console.error("Load Jobs Error", e); }
 }
 
 /**
