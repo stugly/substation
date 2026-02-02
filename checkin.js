@@ -1,7 +1,7 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
+let profile, map, marker, currentLat, currentLon, nearbyStationsData = [], globalJobConfigs = [];
 window.stationMarkers = []; 
 
 async function main() {
