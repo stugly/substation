@@ -1,7 +1,7 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
+let profile, map, marker, currentLat, currentLon, nearbyStationsData = [], globalJobConfigs = [];;
 window.stationMarkers = []; 
 
 async function main() {
@@ -135,27 +135,53 @@ async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
             method: "POST", 
-            body: JSON.stringify({ action: "getJobs" }) 
+            body: JSON.stringify({ action: "getJobConfigs" }) // เปลี่ยน action
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
-        if (sel) {
-            sel.innerHTML = "";
-            data.jobs.forEach(j => { 
-                let o = document.createElement("option"); o.text = j; sel.appendChild(o); 
+        if (sel && data.status === "OK") {
+            globalJobConfigs = data.configs; // เก็บค่าไว้เช็คตอนกดบันทึก
+            sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
+            data.configs.forEach(j => { 
+                let o = document.createElement("option"); 
+                o.value = j.name; 
+                o.text = j.name; 
+                sel.appendChild(o); 
             });
         }
     } catch (e) { console.error("Load Jobs Error", e); }
 }
 
 async function confirmCheckin() {
+    const selectedJobName = document.getElementById("jobSelect").value;
     const selectedSID = document.getElementById("stationSelect").value;
     const station = nearbyStationsData.find(s => s.SID == selectedSID);
+    
+    if (!selectedJobName) { alert("กรุณาเลือกประเภทงาน"); return; }
     if (!selectedSID || selectedSID.includes("❌")) return;
 
-    // ดึงค่าสภาพอากาศที่เลือก (1-5)
-    const weather = document.querySelector('input[name="weather"]:checked').value;
+    // --- ส่วนตรวจสอบเวลา (Logic ใหม่) ---
+    const now = new Date();
+    const currentHM = (now.getHours() * 100) + now.getMinutes();
+    
+    // ค้นหาช่วงเวลาที่กำหนดของ Job นั้นจากข้อมูลที่โหลดมาตอนแรก
+    const config = globalJobConfigs.find(c => c.name === selectedJobName);
 
+    if (config) {
+        const startParts = config.start.split(":");
+        const endParts = config.end.split(":");
+        const startHM = (parseInt(startParts[0]) * 100) + parseInt(startParts[1]);
+        const endHM = (parseInt(endParts[0]) * 100) + parseInt(endParts[1]);
+
+        // ตรวจสอบว่า "ไม่อยู่" ในช่วงเวลาที่กำหนดหรือไม่
+        if (currentHM < startHM || currentHM > endHM) {
+            alert(`⚠️ ไม่สามารถบันทึกได้\nสำหรับงาน "${selectedJobName}"\nโปรด Check-in ระหว่าง ${config.start} - ${config.end} น.`);
+            return; // ❌ หยุดการบันทึกทันที
+        }
+    }
+
+    // --- หากผ่านเงื่อนไขเวลา ให้ทำส่วนบันทึกเดิมต่อ ---
+    const weather = document.querySelector('input[name="weather"]:checked').value;
     toggleSpinner(true);
     try {
         const res = await fetch(API_URL, {
@@ -164,9 +190,9 @@ async function confirmCheckin() {
                 action: "checkin", 
                 lineUserId: profile.userId, 
                 SID: selectedSID,
-                Job: document.getElementById("jobSelect").value, 
+                Job: selectedJobName, 
                 Note: document.getElementById("note").value,
-                Weather: weather, // <--- ส่งค่าอากาศไป
+                Weather: weather,
                 Unit: station ? station.Unit : "-", 
                 lat: currentLat, 
                 lon: currentLon

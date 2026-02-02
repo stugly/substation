@@ -106,64 +106,83 @@ function renderUnitStatusList(fullCheckins) {
     
     const isTestMode = document.getElementById("isTestMode")?.checked;
     const testDate = document.getElementById("testDate")?.value, testTime = document.getElementById("testTime")?.value;
+    
     let now = (isTestMode && testDate && testTime) ? new Date(`${testDate}T${testTime}:00`) : new Date();
-    const targetDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const currentTimeValue = now.getHours() * 100 + now.getMinutes();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentTimeHM = now.getHours() * 100 + now.getMinutes();
 
-    let unitCounter = 1; // ตัวนับลำดับหน่วย
+    let unitCounter = 1;
     targetSIDs.forEach((sid) => {
         const stationInfo = allStationsData.find(s => s.SID === sid);
         const displayName = stationInfo ? stationInfo.SName : sid;
-        
-        // 🚩 Logic การแสดงผล Badge (Unit No.)
         let isDayTimeType = (sid === "TMG" || sid === "KTM");
-        let displayLabel = "";
         
-        if (isDayTimeType) {
-            displayLabel = "Day Time";
-        } else if (sid === "BKO") {
-            displayLabel = "7-8";
-            unitCounter = 9; // ข้ามไปเลข 8 สำหรับหน่วยถัดไป
-        } else {
-            displayLabel = unitCounter.toString();
-            unitCounter++;
-        }
+        let displayLabel = "";
+        if (isDayTimeType) { displayLabel = "Day Time"; }
+        else if (sid === "BKO") { displayLabel = "7-8"; unitCounter = 9; }
+        else { displayLabel = unitCounter.toString(); unitCounter++; }
+
+        // กำหนดกะตามช่วงเวลาปัจจุบัน
+        let shiftName = (currentTimeHM >= 730 && currentTimeHM <= 1529) ? "เข้าปฏิบัติงานกะ 2" : "เข้าปฏิบัติงานกะ 3";
 
         const filteredLogs = fullCheckins.filter(cp => {
             const cTime = new Date(cp.time);
             const jobText = (cp.job || "").toString();
-            const isMatch = cp.sid === sid && (jobText.includes("ปฏิบัติงาน") || jobText === "Day Time") && cTime <= now;
+            const logHM = cTime.getHours() * 100 + cTime.getMinutes();
             const logDate = `${cTime.getFullYear()}-${String(cTime.getMonth() + 1).padStart(2, '0')}-${String(cTime.getDate()).padStart(2, '0')}`;
-            return isDayTimeType || currentTimeValue >= 800 ? (isMatch && logDate === targetDateStr) : isMatch;
+
+            if (cp.sid !== sid) return false;
+            if (isDayTimeType) return jobText === "Day Time" && logDate === todayStr && cTime <= now;
+
+            if (shiftName === "เข้าปฏิบัติงานกะ 2") {
+                return jobText === "เข้าปฏิบัติงานกะ 2" && logDate === todayStr && logHM >= 730 && logHM <= 1529 && cTime <= now;
+            } else {
+                const isTodayShift3 = logDate === todayStr && logHM >= 1530;
+                const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+                const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+                const isYesterdayShift3 = logDate === yesterdayStr && logHM >= 1530;
+                const isTodayEarlyShift3 = logDate === todayStr && logHM <= 729;
+                return jobText === "เข้าปฏิบัติงานกะ 3" && (isTodayShift3 || isYesterdayShift3 || isTodayEarlyShift3) && cTime <= now;
+            }
         });
 
         const lastIn = filteredLogs.sort((a, b) => new Date(b.time) - new Date(a.time))[0];
         let bgColor = "#ffcdd2", borderColor = "#d32f2f", badgeColor = "#d32f2f";
-        
+
         if (lastIn) {
-            const isWeekend = [0, 6].includes(now.getDay());
-            if (isDayTimeType && (isWeekend || currentTimeValue >= 1600 || currentTimeValue < 800)) {
-                bgColor = "#f5f5f5"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e";
-            } else {
+            const checkTime = new Date(lastIn.time);
+            const chkHM = checkTime.getHours() * 100 + checkTime.getMinutes();
+            if (isDayTimeType) {
                 bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745";
+            } else {
+                const jobName = (lastIn.job || "").toString();
+                if (jobName === "เข้าปฏิบัติงานกะ 2") {
+                    if (chkHM >= 730 && chkHM <= 800) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
+                    else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
+                } else if (jobName === "เข้าปฏิบัติงานกะ 3") {
+                    if (chkHM >= 1530 && chkHM <= 1600) { bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; }
+                    else { bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; }
+                }
             }
         }
 
         const card = document.createElement("div");
         card.style.cssText = `position:relative; padding:15px 15px 15px 25px; background:${bgColor}; border-radius:12px; border-left:6px solid ${borderColor}; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin:18px 10px; min-width:280px; flex: 1 1 300px;`;
-        
         const badgeWidth = isDayTimeType ? "85px" : "45px";
         
         if (lastIn) {
             const d = new Date(lastIn.time);
+            // 🚩 คืนค่าเบอร์โทรและ Link โทรออก
+            const telLink = lastIn.tel ? `<a href="tel:${lastIn.tel.toString().replace(/-/g,'')}" style="color:${borderColor};text-decoration:none;font-weight:600;margin-left:5px;">📞 ${lastIn.tel}</a>` : '';
+            
             card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div>
                 <div style="display:grid; grid-template-columns:1fr auto; row-gap:8px;">
                     <div><b>${displayName}</b></div><div style="text-align:right;"><b>${d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</b></div>
-                    <div style="font-size:13px;color:#555;">👤 ${lastIn.userName} ${lastIn.tel ? `<a href="tel:${lastIn.tel.toString().replace(/-/g,'')}" style="color:${borderColor};text-decoration:none;font-weight:600;margin-left:5px;">📞 ${lastIn.tel}</a>`:''}</div>
+                    <div style="font-size:13px;color:#555;">👤 ${lastIn.userName} ${telLink}</div>
                     <div style="text-align:right;font-size:11px;color:#888;">${d.toLocaleDateString('th-TH',{day:'numeric',month:'short'})}</div>
                 </div>`;
         } else {
-            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div><b style="color:${borderColor};">${displayName}</b><br><small style="color:${borderColor};font-weight:600;">⚠️ ยังไม่ลงเวลา</small>`;
+            card.innerHTML = `<div style="position:absolute; top:-12px; left:-12px; width:${badgeWidth}; height:30px; background:${badgeColor}; color:white; border-radius:15px; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; border:2px solid #fff; z-index:10;">${displayLabel}</div><b style="color:${borderColor};">${displayName}</b><br><small style="color:${borderColor};font-weight:600;">⚠️ รอลงเวลา (${shiftName === "เข้าปฏิบัติงานกะ 2" ? "กะ 2" : "กะ 3"})</small>`;
         }
         container.appendChild(card);
     });
