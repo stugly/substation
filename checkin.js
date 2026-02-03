@@ -80,11 +80,11 @@ async function loadJobs() {
                     // --- 🚩 Logic การกรองกะพนักงาน (ปรับช่วงเวลาไม่ให้ทับกัน) ---
                     if (name.includes("2")) {
                         // เปิด 07:00 - 14:59 (พอ 15:00 ปุ๊บ กะ 2 จะหายไปทันที)
-                        if (currentHM >= 700 && currentHM < 1400) isVisible = true;
+                        if (currentHM >= 700 && currentHM < 1500) isVisible = true;
                     } 
                     else if (name.includes("3")) {
                         // เปิด 15:00 - 22:59
-                        if (currentHM >= 1400 && currentHM < 2300) isVisible = true;
+                        if (currentHM >= 1500 && currentHM < 2300) isVisible = true;
                     } 
                     else if (name.includes("Day Time")) {
                         // เปิด 07:30 - 15:30 (จ-ศ)
