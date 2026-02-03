@@ -134,9 +134,10 @@ async function loadStations() {
         const stations = data.allStations || []; 
         nearbyStationsData = stations;
         
-        // 🚩 ลบหมุดสถานีเดิมออกก่อน (ถ้ามี) เพื่อไม่ให้หมุดซ้อนกันเวลาโหลดใหม่
+        // 🚩 1. ล้างหมุดสถานีเดิมออกก่อน (ยกเว้นหมุดสีเขียวของพนักงาน)
         map.eachLayer(layer => {
-            if (layer instanceof L.Marker && layer !== marker) { // ไม่ลบจุดสีเขียวของพนักงาน
+            // เช็คว่าเป็นหมุดสถานี (ไม่ใช่หมุดพนักงาน และไม่ใช่แผ่นแผนที่)
+            if (layer instanceof L.CircleMarker && layer !== marker) {
                 map.removeLayer(layer);
             }
         });
@@ -150,18 +151,18 @@ async function loadStations() {
                 const distMeters = map.distance([currentLat, currentLon], [sLat, sLon]);
                 const isInRange = distMeters <= radius;
 
-                // 🚩 1. วาดหมุดสถานีลงบนแผนที่
-                L.marker([sLat, sLon], {
-                    icon: L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background-color: ${isInRange ? '#28a745' : '#dc3545'}; 
-                                    width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6]
-                    })
-                }).addTo(map).bindPopup(`${st.SName}<br>ระยะ: ${Math.round(distMeters)} ม.`);
+                // 🚩 2. วาดหมุดสถานีด้วย CircleMarker (เสถียรกว่า Marker ปกติ)
+                L.circleMarker([sLat, sLon], {
+                    radius: 6,
+                    fillColor: isInRange ? "#28a745" : "#dc3545", // เขียวถ้าเข้าใกล้, แดงถ้าห่าง
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 0.9
+                })
+                .addTo(map)
+                .bindPopup(`<b>${st.SName}</b><br>ระยะห่าง: ${Math.round(distMeters)} ม.`);
 
-                // 🚩 2. ถ้าอยู่ในระยะ ให้เพิ่มลงใน Dropdown
+                // 🚩 3. เพิ่มลงใน Dropdown เฉพาะที่อยู่ในรัศมี
                 if (isInRange) {
                     inRangeCount++;
                     let o = document.createElement("option"); 
@@ -172,13 +173,17 @@ async function loadStations() {
             }
         });
 
+        // 🚩 4. จัดการปุ่มบันทึก
+        const btn = document.getElementById("checkinBtn");
         if (inRangeCount === 0) {
             sel.innerHTML = "<option>❌ นอกรัศมีเช็คอิน</option>";
-            if(document.getElementById("checkinBtn")) document.getElementById("checkinBtn").disabled = true;
+            if(btn) btn.disabled = true;
         } else { 
-            if(document.getElementById("checkinBtn")) document.getElementById("checkinBtn").disabled = false; 
+            if(btn) btn.disabled = false; 
         }
-    } catch (e) { console.error("Load Stations Error:", e); }
+    } catch (e) { 
+        console.error("Load Stations Error:", e); 
+    }
 }
 
 // 🚩 เปลี่ยนชื่อเป็น showSpinner ให้ตรงกับ Dashboard
