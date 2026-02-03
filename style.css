@@ -18,7 +18,6 @@ body {
     color: var(--text-main); 
 }
 
-/* บังคับ Font Kanit ให้กับทุก Input และ Button */
 button, input, select, textarea {
     font-family: 'Kanit', sans-serif !important;
 }
@@ -50,274 +49,95 @@ button, input, select, textarea {
 /* ============================================================
    3. STATION LABELS (Map Markers & Status Cards)
    ============================================================ */
-.custom-div-icon {
-    background: transparent !important;
-    border: none !important;
-}
-
+.custom-div-icon { background: transparent !important; border: none !important; }
 .station-label {
-    background: white;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    border-left: 5px solid var(--line-green);
-    min-width: 180px; 
-    max-width: 250px; 
-    width: max-content; 
-    pointer-events: auto;
+    background: white; border-radius: 8px; padding: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); border-left: 5px solid var(--line-green);
+    min-width: 180px; max-width: 250px; width: max-content; pointer-events: auto;
     transition: transform 0.2s ease;
 }
-
-.station-label:hover { 
-    transform: translateY(-3px); 
-}
-
-/* สถานะสีพิเศษบนแผนที่ */
-.is-late { 
-    border-left-color: var(--warning-yellow) !important; 
-    background: #fff9c4 !important; 
-}
-
-.is-offline { 
-    border-left-color: var(--offline-gray) !important; 
-    background: #f5f5f5 !important; 
-}
-
-/* โครงสร้างภายใน Label */
-.label-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.label-sid { 
-    font-weight: 600; 
-    font-size: 14px; 
-    color: var(--line-green);
-    margin: 0;
-}
-
-.label-date { 
-    font-size: 11px; 
-    color: #888; 
-}
-
-.label-body {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end; 
-    margin-top: 6px;
-}
-
-.label-user { 
-    font-size: 12.5px; 
-    color: #333; 
-    font-weight: 400; 
-}
-
-.label-time {
-    font-size: 12px;
-    color: #555;
-    font-weight: 600; 
-}
-
-.btn-call {
-    font-weight: 400 !important;
-    letter-spacing: 0.2px;
-    text-decoration: none;
-    color: var(--line-green);
-}
-
-.zoom-icon {
-    cursor: pointer;
-    margin-left: 5px;
-    color: #888;
-    font-size: 14px;
-}
+.station-label:hover { transform: translateY(-3px); }
+.is-late { border-left-color: var(--warning-yellow) !important; background: #fff9c4 !important; }
+.is-offline { border-left-color: var(--offline-gray) !important; background: #f5f5f5 !important; }
 
 /* ============================================================
    4. DASHBOARD TABLES (Log Views)
    ============================================================ */
-.table-card { 
-    background: white; 
-    border-radius: 12px; 
-    overflow-x: auto; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-}
-
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    min-width: 500px; 
-}
-
-th { 
-    background: #fcfcfc; 
-    padding: 15px 12px; 
-    text-align: left; 
-    font-size: 13px; 
-    color: #888; 
-    font-weight: 400;
-    border-bottom: 2px solid #f1f1f1;
-}
-
-td { 
-    padding: 12px; 
-    border-bottom: 1px solid #f9f9f9; 
-    font-size: 14px; 
-    vertical-align: middle;
-}
-
-tr:hover { 
-    background-color: #fafafa; 
-}
+.table-card { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+table { width: 100%; border-collapse: collapse; min-width: 500px; }
+th { background: #fcfcfc; padding: 15px 12px; text-align: left; font-size: 13px; color: #888; font-weight: 400; border-bottom: 2px solid #f1f1f1; }
+td { padding: 12px; border-bottom: 1px solid #f9f9f9; font-size: 14px; vertical-align: middle; }
 
 /* ============================================================
    5. FORM ELEMENTS (Check-in Form)
    ============================================================ */
-.form-group { 
-    margin-bottom: 20px; 
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 1.1em; font-weight: 600; margin-bottom: 8px; }
+select, input[type="text"], input[type="password"] { 
+    width: 100%; height: 48px; background: #f9f9f9; border: 1.5px solid #eee; 
+    border-radius: 10px; padding: 0 12px; font-size: 16px; box-sizing: border-box; 
+    color: var(--text-main); margin-bottom: 10px;
 }
 
-.form-label { 
-    display: block; 
-    font-size: 1.1em; 
-    font-weight: 600; 
-    margin-bottom: 8px; 
-}
-
-select, input[type="text"], input[type="date"] { 
-    width: 100%; height: 48px; 
-    background: #f9f9f9; 
-    border: 1.5px solid #eee; 
-    border-radius: 10px; 
-    padding: 0 12px; 
-    font-size: 16px; 
-    box-sizing: border-box; 
-    color: var(--text-main); 
-    margin-bottom: 10px;
-}
-
-/* Weather Selector (Radio Circle Buttons) */
-.weather-selector {
-    display: flex; 
-    justify-content: space-around;
-    padding: 10px 0; 
-    gap: 10px;
-}
-
+/* Weather Selector */
+.weather-selector { display: flex; justify-content: space-around; padding: 10px 0; gap: 10px; }
 .weather-option {
-    width: 45px; height: 45px; 
-    line-height: 41px;
-    text-align: center; 
-    border-radius: 50%; 
-    background-color: #fff; 
-    border: 2px solid #eee;
-    color: var(--text-sub); 
-    font-weight: bold;
-    cursor: pointer;
+    width: 45px; height: 45px; line-height: 41px; text-align: center; 
+    border-radius: 50%; background-color: #fff; border: 2px solid #eee;
+    color: var(--text-sub); font-weight: bold; cursor: pointer;
 }
-
 .weather-selector input[type="radio"]:checked + .weather-option {
-    background-color: var(--line-green); 
-    color: #fff;
-    border-color: var(--line-green); 
-    transform: scale(1.1);
+    background-color: var(--line-green); color: #fff; border-color: var(--line-green); transform: scale(1.1);
 }
 
 /* ============================================================
    6. BUTTONS & ACTIONS
    ============================================================ */
 button { 
-    width: 100%; height: 52px; 
-    background: var(--line-green); 
-    color: white; 
-    border: none; 
-    border-radius: 12px; 
-    font-size: 17px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: 0.2s;
+    width: 100%; height: 52px; background: var(--line-green); color: white; 
+    border: none; border-radius: 12px; font-size: 17px; font-weight: 600; 
+    cursor: pointer; transition: 0.2s;
 }
-
-button:active { 
-    transform: scale(0.98); 
-    background: var(--dark-green); 
-}
+button:active { transform: scale(0.98); background: var(--dark-green); }
 
 /* ============================================================
    7. MAP, OVERLAYS & CONTROLS
    ============================================================ */
-#map, #fullMap { 
-    height: 300px; 
-    border-radius: 12px; 
-    margin-bottom: 10px; 
-    z-index: 1; 
-}
-
-#fullMap { 
-    height: 100vh; 
-    border-radius: 0; 
-    margin: 0; 
-}
-
-/* แถบสถานะด้านบนบนแผนที่ */
-.top-status-bar {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 8px 20px;
-    border-radius: 30px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-    font-weight: 600;
-    color: var(--line-green);
-    display: flex;
-    gap: 15px;
-    border: 1px solid #eee;
-}
-
-/* ส่วนควบคุมบนแผนที่ */
-.map-controls {
-    position: absolute;
-    bottom: 25px;
-    right: 10px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.ctrl-btn {
-    background: white;
-    border: 1px solid #e0e0e0; /* เส้นขอบบางๆ */
-    width: 45px;
-    height: 45px;
-    border-radius: 12px; /* โค้งมนเหมือน Card */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    color: var(--line-green); /* ไอคอนสีเขียว */
-    font-size: 22px;
-    transition: all 0.2s ease;
-}
-
-.ctrl-btn:hover {
-    background: #f8f9fa;
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-}
+#map { height: 300px; border-radius: 12px; margin-bottom: 10px; z-index: 1; }
 
 /* ============================================================
-   8. UTILITIES (Loaders, Scrolls)
+   8. UTILITIES (Loaders & Spinner Overlay)
    ============================================================ */
+
+/* บังคับให้ Spinner ทับทุกอย่างและอยู่กลางจอ */
+#spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.85); /* พื้นหลังขาวจางๆ */
+    display: none; /* ควบคุมผ่าน JS (flex/none) */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* อยู่บนสุดเสมอ */
+}
+
+/* ข้อความใต้ Spinner */
+#spinner div:last-child {
+    margin-top: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* ตัวหมุน (Loader) */
 .loader { 
-    border: 4px solid #f3f3f3; 
-    border-top: 4px solid var(--line-green); 
+    border: 5px solid #f3f3f3; 
+    border-top: 5px solid var(--line-green); 
     border-radius: 50%; 
-    width: 40px; 
-    height: 40px; 
+    width: 50px; 
+    height: 50px; 
     animation: spin 1s linear infinite; 
 }
 
@@ -326,42 +146,4 @@ button:active {
     100% { transform: rotate(360deg); } 
 }
 
-.scrollable-card {
-    max-height: 400px; 
-    overflow-y: auto;
-}
-
-/* แถบเวลาหน้า Map แบบเรียบๆ มุมขวาบน */
-/* สไตล์เฉพาะหน้า Map: วางมุมขวาบนแบบเรียบง่าย */
-.map-time-overlay {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1000; /* ให้อยู่เหนือแผนที่ */
-    
-    background: rgba(255, 255, 255, 0.9);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 1px solid #eee;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end; /* จัดตัวอักษรชิดขวา */
-    pointer-events: none; /* ไม่ให้ขวางการลากแผนที่ */
-}
-
-.map-time-overlay #currentDate {
-    font-size: 13px;
-    color: var(--text-sub);
-    font-weight: 400;
-}
-
-.map-time-overlay #currentTime {
-    font-size: 22px;
-    color: var(--line-green);
-    font-weight: 600;
-    margin-top: 2px;
-    letter-spacing: 1px;
-}
-
+.scrollable-card { max-height: 400px; overflow-y: auto; }
