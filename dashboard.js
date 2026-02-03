@@ -143,31 +143,34 @@ function renderUnitStatusList(fullCheckins) {
             const isWeekend = [0, 6].includes(now.getDay());
             const dayTimeLog = getShiftLogs("Day Time", todayStr, 0, 2359)[0];
 
-            // 1. ตัดสินสถานะจาก "เวลาปัจจุบัน" และ "วัน" ก่อน
-            if (isWeekend || currentTimeHM < 730 || currentTimeHM > 1630) {
-                // --- อยู่นอกเวลาทำงาน หรือ วันหยุด ---
+            // 1. ตรวจสอบเงื่อนไข "นอกเวลาทำงาน" หรือ "วันหยุด" เป็นอันดับแรก
+            if (isWeekend || currentTimeHM > 1630 || currentTimeHM < 730) {
                 bgColor = "#eeeeee"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e";
                 statusText = isWeekend ? "หยุดเสาร์-อาทิตย์" : "นอกเวลาปฏิบัติงาน";
                 
-                // แม้จะนอกเวลา แต่ถ้ามี Log ของวันนี้ ก็เอามาโชว์ข้อมูลคน (แต่สียังเป็นเทาตามเงื่อนไขนอกเวลา)
+                // แม้จะนอกเวลา แต่ถ้าวันนี้เคยลงชื่อไว้ ให้ดึงข้อมูลมาแสดงเพื่อตรวจสอบย้อนหลังได้
                 if (dayTimeLog) displayLog = dayTimeLog; 
             } 
             else {
-                // --- อยู่ในเวลาทำงาน (7.30 - 16.30 จ-ศ) ---
+                // 2. อยู่ในเวลาทำงานปกติ (07:31 - 16:30 จันทร์-ศุกร์)
                 if (dayTimeLog) {
                     displayLog = dayTimeLog;
                     const chkHM = new Date(displayLog.time).getHours() * 100 + new Date(displayLog.time).getMinutes();
+                    // ลงเวลาทัน (7.30 - 8.30)
                     if (chkHM >= 730 && chkHM <= 830) { 
                         bgColor = "#e8f5e9"; borderColor = "#28a745"; badgeColor = "#28a745"; 
                     } else { 
+                        // ลงสาย (หลัง 8.30)
                         bgColor = "#fff9c4"; borderColor = "#fbc02d"; badgeColor = "#fbc02d"; 
                     }
                 } else {
-                    // ยังไม่มี Log
+                    // ยังไม่มีการลงชื่อในเวลาทำงาน
                     if (currentTimeHM <= 830) {
+                        // ยังไม่สาย (7.30 - 8.30) ให้เป็นสีเทารอลงเวลา
                         bgColor = "#eeeeee"; borderColor = "#9e9e9e"; badgeColor = "#9e9e9e";
                         statusText = "⏳ รอลงเวลา (Day Time)";
                     } else {
+                        // สายแล้วแต่ยังไม่ลงชื่อ (8.31 เป็นต้นไป) เป็นสีแดง
                         bgColor = "#ffcdd2"; borderColor = "#d32f2f"; badgeColor = "#d32f2f";
                         statusText = "⚠️ ขาดลงเวลา (Day Time)";
                     }

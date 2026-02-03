@@ -28,7 +28,7 @@
                 <h3>ลงทะเบียน</h3>
                 <label>เลือกชื่อของคุณ</label>
                 <select id="userSelect"></select>
-                <label>รหัสพนักงาน (UID)</label>
+                <label>รหัสพนักงาน</label>
                 <input id="UID" type="password" inputmode="numeric" placeholder="กรอกรหัสพนักงานเพื่อยืนยัน">
                 <button onclick="confirmBind()">ยืนยันผูกบัญชี</button>
             </div>
@@ -43,23 +43,54 @@
             </div>
             
             <div class="card">
-                <label>ตำแหน่งของคุณ</label>
+                <label class="form-label">ตำแหน่งของคุณ</label>
                 <div id="map"></div>
-                <button style="background:#007bff;" onclick="moveToCurrent()">📍 อัปเดตตำแหน่ง</button>
+                <button type="button" class="btn-secondary" onclick="moveToCurrent()">
+                    🔄 อัปเดตตำแหน่ง
+                </button>
             </div>
 
             <div class="card">
-                <label>สถานีไฟฟ้า</label>
+                <label class="form-label">สถานีไฟฟ้า</label>
                 <select id="stationSelect"></select>
-                <label>ประเภทงาน</label>
+                <label class="form-label">ประเภทงาน</label>
                 <select id="jobSelect"></select>
-                <label>หมายเหตุ</label>
-                <input id="note" placeholder="บันทึกเพิ่มเติม...">
-                <button id="checkinBtn" onclick="confirmCheckin()" disabled>✅ บันทึก Check-in</button>
+                <div style="margin-bottom: 15px;">
+                <div class="form-group">
+                <label class="form-label">สภาพอากาศ</label>
+                <div class="weather-selector">
+                    <input type="radio" id="w1" name="weather" value="1" checked>
+                    <label for="w1" class="weather-option">1</label>
+            
+                    <input type="radio" id="w2" name="weather" value="2">
+                    <label for="w2" class="weather-option">2</label>
+            
+                    <input type="radio" id="w3" name="weather" value="3">
+                    <label for="w3" class="weather-option">3</label>
+            
+                    <input type="radio" id="w4" name="weather" value="4">
+                    <label for="w4" class="weather-option">4</label>
+            
+                    <input type="radio" id="w5" name="weather" value="5">
+                    <label for="w5" class="weather-option">5</label>
+                </div>
+                <small style="color: #999; font-size: 11px; margin-top: 5px; display: block;">
+                    (1: แจ่มใส, 5: ฝนฟ้าคะนอง)
+                </small>
+                </div>
+                </div></div>
+                <div class="form-group">
+    <label class="form-label">หมายเหตุ</label>
+    <input type="text" id="note" placeholder="บันทึกรายละเอียดเพิ่มเติม (ถ้ามี)...">
+</div>
+
+<button id="checkinBtn" onclick="confirmCheckin()">
+    ✅ บันทึก Check-in
+</button>
             </div>
         </div>
     </div>
 
-    <script src="checkin.js"></script>
+    <script src="checkin_test.js"></script>
 </body>
 </html>
