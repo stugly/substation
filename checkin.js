@@ -129,18 +129,56 @@ async function loadStations() {
         const data = await response.json();
         const sel = document.getElementById("stationSelect");
         if (!sel) return;
+        
         sel.innerHTML = "";
-        const stations = data.allStations || []; nearbyStationsData = stations;
-        let inRangeCount = 0;
-        stations.forEach(st => {
-            const dist = map.distance([currentLat, currentLon], [st.Lat, st.Lon]);
-            if (dist <= (st.Radius_m || 50)) {
-                inRangeCount++;
-                let o = document.createElement("option"); o.value = st.SID; o.text = st.SName; sel.appendChild(o);
+        const stations = data.allStations || []; 
+        nearbyStationsData = stations;
+        
+        // 🚩 ลบหมุดสถานีเดิมออกก่อน (ถ้ามี) เพื่อไม่ให้หมุดซ้อนกันเวลาโหลดใหม่
+        map.eachLayer(layer => {
+            if (layer instanceof L.Marker && layer !== marker) { // ไม่ลบจุดสีเขียวของพนักงาน
+                map.removeLayer(layer);
             }
         });
-        if (inRangeCount === 0) sel.innerHTML = "<option>❌ นอกรัศมี</option>";
-    } catch (e) { console.error(e); }
+
+        let inRangeCount = 0;
+        stations.forEach(st => {
+            const sLat = parseFloat(st.Lat), sLon = parseFloat(st.Lon);
+            const radius = parseFloat(st.Radius_m) || 50;
+            
+            if (!isNaN(sLat) && !isNaN(sLon)) {
+                const distMeters = map.distance([currentLat, currentLon], [sLat, sLon]);
+                const isInRange = distMeters <= radius;
+
+                // 🚩 1. วาดหมุดสถานีลงบนแผนที่
+                L.marker([sLat, sLon], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color: ${isInRange ? '#28a745' : '#dc3545'}; 
+                                    width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
+                    })
+                }).addTo(map).bindPopup(`${st.SName}<br>ระยะ: ${Math.round(distMeters)} ม.`);
+
+                // 🚩 2. ถ้าอยู่ในระยะ ให้เพิ่มลงใน Dropdown
+                if (isInRange) {
+                    inRangeCount++;
+                    let o = document.createElement("option"); 
+                    o.value = st.SID; 
+                    o.text = `${st.SName} (${Math.round(distMeters)} ม.)`; 
+                    sel.appendChild(o);
+                }
+            }
+        });
+
+        if (inRangeCount === 0) {
+            sel.innerHTML = "<option>❌ นอกรัศมีเช็คอิน</option>";
+            if(document.getElementById("checkinBtn")) document.getElementById("checkinBtn").disabled = true;
+        } else { 
+            if(document.getElementById("checkinBtn")) document.getElementById("checkinBtn").disabled = false; 
+        }
+    } catch (e) { console.error("Load Stations Error:", e); }
 }
 
 // 🚩 เปลี่ยนชื่อเป็น showSpinner ให้ตรงกับ Dashboard
