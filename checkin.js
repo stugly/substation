@@ -138,8 +138,9 @@ async function loadStations() {
 async function confirmCheckin() {
     const sid = document.getElementById("stationSelect").value;
     const job = document.getElementById("jobSelect").value;
-    const weather = document.querySelector('input[name="weather"]:checked')?.value || "1";
     const note = document.getElementById("note").value;
+    const weatherElem = document.querySelector('input[name="weather"]:checked');
+    const weather = weatherElem ? weatherElem.value : "1";
 
     if (!sid || sid.includes("❌")) return alert("กรุณาเลือกสถานีไฟฟ้าในรัศมี");
     if (!job) return alert("กรุณาเลือกประเภทงาน");
@@ -148,10 +149,25 @@ async function confirmCheckin() {
         showSpinner(true);
         const res = await fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "checkin", lineUserId: profile.userId, lineName: profile.displayName, sid, job, weather, note, lat: currentLat, lon: currentLon })
+            body: JSON.stringify({ 
+                action: "checkin", 
+                lineUserId: profile.userId, 
+                lineName: profile.displayName, 
+                
+                // 🚩 เปลี่ยนกลับเป็นตัวใหญ่ให้เหมือนของเดิมที่พี่เคยใช้
+                SID: sid,      
+                Job: job,      
+                Weather: weather, 
+                Note: note,    
+                Lat: currentLat, 
+                Lon: currentLon 
+            })
         });
         const data = await res.json();
-        if (data.status === "OK") { alert("✅ บันทึกสำเร็จ"); liff.closeWindow(); }
+        if (data.status === "OK") { 
+            alert("✅ บันทึกสำเร็จ"); 
+            liff.closeWindow(); 
+        }
         else { alert("❌ Error: " + data.message); }
     } catch (e) { alert("❌ ส่งข้อมูลไม่ได้"); } finally { showSpinner(false); }
 }
