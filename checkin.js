@@ -159,8 +159,8 @@ async function confirmCheckin() {
                 Job: job,      
                 Weather: weather, 
                 Note: note,    
-                Latitude: currentLat, 
-                Longitude: currentLon                 	
+                lat: currentLat,
+                lon: currentLon             	
             })
         });
         const data = await res.json();
