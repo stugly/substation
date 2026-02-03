@@ -109,41 +109,39 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
    8. UTILITIES (Loaders & Spinner Overlay)
    ============================================================ */
 
-/* บังคับให้ Spinner ทับทุกอย่างและอยู่กลางจอ */
+/* Spinner ของหน้า Check-in ปรับให้เหมือน Dashboard */
 #spinner {
+    display: none; /* เริ่มต้นซ่อนไว้ JS จะสั่งเป็น flex เอง */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.85); /* พื้นหลังขาวจางๆ */
-    display: none; /* ควบคุมผ่าน JS (flex/none) */
+    background: rgba(255, 255, 255, 0.85); /* พื้นหลังขาวจางๆ แบบ Dashboard */
+    z-index: 9999;
+    
+    /* สองบรรทัดนี้สำคัญที่สุดที่ทำให้มันอยู่กลาง */
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* อยู่บนสุดเสมอ */
+    
+    font-family: 'Kanit', sans-serif;
 }
 
-/* ข้อความใต้ Spinner */
-#spinner div:last-child {
-    margin-top: 12px;
-    font-weight: 600;
-    color: var(--text-main);
+/* ปรับ Loader ให้เหมือนกัน */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #28a745; /* สีเขียว */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
 }
 
-/* ตัวหมุน (Loader) */
-.loader { 
-    border: 5px solid #f3f3f3; 
-    border-top: 5px solid var(--line-green); 
-    border-radius: 50%; 
-    width: 50px; 
-    height: 50px; 
-    animation: spin 1s linear infinite; 
-}
-
-@keyframes spin { 
-    0% { transform: rotate(0deg); } 
-    100% { transform: rotate(360deg); } 
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .scrollable-card { max-height: 400px; overflow-y: auto; }
