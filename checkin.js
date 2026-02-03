@@ -106,7 +106,11 @@ async function loadStations() {
         const sel = document.getElementById("stationSelect");
         if (!sel) return;
         sel.innerHTML = "";
-        const stations = data.allStations || [];
+        
+        // 🚩 เก็บข้อมูลสถานีทั้งหมดไว้ใน nearbyStationsData เพื่อใช้หา Unit ตอนกด Check-in
+        nearbyStationsData = data.allStations || [];
+        const stations = nearbyStationsData;
+
         map.eachLayer(layer => { if (layer instanceof L.Marker && layer !== marker) map.removeLayer(layer); });
 
         let inRangeCount = 0;
@@ -145,6 +149,10 @@ async function confirmCheckin() {
     if (!sid || sid.includes("❌")) return alert("กรุณาเลือกสถานีไฟฟ้าในรัศมี");
     if (!job) return alert("กรุณาเลือกประเภทงาน");
 
+    // 🚩 หาข้อมูลสถานีที่เลือก เพื่อดึงค่า Unit มาส่ง
+    const selectedStation = nearbyStationsData.find(s => s.SID === sid);
+    const unitValue = selectedStation ? selectedStation.Unit : "-";
+
     try {
         showSpinner(true);
         const res = await fetch(API_URL, {
@@ -153,14 +161,13 @@ async function confirmCheckin() {
                 action: "checkin", 
                 lineUserId: profile.userId, 
                 lineName: profile.displayName, 
-                
-                // 🚩 เปลี่ยนกลับเป็นตัวใหญ่ให้เหมือนของเดิมที่พี่เคยใช้
                 SID: sid,      
                 Job: job,      
                 Weather: weather, 
                 Note: note,    
-                lat: currentLat,
-                lon: currentLon             	
+                Unit: unitValue, // 🚩 เพิ่ม Unit เข้าไปตามที่ต้องการ
+                lat: currentLat, // 🚩 lat ตัวเล็กตามเดิม (คอลัมน์ I)
+                lon: currentLon  // 🚩 lon ตัวเล็กตามเดิม (คอลัมน์ J)              
             })
         });
         const data = await res.json();
