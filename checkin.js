@@ -145,14 +145,10 @@ async function loadStations() {
         
         sel.innerHTML = "";
         const stations = data.allStations || []; 
-        nearbyStationsData = stations;
         
-        // 🚩 1. ล้างหมุดสถานีเดิมออกก่อน (ยกเว้นหมุดสีเขียวของพนักงาน)
+        // ลบหมุดสถานีเดิม (Marker) ออกก่อน
         map.eachLayer(layer => {
-            // เช็คว่าเป็นหมุดสถานี (ไม่ใช่หมุดพนักงาน และไม่ใช่แผ่นแผนที่)
-            if (layer instanceof L.CircleMarker && layer !== marker) {
-                map.removeLayer(layer);
-            }
+            if (layer instanceof L.Marker && layer !== marker) map.removeLayer(layer);
         });
 
         let inRangeCount = 0;
@@ -164,18 +160,16 @@ async function loadStations() {
                 const distMeters = map.distance([currentLat, currentLon], [sLat, sLon]);
                 const isInRange = distMeters <= radius;
 
-                // 🚩 2. วาดหมุดสถานีด้วย CircleMarker (เสถียรกว่า Marker ปกติ)
-                L.circleMarker([sLat, sLon], {
-                    radius: 6,
-                    fillColor: isInRange ? "#28a745" : "#dc3545", // เขียวถ้าเข้าใกล้, แดงถ้าห่าง
-                    color: "#fff",
-                    weight: 2,
-                    fillOpacity: 0.9
-                })
-                .addTo(map)
-                .bindPopup(`<b>${st.SName}</b><br>ระยะห่าง: ${Math.round(distMeters)} ม.`);
+                // 📍 ใช้ไอคอนหมุด (Location Dot)
+                L.marker([sLat, sLon], {
+                    icon: L.divIcon({
+                        className: 'station-icon',
+                        html: `<i class="fa-solid fa-location-dot" style="color: ${isInRange ? '#28a745' : '#dc3545'}; font-size: 22px; filter: drop-shadow(0 0 2px #fff);"></i>`,
+                        iconSize: [20, 25],
+                        iconAnchor: [10, 25] // ให้ปลายแหลมจิ้มลงพิกัด
+                    })
+                }).addTo(map).bindPopup(`<b>${st.SName}</b><br>ห่าง: ${Math.round(distMeters)} ม.`);
 
-                // 🚩 3. เพิ่มลงใน Dropdown เฉพาะที่อยู่ในรัศมี
                 if (isInRange) {
                     inRangeCount++;
                     let o = document.createElement("option"); 
