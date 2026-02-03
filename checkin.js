@@ -113,13 +113,26 @@ function moveToCurrent() {
     navigator.geolocation.getCurrentPosition(pos => {
         currentLat = pos.coords.latitude; currentLon = pos.coords.longitude;
         if (marker) map.removeLayer(marker);
-        marker = L.circleMarker([currentLat, currentLon], { radius: 8, fillColor: "#28a745", color: "#fff", weight: 2, fillOpacity: 0.9 }).addTo(map);
+        
+        // 👤 ใช้ไอคอนรูปคน และมีวงกลมสีเขียวจางๆ รอบตัว
+        marker = L.marker([currentLat, currentLon], {
+            icon: L.divIcon({
+                className: 'user-icon',
+                html: `
+                    <div style="position:relative;">
+                        <div class="pulse"></div>
+                        <div style="font-size: 26px; position:relative; z-index:2;">👤</div>
+                    </div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map);
+        
         map.setView([currentLat, currentLon], 16);
         loadStations();
-    }, () => {
-        console.warn("GPS เข้าถึงไม่ได้ ใช้พิกัดจำลอง");
-        currentLat = 13.75; currentLon = 100.52;
-        loadStations();
+    }, (err) => { 
+        console.warn("GPS Error", err); 
+        loadStations(); 
     }, { enableHighAccuracy: true });
 }
 
