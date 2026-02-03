@@ -75,25 +75,23 @@ async function loadJobs() {
                 const name = jobName.trim();
 
                 if (isAdmin) {
-                    isVisible = true; // Admin เห็นหมด
+                    isVisible = true; 
                 } else {
-                    // --- 🚩 Logic การกรอง (พนักงานปกติ) ---
-                    // ถ้าตอนนี้ 14.00 น. (1400) จะยังไม่เข้าเงื่อนไขกะ 3 (>=1500)
-                    // --- Logic การกรองกะพนักงาน (แบบใช้ Keyword) ---
+                    // --- 🚩 Logic การกรองกะพนักงาน (ปรับช่วงเวลาไม่ให้ทับกัน) ---
                     if (name.includes("กะ 2")) {
-                        // ถ้าชื่อมีคำว่า "กะ 2" ให้เช็คเวลา 07.00 - 15.00
-                        if (currentHM >= 700 && currentHM <= 1500) isVisible = true;
+                        // เปิด 07:00 - 14:59 (พอ 15:00 ปุ๊บ กะ 2 จะหายไปทันที)
+                        if (currentHM >= 700 && currentHM < 1500) isVisible = true;
                     } 
                     else if (name.includes("กะ 3")) {
-                        // ถ้าชื่อมีคำว่า "กะ 3" ให้เช็คเวลา 15.00 - 23.00
-                        if (currentHM >= 1500 && currentHM <= 2300) isVisible = true;
+                        // เปิด 15:00 - 22:59
+                        if (currentHM >= 1500 && currentHM < 2300) isVisible = true;
                     } 
                     else if (name.includes("Day Time")) {
-                        // ถ้าชื่อมีคำว่า "Day Time" ให้เช็ค จ-ศ และเวลา 07.30 - 15.30
+                        // เปิด 07:30 - 15:30 (จ-ศ)
                         if (!isWeekend && currentHM >= 730 && currentHM <= 1530) isVisible = true;
                     } 
                     else {
-                        // งานอื่นๆ ที่ไม่มีคำว่า กะ 2, กะ 3 หรือ Day Time ให้เห็นตลอด
+                        // งานอื่นๆ ที่ไม่มีคำ Keyword ด้านบน ให้เห็นตลอด
                         isVisible = true; 
                     }
                 }
