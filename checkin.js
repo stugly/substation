@@ -1,8 +1,11 @@
 const LIFF_ID = "2008876139-ISUrdRGi"; 
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 
-let profile, map, marker, currentLat, currentLon, nearbyStationsData = [];
-window.stationMarkers = []; 
+
+const ADMIN_LINE_ID = ""; 
+//U15acdf3b0f3ba205f9d49111f6595068
+
+let profile = { userId: "GUEST" }, map, marker, currentLat, currentLon, nearbyStationsData = [];
 
 async function main() {
     try {
@@ -15,20 +18,21 @@ async function main() {
             document.getElementById("profileImg").style.display = "block";
         }
 
-        toggleSpinner(true);
+        toggleSpinner(true); // เริ่มหมุน
+        
         const res = await fetch(API_URL, {
             method: "POST",
             body: JSON.stringify({ action: "checkUser", lineUserId: profile.userId, lineName: profile.displayName })
         });
         const data = await res.json();
-        toggleSpinner(false);
 
         if (data.status === "FOUND") {
             document.getElementById("welcome").innerText = "สวัสดี, " + data.user.Name;
             document.getElementById("mainSection").style.display = "block";
             initMap(); 
-            loadJobs(); // 🚩 เรียกโหลดรายการงาน
+            await loadJobs(); // 🚩 รอให้โหลด Job เสร็จก่อนค่อยปิด Spinner ทีเดียว
         } else {
+            // ส่วนของ NEED_BIND
             const sel = document.getElementById("userSelect");
             sel.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
             if (data.freeUsers) {
@@ -40,85 +44,12 @@ async function main() {
         }
     } catch (error) {
         console.error("Checkin Error:", error);
-        toggleSpinner(false);
+        alert("เกิดข้อผิดพลาด: " + error.message);
+    } finally {
+        toggleSpinner(false); // 🚩 ไม่ว่าจะ FOUND, NEED_BIND หรือ Error ต้องหยุดหมุนที่นี่
     }
 }
 
-function initMap() {
-    map = L.map('map', { zoomControl: false }).setView([13.7, 100.5], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    moveToCurrent();
-}
-
-function moveToCurrent() {
-    navigator.geolocation.getCurrentPosition(pos => {
-        currentLat = pos.coords.latitude;
-        currentLon = pos.coords.longitude;
-        if (marker) map.removeLayer(marker);
-
-        marker = L.circleMarker([currentLat, currentLon], {
-            radius: 8, fillColor: "#28a745", color: "#fff", weight: 2, fillOpacity: 0.9
-        }).addTo(map);
-
-        map.setView([currentLat, currentLon], 16);
-        loadStations();
-    }, () => alert("กรุณาเปิด GPS"), { enableHighAccuracy: true });
-}
-
-async function loadStations() {
-    try {
-        const response = await fetch(`${API_URL}?action=getAllStations&t=${new Date().getTime()}`);
-        const data = await response.json();
-        const sel = document.getElementById("stationSelect");
-        if (!sel) return;
-
-        if (window.stationMarkers) {
-            window.stationMarkers.forEach(m => map.removeLayer(m));
-        }
-        window.stationMarkers = [];
-        sel.innerHTML = "";
-
-        const stations = data.allStations || data.stations || [];
-        nearbyStationsData = stations;
-        let inRangeCount = 0;
-
-        stations.forEach(st => {
-            const sLat = parseFloat(st.Lat);
-            const sLon = parseFloat(st.Lon);
-            const radius = parseFloat(st.Radius_m) || 50;
-
-            if (!isNaN(sLat) && !isNaN(sLon)) {
-                const distMeters = map.distance([currentLat, currentLon], [sLat, sLon]);
-                let distDisplayText = distMeters < 1000 ? `${Math.round(distMeters)} ม.` : `${(distMeters / 1000).toFixed(2)} กม.`;
-
-                const m = L.marker([sLat, sLon]).addTo(map).bindPopup(`<b>${st.SName}</b><br>ห่าง: ${distDisplayText}`);
-                window.stationMarkers.push(m);
-
-                if (distMeters <= radius) {
-                    inRangeCount++;
-                    let o = document.createElement("option"); 
-                    o.value = st.SID; 
-                    o.text = `${st.SName} (${distDisplayText})`; 
-                    sel.appendChild(o);
-
-                    const c = L.circle([sLat, sLon], { radius: radius, color: '#28a745', fillOpacity: 0.1, weight: 1 }).addTo(map);
-                    window.stationMarkers.push(c);
-                }
-            }
-        });
-
-        if (inRangeCount === 0) {
-            sel.innerHTML = "<option>❌ ไม่อยู่ในรัศมีเช็คอิน</option>";
-            document.getElementById("checkinBtn").disabled = true;
-        } else {
-            document.getElementById("checkinBtn").disabled = false;
-        }
-    } catch (error) { console.error("Load Stations Error:", error); }
-}
-
-/**
- * 🚩 โหลดรายการ Job แบบปกติ (ใช้ Action "getJobs")
- */
 async function loadJobs() {
     try {
         const res = await fetch(API_URL, { 
@@ -127,79 +58,95 @@ async function loadJobs() {
         });
         const data = await res.json();
         const sel = document.getElementById("jobSelect");
+        
         if (sel && data.status === "OK") {
+            const now = new Date();
+            // 🚩 currentHM ต้องเป็นตัวเลข เช่น 1415 (บ่าย 2 โมง 15 นาที)
+            const currentHM = now.getHours() * 100 + now.getMinutes();
+            const isWeekend = [0, 6].includes(now.getDay());
+            
+            // ตรวจสอบสถานะ Admin (ถ้า ID ไม่ตรง จะได้ค่า false)
+            const isAdmin = (profile.userId === ADMIN_LINE_ID);
+
             sel.innerHTML = '<option value="">-- เลือกประเภทงาน --</option>';
-            data.jobs.forEach(j => { 
-                let o = document.createElement("option"); 
-                o.value = j; 
-                o.text = j; 
-                sel.appendChild(o); 
+            
+            data.jobs.forEach(jobName => {
+                let isVisible = false;
+                const name = jobName.trim();
+
+                if (isAdmin) {
+                    isVisible = true; // Admin เห็นหมด
+                } else {
+                    // --- 🚩 Logic การกรอง (พนักงานปกติ) ---
+                    // ถ้าตอนนี้ 14.00 น. (1400) จะยังไม่เข้าเงื่อนไขกะ 3 (>=1500)
+                    // --- Logic การกรองกะพนักงาน (แบบใช้ Keyword) ---
+                    if (name.includes("กะ 2")) {
+                        // ถ้าชื่อมีคำว่า "กะ 2" ให้เช็คเวลา 07.00 - 15.00
+                        if (currentHM >= 700 && currentHM <= 1500) isVisible = true;
+                    } 
+                    else if (name.includes("กะ 3")) {
+                        // ถ้าชื่อมีคำว่า "กะ 3" ให้เช็คเวลา 15.00 - 23.00
+                        if (currentHM >= 1500 && currentHM <= 2300) isVisible = true;
+                    } 
+                    else if (name.includes("Day Time")) {
+                        // ถ้าชื่อมีคำว่า "Day Time" ให้เช็ค จ-ศ และเวลา 07.30 - 15.30
+                        if (!isWeekend && currentHM >= 730 && currentHM <= 1530) isVisible = true;
+                    } 
+                    else {
+                        // งานอื่นๆ ที่ไม่มีคำว่า กะ 2, กะ 3 หรือ Day Time ให้เห็นตลอด
+                        isVisible = true; 
+                    }
+                }
+
+                if (isVisible) {
+                    let o = document.createElement("option"); 
+                    o.value = name; 
+                    o.text = isAdmin ? `[Test] ${name}` : name; 
+                    sel.appendChild(o); 
+                }
             });
+
+            if (sel.options.length <= 1) {
+                sel.innerHTML = '<option value="">❌ นอกเวลาปฏิบัติงาน</option>';
+            }
         }
-    } catch (e) { 
-        console.error("Load Jobs Error", e); 
-        alert("โหลดรายการงานไม่สำเร็จ กรุณาลองใหม่");
-    }
+    } catch (e) { console.error("Load Jobs Error", e); }
 }
-
-/**
- * 🚩 บันทึก Check-in แบบปกติ (ไม่มีการเช็คเงื่อนไขเวลา)
- */
-async function confirmCheckin() {
-    const selectedJobName = document.getElementById("jobSelect").value;
-    const selectedSID = document.getElementById("stationSelect").value;
-    const station = nearbyStationsData.find(s => s.SID == selectedSID);
-    
-    if (!selectedJobName) { alert("กรุณาเลือกประเภทงาน"); return; }
-    if (!selectedSID || selectedSID.includes("❌")) return;
-
-    const weather = document.querySelector('input[name="weather"]:checked').value;
-    toggleSpinner(true);
-    
+function initMap() {
+    map = L.map('map', { zoomControl: false }).setView([13.7, 100.5], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    moveToCurrent();
+}
+function moveToCurrent() {
+    navigator.geolocation.getCurrentPosition(pos => {
+        currentLat = pos.coords.latitude; currentLon = pos.coords.longitude;
+        marker = L.circleMarker([currentLat, currentLon], { radius: 8, fillColor: "#28a745", color: "#fff", weight: 2, fillOpacity: 0.9 }).addTo(map);
+        map.setView([currentLat, currentLon], 16);
+        loadStations();
+    }, () => {
+        console.warn("GPS เข้าถึงไม่ได้ ใช้พิกัดจำลอง");
+        currentLat = 13.75; currentLon = 100.52;
+        loadStations();
+    }, { enableHighAccuracy: true });
+}
+async function loadStations() {
     try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                action: "checkin", 
-                lineUserId: profile.userId, 
-                SID: selectedSID,
-                Job: selectedJobName, 
-                Note: document.getElementById("note").value,
-                Weather: weather,
-                Unit: station ? station.Unit : "-", 
-                lat: currentLat, 
-                lon: currentLon
-            })
+        const response = await fetch(`${API_URL}?action=getAllStations&t=${new Date().getTime()}`);
+        const data = await response.json();
+        const sel = document.getElementById("stationSelect");
+        if (!sel) return;
+        sel.innerHTML = "";
+        const stations = data.allStations || []; nearbyStationsData = stations;
+        let inRangeCount = 0;
+        stations.forEach(st => {
+            const dist = map.distance([currentLat, currentLon], [st.Lat, st.Lon]);
+            if (dist <= (st.Radius_m || 50)) {
+                inRangeCount++;
+                let o = document.createElement("option"); o.value = st.SID; o.text = st.SName; sel.appendChild(o);
+            }
         });
-        const data = await res.json();
-        alert(data.message);
-        liff.closeWindow();
-    } catch (e) {
-        alert("เกิดข้อผิดพลาดในการบันทึก");
-    } finally {
-        toggleSpinner(false);
-    }
+        if (inRangeCount === 0) sel.innerHTML = "<option>❌ นอกรัศมี</option>";
+    } catch (e) { console.error(e); }
 }
-
-async function confirmBind() {
-    const selectedUID = document.getElementById("userSelect").value;
-    const inputUID = document.getElementById("UID").value.trim();
-    if (selectedUID !== inputUID) { alert("❌ รหัสไม่ตรงกับชื่อที่เลือก"); return; }
-    toggleSpinner(true);
-    try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "bindUser", uid: inputUID, lineUserId: profile.userId, lineName: profile.displayName })
-        });
-        const data = await res.json();
-        if (data.status == "OK") location.reload(); else alert(data.message);
-    } catch (e) { alert("เกิดข้อผิดพลาด"); }
-    finally { toggleSpinner(false); }
-}
-
-function toggleSpinner(show) {
-    const s = document.getElementById("spinner");
-    if(s) s.style.display = show ? "flex" : "none";
-}
-
+function toggleSpinner(show) { const s = document.getElementById("spinner"); if(s) s.style.display = show ? "flex" : "none"; }
 main();
