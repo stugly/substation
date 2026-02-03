@@ -145,3 +145,26 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 }
 
 .scrollable-card { max-height: 400px; overflow-y: auto; }
+
+/* เอฟเฟกต์วงกลมกระเพื่อมรอบตัวพนักงาน */
+.pulse {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(40, 167, 69, 0.4);
+    border-radius: 50%;
+    top: 5px;
+    left: 5px;
+    animation: pulse-animation 2s infinite;
+    z-index: 1;
+}
+
+@keyframes pulse-animation {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+.custom-icon, .user-icon, .station-icon {
+    background: transparent !important;
+    border: none !important;
+}
