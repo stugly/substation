@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report - ประวัติการเช็คอิน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="history-page"> <div class="header">
+        <h1>รายงานประวัติปฏิบัติงาน</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">ค้นหาชื่อ/หน่วยงาน</label>
+                <input type="text" id="searchInput" placeholder="พิมพ์เพื่อค้นหา...">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label class="form-label">วันที่เริ่ม</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">วันที่สิ้นสุด</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <button id="btnSearch" style="margin-top: 15px;">
+                <i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อมูล
+            </button>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>วันที่/เวลา</th>
+                        <th>ชื่อ - หน่วยงาน</th>
+                        <th>สถานะ/สภาพอากาศ</th>
+                    </tr>
+                </thead>
+                <tbody id="logTable">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="report.js"></script>
+</body>
+</html>

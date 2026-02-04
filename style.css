@@ -120,7 +120,7 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 }
 
 /* ============================================================
-    REPORT & DASHBOARD (ดึงสไตล์ดั้งเดิมจาก today.html)
+    DASHBOARD
    ============================================================ */
 
 /* บังคับให้หน้าที่มีคลาส .report-page ใช้สไตล์แบบ Today */
@@ -185,4 +185,45 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 .report-page #endDate, 
 .report-page #searchInput { 
     display: none !important; 
+}
+
+/* ============================================================
+   HISTORY & REPORT PAGE (.history-page)
+   ============================================================ */
+.history-page .table-card {
+    background: white;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.history-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-page th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    color: #666;
+    border-bottom: 2px solid #eee;
+}
+
+.history-page td {
+    padding: 12px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 14px;
+}
+
+/* ปรับแต่ง Input ในหน้า Report */
+.history-page input[type="date"], 
+.history-page input[type="text"] {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
