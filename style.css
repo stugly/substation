@@ -120,10 +120,18 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 }
 
 /* ============================================================
-    REPORT & DASHBOARD PAGE (.report-page) 
-    แก้ปัญหาการ์ดทับกันและจัดระเบียบ Accordion
+    REPORT & DASHBOARD (ดึงสไตล์ดั้งเดิมจาก today.html)
    ============================================================ */
 
+/* บังคับให้หน้าที่มีคลาส .report-page ใช้สไตล์แบบ Today */
+.report-page .container { 
+    padding: 15px; 
+    max-width: 100%; 
+    margin: auto; 
+    box-sizing: border-box; 
+}
+
+/* สไตล์ Tab / Accordion (ดั้งเดิมของพี่) */
 .report-page .accordion-item {
     background: white; border-radius: 12px; margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; border: 1px solid #eee;
@@ -131,43 +139,47 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 
 .report-page .accordion-header {
     padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between;
-    align-items: center; transition: background 0.3s;
+    align-items: center; transition: background 0.3s; position: relative;
 }
 
-/* สีที่คั่นหนังสือ */
+/* สีที่คั่นหนังสือ (Left Border) */
 .report-page .type-daytime { border-left: 10px solid #28a745; background: #f1f8e9; }
 .report-page .type-patrol { border-left: 10px solid #007bff; background: #e3f2fd; }
 .report-page .type-etc { border-left: 10px solid #fd7e14; background: #fff3e0; }
 
-.report-page .accordion-header h3 { margin: 0; font-size: 1.1em; font-weight: 600; color: #333; }
+.report-page .accordion-header h3 {
+    margin: 0; font-family: 'Kanit'; font-weight: 600; font-size: 1.2em; color: #333;
+}
 
 .report-page .accordion-content {
-    padding: 15px; display: block;
-    width: 100%; box-sizing: border-box; /* ป้องกันเนื้อหาล้น */
+    padding: 20px; display: block;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
 }
 
 .report-page .accordion-content.hidden { display: none; }
 
-.report-page .toggle-icon { transition: transform 0.3s; font-size: 1.1em; color: #666; }
+.report-page .toggle-icon { transition: transform 0.3s; font-size: 1.2em; color: #666; }
 .report-page .rotate { transform: rotate(180deg); }
 
-/* 🚩 แก้ไขการจัดเรียง Grid: ป้องกันการทับกัน */
+/* 🚩 จุดสำคัญ: การจัดเรียงการ์ด (ดั้งเดิมของพี่) */
 .report-page #unitCheckinToday, 
 .report-page #patrolListContainer, 
 .report-page #ETCListContainer {
     display: grid; 
-    /* มือถือให้เต็มแถว (100%) คอมให้แบ่งคอลัมน์ */
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px; 
     width: 100%;
 }
 
-/* บังคับให้การ์ดพนักงานในหน้า Today ขยายเต็มกรอบ Grid */
-.report-page .scrollable-card { 
-    max-height: none !important; 
-    overflow: visible !important; 
-    width: 100%;
-}
+.report-page .scrollable-card { max-height: none !important; overflow: visible !important; }
 
-/* ซ่อนแผนที่และตัวกรองที่ไม่ได้ใช้ในหน้า Today */
-.report-page #map { display: none !important; }
+/* ซ่อนสิ่งที่ไม่ได้ใช้ในหน้า Today */
+.report-page #map, 
+.report-page #logTable, 
+.report-page .filter-bar, 
+.report-page #startDate, 
+.report-page #endDate, 
+.report-page #searchInput { 
+    display: none !important; 
+}
