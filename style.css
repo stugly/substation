@@ -322,3 +322,62 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
     font-size: 12px;
     font-weight: 600;
 }
+
+/* ============================================================
+   CALENDAR PAGE STYLES
+   ============================================================ */
+.calendar-container { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
+.cal-day-head { text-align: center; font-weight: 600; font-size: 12px; color: #888; padding: 5px; }
+.cal-cell { 
+    min-height: 90px; border: 1px solid #f0f0f0; border-radius: 8px; padding: 5px;
+    display: flex; flex-direction: column; gap: 3px; background: #fff;
+}
+.cal-date { font-size: 12px; font-weight: 600; color: #ccc; margin-bottom: 2px; }
+.current-month-date { color: #333 !important; }
+.cal-staff { 
+    font-size: 10px; background: #e8f5e9; color: #2e7d32; padding: 2px 4px; 
+    border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border-left: 3px solid var(--line-green);
+}
+/* การจัดกลุ่มควบคุม (สถานี เดือน ปี) ให้อยู่แถวเดียวกัน */
+.calendar-controls { 
+    display: flex;       /* เปลี่ยนจาก grid เป็น flex */
+    gap: 10px; 
+    margin-bottom: 15px;
+    align-items: flex-end; 
+}
+
+/* ให้ช่องเลือกสถานีกว้างกว่าเพื่อน */
+.calendar-controls .control-group.station { flex: 2; }
+.calendar-controls .control-group { flex: 1; }
+
+.calendar-page select { 
+    width: 100%; 
+    height: 45px; 
+    border: 1.5px solid #eee; 
+    border-radius: 10px; 
+    padding: 0 10px; 
+    font-family: 'Kanit', sans-serif; 
+    background-color: #fff;
+}
+
+/* ตกแต่ง label เล็กน้อยให้อยู่เหนือ select */
+.calendar-controls label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* สีพื้นหลังพนักงานตามประเภทงานในปฏิทิน */
+.cal-staff.bg-patrol { 
+    background-color: #e0f2fe; color: #0369a1; border-left: 3px solid #0ea5e9; /* สีฟ้า */
+}
+.cal-staff.bg-shift { 
+    background-color: #dcfce7; color: #15803d; border-left: 3px solid #22c55e; /* สีเขียว */
+}
+.cal-staff.bg-other { 
+    background-color: #ffedd5; color: #9a3412; border-left: 3px solid #f97316; /* สีส้ม */
+}
