@@ -14,11 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadReportData() {
     showSpinner(true);
     try {
-        const response = await fetch(SCRIPT_URL + "?action=getCheckins"); // สมมติว่าพี่มี action นี้ใน Sheets
+        const response = await fetch(SCRIPT_URL + "?action=getCheckins");
         const data = await response.json();
         
-        allCheckins = data.checkins || []; // เก็บข้อมูลไว้ที่ตัวแปร Global
-        renderTable(allCheckins); // แสดงผลในตารางครั้งแรก
+        console.log("Data from Sheets:", data); // 🚩 เพิ่มบรรทัดนี้เพื่อดูชื่อตัวแปรใน Console (F12)
+        
+        allCheckins = data.checkins || [];
+        renderTable(allCheckins);
     } catch (error) {
         console.error("Error loading data:", error);
         alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่");
@@ -38,23 +40,23 @@ function renderTable(data) {
     }
 
     data.forEach(item => {
-        const row = `
-            <tr>
-                <td>
-                    <div style="font-weight:600;">${item.time}</div>
-                    <div style="font-size:11px; color:#888;">${item.date}</div>
-                </td>
-                <td>
-                    <div>${item.name}</div>
-                    <div style="font-size:12px; color:var(--line-green);">${item.station}</div>
-                </td>
-                <td>
-                    <span class="badge-job">${item.jobType}</span>
-                    <div style="font-size:11px; color:#999; margin-top:4px;">อากาศ: ${item.weather}</div>
-                </td>
-            </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+    const row = `
+        <tr>
+            <td>
+                <div style="font-weight:600;">${item.time || item.Timestamp || '-'}</div>
+                <div style="font-size:11px; color:#888;">${item.date || '-'}</div>
+            </td>
+            <td>
+                <div>${item.name || item.userName || 'ไม่ระบุชื่อ'}</div>
+                <div style="font-size:12px; color:var(--line-green);">${item.station || item.location || '-'}</div>
+            </td>
+            <td>
+                <span class="badge-job">${item.jobType || item.job || '-'}</span>
+                <div style="font-size:11px; color:#999; margin-top:4px;">อากาศ: ${item.weather || '-'}</div>
+            </td>
+        </tr>
+    `;
+    tableBody.insertAdjacentHTML('beforeend', row);
     });
 }
 
