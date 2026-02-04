@@ -175,8 +175,11 @@ button:active { transform: scale(0.98); background: var(--dark-green); }
 .report-page .scrollable-card { max-height: none !important; overflow: visible !important; }
 
 /* ซ่อนสิ่งที่ไม่ได้ใช้ในหน้า Today */
+/* 🚩 ส่วนสำคัญ: สั่งล้างตาราง แผนที่ และตัวกรอง ออกจากหน้า Today ให้เกลี้ยง */
 .report-page #map, 
 .report-page #logTable, 
+.report-page table,           /* 👈 เพิ่มตัวนี้เข้าไปเพื่อล้างโครงสร้างตาราง */
+.report-page .table-card,      /* 👈 เพิ่มตัวนี้เข้าไปเพื่อล้างกล่องตาราง */
 .report-page .filter-bar, 
 .report-page #startDate, 
 .report-page #endDate, 
