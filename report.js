@@ -1,6 +1,6 @@
 // 1. กำหนดตัวแปรหลัก
 let allCheckins = []; // เก็บข้อมูลทั้งหมดที่โหลดมาครั้งแรกเพื่อใช้ Filter
-const SCRIPT_URL = "URL_WEB_APP_G_SHEET_ของพี่"; // 🚩 เปลี่ยนเป็น URL ของพี่นะครับ
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec"; 
 
 // 2. โหลดข้อมูลเมื่อเปิดหน้าจอ
 document.addEventListener('DOMContentLoaded', function() {
