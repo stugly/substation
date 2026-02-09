@@ -201,16 +201,30 @@ function showSpinner(show) {
 }
 
 function getDeviceInfo() {
-    const ua = navigator.userAgent;
-    let device = "Unknown Device";
+    const ua = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform.toLowerCase();
+    const screen = window.screen;
     
-    if (/android/i.test(ua)) device = "Android";
-    else if (/iPad|iPhone|iPod/.test(ua)) device = "iOS";
-    else if (/Windows/i.test(ua)) device = "PC/Windows";
-    
-    // ดึงรุ่นเบราว์เซอร์แบบย่อ
-    const browser = ua.split(' ').pop(); 
-    return `${device} (${browser})`;
+    let deviceType = "Mobile";
+
+    // 🚩 ตรวจสอบร่องรอย Emulator
+    const isEmulator = 
+        ua.includes("nexus") || ua.includes("pixel") || // Emulator มักใช้ชื่อรุ่น Google
+        ua.includes("bluestacks") || 
+        ua.includes("nox") ||
+        platform.includes("win") || // ถ้า Platform เป็น Windows แต่ส่งมาเป็น Android = ปลอม
+        (screen.width > 1024 && !ua.includes("ipad")); // จอใหญ่เกินมือถือปกติ
+
+    if (isEmulator) {
+        deviceType = "🛑 EMULATOR/PC";
+    } else if (/android/i.test(ua)) {
+        deviceType = "Android";
+    } else if (/iphone|ipad|ipod/i.test(ua)) {
+        deviceType = "iOS";
+    }
+
+    // ส่งค่ากลับไปบันทึก (ระบุรุ่นละเอียดเพื่อให้เรามาไล่ดูเองได้ด้วย)
+    return `${deviceType} | ${ua.split('(')[1] ? ua.split('(')[1].split(')')[0] : ua}`;
 }
 
 main();
