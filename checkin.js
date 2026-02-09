@@ -165,9 +165,10 @@ async function confirmCheckin() {
                 Job: job,      
                 Weather: weather, 
                 Note: note,    
-                Unit: unitValue, // 🚩 เพิ่ม Unit เข้าไปตามที่ต้องการ
-                lat: currentLat, // 🚩 lat ตัวเล็กตามเดิม (คอลัมน์ I)
-                lon: currentLon  // 🚩 lon ตัวเล็กตามเดิม (คอลัมน์ J)              
+                Unit: unitValue,
+                lat: currentLat,
+                lon: currentLon, 
+                Device: getDeviceInfo()           
             })
         });
         const data = await res.json();
@@ -197,6 +198,19 @@ async function confirmBind() {
 function showSpinner(show) { 
     const s = document.getElementById("spinner"); 
     if(s) s.style.display = show ? "flex" : "none"; 
+}
+
+function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    let device = "Unknown Device";
+    
+    if (/android/i.test(ua)) device = "Android";
+    else if (/iPad|iPhone|iPod/.test(ua)) device = "iOS";
+    else if (/Windows/i.test(ua)) device = "PC/Windows";
+    
+    // ดึงรุ่นเบราว์เซอร์แบบย่อ
+    const browser = ua.split(' ').pop(); 
+    return `${device} (${browser})`;
 }
 
 main();
