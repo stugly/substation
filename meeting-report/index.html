@@ -117,36 +117,24 @@
             </div>
 
             <div id="tab-2" class="tab-content">
-                <div class="card">
-                    <label class="form-label" style="font-weight: 600; color: #06C755;">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                    <textarea name="op_detail" rows="5" placeholder="สรุปภาพรวมการทำงานในเดือนนี้..."></textarea>
-                    
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-                    
-                    <label class="form-label" style="color: #06C755; font-weight: 600;">
-                        <i class="fa-solid fa-list-check"></i> รายการงานและแผนดำเนินงาน
-                    </label>
-                    
-                    <div id="task-container">
-                        <div class="task-row" style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-                            <select name="task_type[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border-radius: 4px; border: 1px solid #ddd;">
-                                <option value="มอบหมาย">🚩 งานมอบหมาย</option>
-                                <option value="แผนงาน">📅 แผนประจำเดือน</option>
-                            </select>
-                            <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียดงาน..." 
-                                   style="flex: 1; height: 32px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
-                            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">
-                                <i class="fa-solid fa-circle-minus"></i>
-                            </button>
-                        </div>
-                    </div>
+              <div class="card">
+                  <label class="form-label" style="font-weight: 600; color: #06C755;">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                  <textarea name="op_detail" rows="5" placeholder="สรุปภาพรวมการทำงานในเดือนนี้..."></textarea>
+                  
+                  <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                  
+                  <label class="form-label" style="color: #06C755; font-weight: 600;">
+                      <i class="fa-solid fa-list-check"></i> รายการงานและแผนดำเนินงาน
+                  </label>
+                  
+                  <div id="task-container"></div>
 
-                    <button type="button" onclick="addTaskRow()" class="btn-secondary" 
-                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; background: #f0fdf4; color: #06C755; border: 1px dashed #06C755;">
-                        <i class="fa-solid fa-plus"></i> เพิ่มรายการงาน
-                    </button>
-                </div>
-            </div>
+                  <button type="button" onclick="addTaskRow()" class="btn-secondary" 
+                          style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; background: #f0fdf4; color: #06C755; border: 1px dashed #06C755;">
+                      <i class="fa-solid fa-plus"></i> เพิ่มรายการงาน
+                  </button>
+              </div>
+          </div>
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
@@ -185,6 +173,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=7.7"></script>
+    <script src="script.js?v=7.8"></script>
 </body>
 </html>

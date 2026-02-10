@@ -144,6 +144,8 @@ function setupMetadata(data) {
             </label>`
         ).join('');
     }
+    document.getElementById('task-container').innerHTML = '';
+    addTaskRow();
 }
 
 // 5. จัดการการเลือกรูปภาพและ Preview
@@ -214,14 +216,33 @@ function addEqRow() {
 
 function addTaskRow() {
     const container = document.getElementById('task-container');
+    const rows = container.getElementsByClassName('task-row');
+    
+    // เงื่อนไข: ถ้ามีแถวก่อนหน้า และช่องล่าสุดยังว่างอยู่ ห้ามเพิ่ม!
+    if (rows.length > 0) {
+        const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
+        if (lastInput.value.trim() === "") {
+            alert("กรุณากรอกรายละเอียดงานในแถวก่อนหน้าก่อนครับ");
+            lastInput.focus();
+            return;
+        }
+    }
+
     const div = document.createElement('div');
-    div.style.cssText = "margin-top:10px; padding:10px; border:1px solid #eee; border-radius:8px; background:#fcfcfc;";
+    div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 5px; margin-bottom: 8px; align-items: center;";
+    
     div.innerHTML = `
-        <select name="task_type[]" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px;">
-            <option value="Assignment">ภารกิจมอบหมาย</option>
-            <option value="Plan">แผนงานเดือนถัดไป</option>
+        <select name="task_type[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border-radius: 4px; border: 1px solid #ddd; background:#fff;">
+            <option value="มอบหมาย">🚩 งานมอบหมาย</option>
+            <option value="แผนงาน">📅 แผนประจำเดือน</option>
         </select>
-        <input type="text" name="task_detail[]" placeholder="รายละเอียดภารกิจ..." style="width:100%; margin-top:5px; padding:6px; border:1px solid #ddd; border-radius:4px;">
+        <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียดงาน..." 
+               style="flex: 1; height: 32px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px; min-width:0;">
+        <button type="button" onclick="this.parentElement.remove()" 
+                style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 0 5px;">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
 }
