@@ -44,11 +44,10 @@ function initLiff() {
 }
 
 function checkAccess(profile) {
-    // ค้นหาพนักงานจาก userId ของ LINE
     const user = staffData.find(s => s.line === profile.userId);
     
     if (user) {
-        // ✅ ผ่านสิทธิ์: ปิด Spinner และแสดงแอปหลัก
+        // ✅ ผ่านสิทธิ์: ซ่อนหน้าโหลดทั้งหมด
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         
@@ -56,17 +55,17 @@ function checkAccess(profile) {
         document.getElementById('recorder_uid').value = user.uid;
         document.getElementById('recorder_line').value = user.line;
     } else {
-        // ❌ ไม่พบสิทธิ์: เปลี่ยนหน้า Spinner เป็นหน้าแจ้งเตือน (ไม่มีการ alert)
-        document.getElementById('spinner').innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <i class="fa-solid fa-circle-xmark" style="font-size: 50px; color: #dc3545; margin-bottom: 15px;"></i>
-                <h3 style="color: #333;">ไม่พบสิทธิ์การใช้งาน</h3>
-                <p style="font-size: 14px; color: #666;">LINE ID นี้ยังไม่ได้ลงทะเบียนในระบบพนักงาน</p>
-                <p style="font-size: 11px; color: #999; margin-bottom: 20px;">ID: ${profile.userId}</p>
-                <button class="btn-primary" onclick="forceLogout()" style="padding:12px 25px;">
-                    <i class="fa-solid fa-right-from-bracket"></i> Login to another account
-                </button>
-            </div>
+        // ❌ ไม่พบสิทธิ์: เปลี่ยนข้อความและแสดงปุ่ม Logout ในหน้า Spinner เดิม
+        document.getElementById('spinner-text').innerHTML = `
+            <span style="color: #dc3545; font-weight: 500;">❌ ไม่พบสิทธิ์การใช้งานสำหรับบัญชีนี้</span><br>
+            <small style="color: #999;">ID: ${profile.userId}</small>
+        `;
+        
+        // สร้างปุ่มใหม่ขึ้นมาเฉพาะเคสนี้
+        document.getElementById('spinner-action').innerHTML = `
+            <button class="btn-primary" onclick="forceLogout()" style="padding: 12px 25px; border-radius: 25px;">
+                Login to another account
+            </button>
         `;
     }
 }
