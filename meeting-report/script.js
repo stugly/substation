@@ -4,36 +4,51 @@ let staffData = [];
 let selectedImages = [];
 
 window.onload = async () => {
+    // แสดง Spinner ไว้ตั้งแต่เริ่ม (ถูกตั้งใน HTML อยู่แล้ว)
     try {
-        // 1. ดึง Metadata จาก GAS ก่อน
+        // 1. ดึงข้อมูลพนักงานจาก GAS ก่อนเป็นอันดับแรก
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
+        
+        if (data.error) throw new Error(data.error);
+
         staffData = data.staff;
         setupMetadata(data);
         
-        // 2. รัน LIFF
+        // 2. เมื่อข้อมูลพนักงานมาครบแล้ว ค่อยเริ่มรัน LIFF
         initLiff();
     } catch (err) {
-        alert("ไม่สามารถดึงข้อมูลพนักงานได้ กรุณาเช็คอินเทอร์เน็ต");
+        console.error(err);
+        document.getElementById('spinner').innerHTML = `
+            <div style="color: red; padding: 20px;">
+                <h3>❌ ไม่สามารถโหลดข้อมูลได้</h3>
+                <p>กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</p>
+                <button onclick="location.reload()" style="padding:10px 20px; border-radius:20px; border:none; background:#28a745; color:#fff;">ลองใหม่อีกครั้ง</button>
+            </div>
+        `;
     }
 };
 
 function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
         if (!liff.isLoggedIn()) {
-            // ถ้ายังไม่ได้ Login ให้เด้งหน้า Login ทันที
+            // ถ้ายังไม่ Login ให้สั่ง Login ทันที (จะ Redirect ไปหน้า LINE)
             liff.login();
         } else {
-            // ถ้า Login แล้ว เช็คสิทธิ์พนักงานเลย
+            // ถ้า Login แล้ว ตรวจสอบสิทธิ์ทันที
             liff.getProfile().then(profile => checkAccess(profile));
         }
-    }).catch(err => console.error(err));
+    }).catch(err => {
+        console.error("LIFF Initialization failed", err);
+    });
 }
 
 function checkAccess(profile) {
+    // ค้นหาพนักงานจาก userId ของ LINE
     const user = staffData.find(s => s.line === profile.userId);
+    
     if (user) {
-        // ผ่านสิทธิ์! ซ่อน Spinner และโชว์แอปหลัก
+        // ✅ ผ่านสิทธิ์: ปิด Spinner และแสดงแอปหลัก
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         
@@ -41,19 +56,32 @@ function checkAccess(profile) {
         document.getElementById('recorder_uid').value = user.uid;
         document.getElementById('recorder_line').value = user.line;
     } else {
-        // ไม่พบชื่อในระบบพนักงาน
-        alert("ขออภัย! LINE ของคุณยังไม่ได้ลงทะเบียนในระบบ\nID: " + profile.userId);
-        liff.logout();
-        location.reload();
+        // ❌ ไม่พบสิทธิ์: เปลี่ยนหน้า Spinner เป็นหน้าแจ้งเตือน (ไม่มีการ alert)
+        document.getElementById('spinner').innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <i class="fa-solid fa-circle-xmark" style="font-size: 50px; color: #dc3545; margin-bottom: 15px;"></i>
+                <h3 style="color: #333;">ไม่พบสิทธิ์การใช้งาน</h3>
+                <p style="font-size: 14px; color: #666;">LINE ID นี้ยังไม่ได้ลงทะเบียนในระบบพนักงาน</p>
+                <p style="font-size: 11px; color: #999; margin-bottom: 20px;">ID: ${profile.userId}</p>
+                <button class="btn-primary" onclick="forceLogout()" style="padding:12px 25px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Login to another account
+                </button>
+            </div>
+        `;
     }
 }
 
-// ส่วนอื่นๆ คงเดิมตามความต้องการของระบบ
+// --- ฟังก์ชันการทำงานของฟอร์ม (คงเดิม) ---
+
 function setupMetadata(data) {
     const uSel = document.getElementById('unit');
+    uSel.innerHTML = ""; // Clear old options
     data.units.forEach(u => uSel.add(new Option(u, u)));
+    
     const mSel = document.getElementById('month');
+    mSel.innerHTML = "";
     data.months.forEach(m => mSel.add(new Option(m, m)));
+    
     const attList = document.getElementById('attendance-list');
     attList.innerHTML = data.staff.map(s => 
         `<label><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`
@@ -81,15 +109,16 @@ function showTab(evt, tabId, tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     evt.currentTarget.classList.add('active');
-    // อัปเดตชื่อ Tab ที่หัวข้อ
     document.getElementById('tab-name').innerText = tabName;
 }
 
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
+    const originalText = btn.innerText;
+    
     btn.disabled = true;
-    btn.innerText = "กำลังส่งข้อมูล...";
+    btn.innerText = "⌛ กำลังส่งข้อมูล...";
 
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
@@ -100,19 +129,24 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     payload.images = selectedImages;
 
     try {
-        const response = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(GAS_WEBAPP_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
         const result = await response.text();
         alert(result);
         location.reload();
     } catch (err) {
-        alert("บันทึกไม่สำเร็จ");
+        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
         btn.disabled = false;
+        btn.innerText = originalText;
     }
 };
 
 function addTaskRow() {
     const div = document.createElement('div');
     div.className = "card";
+    div.style.marginTop = "10px";
     div.innerHTML = `
         <select name="task_type[]" style="width:100%;"><option>Assignment</option><option>Plan</option></select>
         <input type="text" name="task_detail[]" placeholder="รายละเอียด..." style="width:100%; margin-top:5px;">`;
@@ -122,37 +156,16 @@ function addTaskRow() {
 function addEqRow() {
     const div = document.createElement('div');
     div.className = "card";
+    div.style.marginTop = "10px";
     div.innerHTML = `
         <input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์" style="width:100%;">
         <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px;"></textarea>`;
     document.getElementById('eq-container').appendChild(div);
 }
 
-// ฟังก์ชันสำหรับสลับบัญชี
 function forceLogout() {
     if (confirm("คุณต้องการออกจากระบบเพื่อเข้าใช้งานด้วยบัญชีอื่นใช่หรือไม่?")) {
         liff.logout();
-        // หลังจาก logout ให้ reload หน้าเว็บเพื่อให้ liff.login() ทำงานใหม่
         location.reload();
-    }
-}
-
-// ปรับปรุงฟังก์ชัน checkAccess เล็กน้อยเพื่อให้แสดง Error ชัดเจนถ้าไม่มีสิทธิ์
-function checkAccess(profile) {
-    const user = staffData.find(s => s.line === profile.userId);
-    if (user) {
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        
-        document.getElementById('welcome').innerText = `ยินดีต้อนรับ: ${user.name}`;
-        document.getElementById('recorder_uid').value = user.uid;
-        document.getElementById('recorder_line').value = user.line;
-    } else {
-        // หากไม่พบสิทธิ์ ให้หยุดตัวหมุนและโชว์ปุ่ม Logout ชัดๆ
-        document.getElementById('spinner').innerHTML = `
-            <div style="color: red; margin-bottom: 20px;">❌ ไม่พบสิทธิ์การใช้งานสำหรับบัญชีนี้</div>
-            <p style="font-size: 14px; margin-bottom: 20px;">ID: ${profile.userId}</p>
-            <button class="btn-primary" onclick="forceLogout()">Login to another account</button>
-        `;
     }
 }
