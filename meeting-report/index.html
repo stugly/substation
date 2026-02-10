@@ -8,175 +8,114 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
+    
     <style>
-      /* 1. บังคับฟอนต์ให้เหมือนเดิมทุกจุด */
-      * { font-family: 'Kanit', sans-serif !important; }
-
-      /* 2. แก้ไข Header ให้สีและสไตล์เหมือน Argus (Check-in) */
-      .header {
-          background-color: #06C755 !important; /* เปลี่ยนเป็นสีเขียว LINE ที่สดกว่า */
-          padding: 40px 15px 50px 15px !important; /* เพิ่ม padding ล่างให้เผื่อพื้นที่ container เกย */
-          border-radius: 0 0 30px 30px !important; /* มนโค้งสวยงามแบบ Argus */
-          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-          position: relative;
-          z-index: 1;
-      }
-
-      .header h2 {
-          color: #ffffff !important;
-          font-weight: 600 !important;
-          margin: 0 !important;
-          font-size: 24px !important;
-          letter-spacing: 0.5px;
-      }
-
-      /* 3. จัดการ Spinner ให้เนียน */
-      #spinner { 
-          display: flex; flex-direction: column; align-items: center; justify-content: center; 
-          height: 100vh; background: #ffffff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; 
-      }
-
-      /* 4. ปรับ Container ให้เกยขึ้นไปทับ Header เหมือนของเดิม */
-      .container {
-          margin-top: -35px !important; /* ดึงขึ้นไปทับ header */
-          position: relative;
-          z-index: 2;
-          padding-bottom: 50px;
-      }
-
-      /* 5. สไตล์ Card ให้มนและไม่มีเส้นขอบ */
-      .card {
-          border-radius: 18px !important;
-          border: none !important;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
-          background-color: #ffffff !important;
-          margin-bottom: 15px !important;
-      }
-
-      /* 6. ตกแต่ง Tab Nav ให้ดูสะอาดตา */
-      .tab-nav {
-          display: flex; justify-content: space-between; gap: 10px; margin: 15px 0;
-          overflow-x: auto; padding: 5px; -webkit-overflow-scrolling: touch;
-      }
-      .tab-btn {
-          width: 45px; height: 45px; border-radius: 50%; border: 2px solid #eee;
-          background: #fff; font-weight: 600; color: #888; cursor: pointer;
-          display: flex; align-items: center; justify-content: center; transition: 0.3s;
-      }
-      .tab-btn.active { 
-          background-color: #06C755 !important; color: #fff !important; border-color: #06C755 !important;
-          transform: scale(1.1);
-      }
-      
-      /* สไตล์ Check-list พนักงาน */
-      .check-list { 
-          display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
-          padding: 12px; border: 1px solid #f0f0f0; border-radius: 12px; 
-          max-height: 220px; overflow-y: auto; background: #fafafa;
-      }
+        /* 2. เพิ่มเติมเฉพาะส่วนที่ใน CSS หลักไม่มี */
+        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* สไตล์ปุ่มตัวเลข 1-5 แบบวงกลม (ใช้ชื่อคลาสไม่ให้ซ้ำของเดิม) */
+        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; }
+        .step-circle { 
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; 
+            background: #fff; font-weight: 600; color: #888; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step-circle.active { background: #28a745; color: #fff; border-color: #28a745; }
+        
+        .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+        .preview-img-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
-      <div class="loader"></div>
-      <div id="spinner-text" style="margin-top:15px; font-weight: 400; color: #666;">กำลังตรวจสอบสิทธิ์...</div>
-      <div id="spinner-action" style="margin-top: 30px;"></div>
+        <div class="loader"></div>
+        <div style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
+        <div id="spinner-action"></div>
     </div>
 
     <div id="main-app" style="display:none;">
-      <div class="header">
-        <h2>Meeting Report</h2>
-      </div>
+        <div class="header">
+            <h2>Meeting Report</h2>
+        </div>
 
-        <div class="container" style="margin-top: -20px;"> <div class="card" style="border-top: 4px solid #28a745;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <i class="fa-solid fa-circle-user" style="font-size: 32px; color: #28a745;"></i>
-                    <div id="welcome" style="font-weight:400; font-size: 15px; color: #333;"></div>
+        <div class="container">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
+                    <div id="welcome" style="font-weight:600;"></div>
                 </div>
             </div>
 
-            <div style="margin: 20px 0 5px 5px; font-size: 15px; font-weight: 500; color: #666;">
-                <i class="fa-solid fa-file-pen" style="color:#28a745;"></i> บันทึกการรายงาน: 
-                <span id="tab-name" style="color:#28a745; font-weight: 600;">1. General</span>
+            <div style="margin: 15px 0 5px 5px; font-weight: 600;">
+                <i class="fa-solid fa-file-signature"></i> บันทึกการรายงาน: <span id="tab-name" style="color:#28a745;">1. General</span>
             </div>
 
-            <div class="tab-nav">
-                <button type="button" class="tab-btn active" onclick="showTab(event, 'tab-general', '1. General')">1</button>
-                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-op', '2. Operation')">2</button>
-                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-maint', '3. Maint')">3</button>
-                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-task', '4. Task/Plan')">4</button>
-                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-pics', '5. Pics')">5</button>
+            <div class="step-nav">
+                <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. General')">1</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-op', '2. Operation')">2</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. Maint')">3</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-task', '4. Task/Plan')">4</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. Pics')">5</div>
             </div>
 
             <form id="reportForm">
                 <div id="tab-general" class="tab-content active">
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
-                        <select name="unit" id="unit" class="form-control" required></select>
-                        
-                        <label class="form-label" style="margin-top:10px;">เดือน / วันที่ประชุม</label>
-                        <div style="display:flex; gap:10px;">
-                            <select name="month" id="month" style="flex:1;" required></select>
-                            <input type="date" name="date" style="flex:1;" required>
-                        </div>
+                        <select id="unit" name="unit" required></select>
+                        <label class="form-label">เดือน</label>
+                        <select id="month" name="month" required></select>
+                        <label class="form-label">วันที่ประชุม</label>
+                        <input type="date" name="date" required>
                     </div>
                     <div class="card">
-                        <label class="form-label">รายชื่อผู้เข้าร่วมประชุม</label>
-                        <div id="attendance-list" class="check-list"></div>
+                        <label class="form-label">ผู้เข้าประชุม</label>
+                        <div id="attendance-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
                     </div>
                 </div>
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
-                        <label class="form-label">สรุปผลดำเนินงาน / ความปลอดภัย</label>
-                        <textarea name="op_detail" rows="8" placeholder="กรอกรายละเอียด..."></textarea>
+                        <label class="form-label">สรุปผลการดำเนินงาน</label>
+                        <textarea name="op_detail" rows="5"></textarea>
                     </div>
                 </div>
 
                 <div id="tab-maint" class="tab-content">
                     <div class="card">
-                        <label class="form-label">รายการอุปกรณ์ชำรุด</label>
                         <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">
-                            <i class="fa-solid fa-plus-circle"></i> เพิ่มรายการอุปกรณ์
-                        </button>
+                        <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มอุปกรณ์</button>
                     </div>
                 </div>
 
                 <div id="tab-task" class="tab-content">
                     <div class="card">
-                        <label class="form-label">ภารกิจมอบหมาย / แผนงาน</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">
-                            <i class="fa-solid fa-calendar-plus"></i> เพิ่มแผนงานใหม่
-                        </button>
+                        <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
                     </div>
                 </div>
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
-                        <label class="form-label">รูปภาพประกอบการประชุม</label>
-                        <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 10px; background: #fafafa;">
-                            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="display:none;">
-                            <label for="imageInput" style="cursor:pointer; color:#28a745;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 30px;"></i><br>
-                                คลิกเพื่อเลือกรูปภาพ (หลายรูป)
-                            </label>
-                        </div>
-                        <div id="image-preview" class="preview-container"></div>
+                        <label class="form-label">แนบรูปภาพ</label>
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                        <div id="image-preview" class="preview-img-container"></div>
                     </div>
                     <input type="hidden" name="recorder_uid" id="recorder_uid">
                     <input type="hidden" name="recorder_line" id="recorder_line">
                 </div>
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 25px 0 50px 0; padding: 16px; font-size: 18px; font-weight: 500; border-radius: 12px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
+                <button type="submit" id="btn-submit" style="width: 100%; margin-top: 20px;">
                     ✅ บันทึกรายงานทั้งหมด
                 </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=1.6"></script>
+    <script src="script.js?v=1.7"></script>
 </body>
 </html>
