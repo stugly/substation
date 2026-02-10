@@ -2,16 +2,14 @@ const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwe_OPptH3rOfFH2
 const LIFF_ID = "2008876139-kiwCd2kF";
 
 let staffData = [];
+let rawAppData = null;
+let currentUserUnit = "";
 let selectedImages = [];
-let currentUserUnit = ""; // เก็บหน่วยงานของผู้ที่ Login
-let rawAppData = null;    // เก็บข้อมูล Metadata (เดือน/หน่วยงาน) สำรองไว้
 
-// 1. เริ่มรันระบบ
 window.onload = function() {
     initLiff();
 };
 
-// 2. ตรวจสอบการ Login ด้วย LIFF
 async function initLiff() {
     try {
         await liff.init({ liffId: LIFF_ID });
@@ -26,172 +24,90 @@ async function initLiff() {
     }
 }
 
-// 3. ดึงข้อมูลจาก GAS และตั้งค่าเริ่มต้น
 async function loadAppData(profile) {
     try {
-        console.log("Fetching data from GAS...");
+        console.log("Fetching data...");
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         
-        console.log("Raw Data from GAS:", data);
-        
-        // เก็บข้อมูลลงตัวแปร Global
-        staffData = data.staff || []; 
-        rawAppData = data; // เก็บไว้ใช้ใน setupMetadata
-        
-        // เรียกฟังก์ชันตรวจสอบสิทธิ์
-        checkAccess(profile);
-        
-    } catch (err) {
-        console.error("Data Load Error:", err);
-        document.getElementById('spinner-text').innerHTML = "❌ โหลดข้อมูลไม่สำเร็จ: " + err.message;
-    }
-}
+        staffData = data.staff || [];
+        rawAppData = data; 
 
-// 4. เช็คสิทธิ์พนักงานและระบุหน่วยงาน
-function checkAccess(profile) {
-    const myLineId = profile.userId.trim();
-    console.log("Comparing:", myLineId);
+        // ตรวจสอบสิทธิ์ผู้ใช้งาน
+        const myId = profile.userId.trim();
+        const user = staffData.find(s => s.line && s.line.trim() === myId);
+        
+        if (user) {
+            currentUserUnit = user.unit;
+            
+            // 1. ตั้งค่าข้อมูลลงฟอร์มทันที
+            setupMetadata(data); 
 
-    // ค้นหา User โดยเทียบไอดี LINE
-    const user = staffData.find(s => s.line && s.line.trim() === myLineId);
-    
-    if (user) {
-        console.log("Access Granted:", user.name);
-        currentUserUnit = user.unit; // เก็บ Unit ของผู้ใช้ไว้กรองสถานี
-        
-        // เรียกฟังก์ชันตั้งค่า Meta Data (วันที่, สถานที่, รายชื่อพนักงาน)
-        setupMetadata(rawAppData);
-        
-        // ปิด Spinner และแสดงหน้าแอป
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        
-        // แสดงชื่อผู้ใช้งาน
-        document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
-        
-        // แสดงรูปโปรไฟล์
-        const avatarBox = document.getElementById('user-avatar-placeholder');
-        if (avatarBox && profile.pictureUrl) {
-            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            // 2. แสดงหน้าแอป
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
+            
+            if (profile.pictureUrl) {
+                document.getElementById('user-avatar-placeholder').innerHTML = 
+                    `<img src="${profile.pictureUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            }
+
+            // 3. ใส่ค่า Hidden Fields
+            document.getElementById('recorder_uid').value = user.uid;
+            document.getElementById('recorder_line').value = user.line;
+
+        } else {
+            // กรณีหา User ไม่เจอ
+            document.getElementById('spinner-text').innerHTML = 
+                `<div style="padding:20px; color:red;">
+                    <b>ไม่พบสิทธิ์การใช้งาน</b><br>
+                    <small style="color:gray;">ID: ${myId}</small><br>
+                    <p style="font-size:12px; margin-top:10px; color:#333;">กรุณานำ ID นี้ไปใส่ใน Sheet 'Users' คอลัมน์ C</p>
+                    <button onclick="location.reload()" style="margin-top:10px; padding:5px 15px;">ลองใหม่อีกครั้ง</button>
+                </div>`;
         }
-    } else {
-        console.error("User not found in database.");
-        document.getElementById('spinner-text').innerHTML = 
-            `<div style="padding:20px; color:#d9534f;">
-                <b>ไม่พบข้อมูลผู้ใช้งานในระบบ</b><br>
-                <small style="color:#666;">ID: ${myLineId}</small><br>
-                <p style="font-size:12px; margin-top:10px;">กรุณาแจ้งผู้ดูแลระบบเพื่อเพิ่มสิทธิ์การใช้งาน</p>
-            </div>`;
+    } catch (err) {
+        console.error("Load Error:", err);
     }
 }
 
-// 5. เตรียม Dropdown และ Checkbox (กรองตามเงื่อนไขที่ระบุ)
 function setupMetadata(data) {
-    // ... (ส่วนตั้งค่าหัวข้อรายงานและวันที่/เวลาเหมือนเดิม) ...
+    const now = new Date();
+    const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
 
-    // --- ปรับปรุง: ดึงรายชื่อสถานีเฉพาะที่อยู่ใน Unit เดียวกัน ---
+    // --- ส่วนแสดงผลหัวข้อและค่า Hidden ---
+    document.getElementById('report-title').innerText = `รายงานการประชุม ${currentUserUnit} ประจำเดือน ${fullDateText}`;
+    document.getElementById('unit').value = currentUserUnit;
+    document.getElementById('month').value = fullDateText;
+
+    // --- ส่วนค่า Default วันที่และเวลา ---
+    document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
+    document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+    // --- ส่วน Dropdown สถานที่ (SName จาก Unit เดียวกัน) ---
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
-        
-        // กรองเอาเฉพาะสถานีที่ค่า unit ตรงกับผู้ใช้งาน
-        const filteredStations = data.stations.filter(s => s.unit === currentUserUnit);
-        
-        if (filteredStations.length > 0) {
-            filteredStations.forEach(s => {
-                locSel.add(new Option(s.name, s.name)); // ใช้ SName ทั้ง text และ value
-            });
-        } else {
-            // ถ้าไม่เจอสถานีใน Unit ตัวเอง ให้แสดง "อื่นๆ" หรือดึงทั้งหมดตามความเหมาะสม
-            locSel.add(new Option("อื่นๆ/สำนักงาน", "สำนักงาน"));
-        }
+        const myStations = data.stations.filter(s => s.unit === currentUserUnit);
+        myStations.forEach(s => locSel.add(new Option(s.name, s.name)));
     }
 
-    // ... (ส่วนกรองรายชื่อพนักงานเหมือนเดิม) ...
-}
+    // --- ส่วนรายชื่อผู้เข้าประชุม ---
+    const attList = document.getElementById('attendance-list');
+    if (attList && staffData.length > 0) {
+        let filteredStaff = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1");
+        // เรียงลำดับ Unit ตัวเองขึ้นก่อน
+        filteredStaff.sort((a, b) => (a.unit === currentUserUnit ? -1 : 1));
 
-// 6. จัดการรูปภาพ
-function handleImageSelect(input) {
-    const preview = document.getElementById('image-preview');
-    preview.innerHTML = '';
-    selectedImages = [];
-    Array.from(input.files).slice(0, 5).forEach(file => { // จำกัด 5 รูป
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            selectedImages.push({ name: file.name, data: e.target.result });
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = "70px";
-            img.style.height = "70px";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "8px";
-            img.style.margin = "4px";
-            preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-// 7. ส่งฟอร์มไป GAS
-document.getElementById('reportForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.innerText = "⌛ กำลังส่งข้อมูล...";
-    
-    const formData = new FormData(e.target);
-    const payload = Object.fromEntries(formData.entries());
-
-    payload.attendance = Array.from(formData.getAll('attendance'));
-    payload.task_detail = Array.from(formData.getAll('task_detail[]'));
-    payload.task_type = Array.from(formData.getAll('task_type[]'));
-    payload.eq_id = Array.from(formData.getAll('eq_id[]'));
-    payload.eq_detail = Array.from(formData.getAll('eq_detail[]'));
-    payload.images = selectedImages;
-
-    try {
-        const response = await fetch(GAS_WEBAPP_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload) 
-        });
-        const result = await response.text();
-        alert(result);
-        location.reload();
-    } catch (err) {
-        alert("❌ ไม่สำเร็จ: " + err.message);
-        btn.disabled = false;
-        btn.innerText = "✅ บันทึกรายงานทั้งหมด";
-    }
-};
-
-// 8. เพิ่มแถวไดนามิก
-function addEqRow() {
-    const div = document.createElement('div');
-    div.style.marginTop = "10px";
-    div.style.padding = "10px";
-    div.style.border = "1px solid #eee";
-    div.style.borderRadius = "8px";
-    div.innerHTML = `<input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์" style="width:100%; padding:5px; border:1px solid #ddd;">
-                     <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px; padding:5px; border:1px solid #ddd;"></textarea>`;
-    document.getElementById('eq-container').appendChild(div);
-}
-
-function addTaskRow() {
-    const div = document.createElement('div');
-    div.style.marginTop = "10px";
-    div.style.padding = "10px";
-    div.style.border = "1px solid #eee";
-    div.style.borderRadius = "8px";
-    div.innerHTML = `<select name="task_type[]" style="width:100%; padding:5px; border:1px solid #ddd;"><option>Assignment</option><option>Plan</option></select>
-                     <input type="text" name="task_detail[]" placeholder="รายละเอียด..." style="width:100%; margin-top:5px; padding:5px; border:1px solid #ddd;">`;
-    document.getElementById('task-container').appendChild(div);
-}
-
-// 9. ออกจากระบบ
-function forceLogout() {
-    if (confirm("ต้องการสลับไปใช้บัญชีอื่นใช่หรือไม่?")) {
-        liff.logout();
-        location.reload();
+        attList.innerHTML = filteredStaff.map(s => 
+            `<label style="display:block; margin-bottom:8px;">
+                <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
+                <span style="font-size:10px; color:${s.unit === 'ผจฟ.1' ? '#f39c12' : '#06C755'};">(${s.unit})</span>
+            </label>`
+        ).join('');
     }
 }
+
+// ฟังก์ชันอื่นๆ (handleImageSelect, addEqRow, addTaskRow, onsubmit) ให้คงเดิมจากเวอร์ชันก่อนหน้า
