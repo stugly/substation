@@ -8,12 +8,11 @@ window.onload = function() {
     initLiff();
 };
 
-// 2. ตรวจสอบการ Login ด้วย LIFF (หน้าเขียว LINE จะขึ้นตรงนี้)
+// 2. ตรวจสอบการ Login ด้วย LIFF
 async function initLiff() {
     try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
-            // ถ้ายังไม่ Login หรือต้องการเปลี่ยน Account หน้า LINE มาตรฐานจะแสดงตรงนี้
             liff.login(); 
         } else {
             const profile = await liff.getProfile();
@@ -31,17 +30,14 @@ async function loadAppData(profile) {
         const data = await response.json();
         staffData = data.staff || [];
         
-        // เรียกใช้ฟังก์ชันเตรียมข้อมูล (ที่เคย Error ว่าหาไม่เจอ)
         setupMetadata(data);
-        
-        // ตรวจสอบสิทธิ์พนักงาน
         checkAccess(profile);
     } catch (err) {
         console.error("Data Load Error:", err);
     }
 }
 
-// 4. เตรียม Dropdown และ Checkbox
+// 4. เตรียม Dropdown และ Checkbox รายชื่อพนักงาน
 function setupMetadata(data) {
     const uSel = document.getElementById('unit');
     if (uSel) { uSel.innerHTML = ""; data.units.forEach(u => uSel.add(new Option(u, u))); }
@@ -57,7 +53,7 @@ function setupMetadata(data) {
     }
 }
 
-// 5. เช็คสิทธิ์เพื่อเข้าหน้าแอป
+// 5. เช็คสิทธิ์พนักงาน
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
     if (user) {
@@ -73,22 +69,7 @@ function checkAccess(profile) {
     }
 }
 
-// 6. จัดการระบบ Tab
-function showTab(evt, tabId, tabName) {
-    const contents = document.getElementsByClassName("tab-content");
-    for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
-    
-    const target = document.getElementById(tabId);
-    if (target) target.style.display = "block";
-
-    const circles = document.getElementsByClassName("step-circle");
-    for (let i = 0; i < circles.length; i++) circles[i].classList.remove("active");
-    
-    evt.currentTarget.classList.add("active");
-    document.getElementById('current-tab-title').innerText = tabName;
-}
-
-// 7. จัดการรูปภาพ
+// 6. จัดการรูปภาพ
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
@@ -105,53 +86,75 @@ function handleImageSelect(input) {
     });
 }
 
-// 8. ส่งฟอร์มไป GAS
+// 7. ส่งฟอร์มไป GAS (เพิ่มการเก็บค่าตัวแปรใหม่ๆ ให้ครบทุก Sheet)
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
-    btn.innerText = "⌛ กำลังส่ง...";
+    btn.innerText = "⌛ กำลังส่งข้อมูล...";
     
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
+
+    // ดึงค่าที่เป็น Array
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.task_detail = Array.from(formData.getAll('task_detail[]'));
     payload.task_type = Array.from(formData.getAll('task_type[]'));
     payload.eq_id = Array.from(formData.getAll('eq_id[]'));
     payload.eq_detail = Array.from(formData.getAll('eq_detail[]'));
+
+    // ดึงค่าตัวแปรจากกล่องข้อความที่เพิ่มเข้ามา (Tab 3-5)
+    payload.site_detail = formData.get('site_detail') || "";
+    payload.procure_detail = formData.get('procure_detail') || "";
+    payload.assets_detail = formData.get('assets_detail') || "";
+    payload.other_detail = formData.get('other_detail') || "";
+    
     payload.images = selectedImages;
 
     try {
-        const response = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(GAS_WEBAPP_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
         const result = await response.text();
         alert(result);
         location.reload();
     } catch (err) {
-        alert("❌ ไม่สำเร็จ");
+        alert("❌ ไม่สำเร็จ: " + err.message);
         btn.disabled = false;
         btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
 
-// 9. เพิ่มแถวไดนามิก
+// 8. เพิ่มแถวไดนามิก (ซ่อมบำรุง และ ภารกิจ)
 function addEqRow() {
     const div = document.createElement('div');
-    div.className = "card"; div.style.marginTop = "10px";
-    div.innerHTML = `<input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์" style="width:100%;">
-                     <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px;"></textarea>`;
+    div.className = "dynamic-row card-inner"; 
+    div.style.marginTop = "10px";
+    div.style.padding = "10px";
+    div.style.border = "1px solid #eee";
+    div.style.borderRadius = "8px";
+    div.innerHTML = `<input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์" style="width:100%; border: 1px solid #ddd; padding: 5px;">
+                     <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px; border: 1px solid #ddd; padding: 5px;"></textarea>`;
     document.getElementById('eq-container').appendChild(div);
 }
 
 function addTaskRow() {
     const div = document.createElement('div');
-    div.className = "card"; div.style.marginTop = "10px";
-    div.innerHTML = `<select name="task_type[]" style="width:100%"><option>Assignment</option><option>Plan</option></select>
-                     <input type="text" name="task_detail[]" placeholder="รายละเอียด..." style="width:100%; margin-top:5px;">`;
+    div.className = "dynamic-row card-inner";
+    div.style.marginTop = "10px";
+    div.style.padding = "10px";
+    div.style.border = "1px solid #eee";
+    div.style.borderRadius = "8px";
+    div.innerHTML = `<select name="task_type[]" style="width:100%; border: 1px solid #ddd; padding: 5px;"><option>Assignment</option><option>Plan</option></select>
+                     <input type="text" name="task_detail[]" placeholder="รายละเอียด..." style="width:100%; margin-top:5px; border: 1px solid #ddd; padding: 5px;">`;
     document.getElementById('task-container').appendChild(div);
 }
 
-// 10. ออกจากระบบ
+// 9. ออกจากระบบ
 function forceLogout() {
-    liff.logout();
-    location.reload();
+    if (confirm("ต้องการสลับไปใช้บัญชีอื่นใช่หรือไม่?")) {
+        liff.logout();
+        location.reload();
+    }
 }
