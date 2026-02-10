@@ -158,3 +158,8 @@ function forceLogout() {
         location.reload();
     }
 }
+
+if (profile.pictureUrl) {
+    document.getElementById('user-avatar-placeholder').innerHTML = 
+        `<img src="${profile.pictureUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">`;
+}

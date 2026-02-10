@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Argus - Meeting</title>
+    <title>Argus - Report</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     
     <style>
-        /* ส่วนที่ CSS หลักของคุณไม่มี คือ "ที่คั่นแฟ้ม" จึงต้องใส่เพิ่มนิดหน่อยครับ */
-        .step-nav { display: flex; padding: 0 10px; gap: 2px; margin-top: 20px; }
-        .step-tab { flex: 1; height: 35px; background: #e9ecef; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; }
-        .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; }
+        /* เขียนเพิ่มเฉพาะส่วนที่ CSS หลักไม่มีจริงๆ คือ Tab */
+        .step-nav { display: flex; padding: 0 10px; gap: 4px; margin-top: 20px; }
+        .step-tab { flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; }
+        .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; z-index: 5; }
+        
+        /* ซ่อน Tab ที่ไม่ได้เลือก */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        /* ปรับ Container ให้รับกับ CSS หลักของคุณ */
-        .container { margin-top: -30px; }
+
+        /* ปรับแต่ง Check-list เล็กน้อย */
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
+        .preview-img-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div>กำลังประมวลผล...</div>
+        <div id="spinner-text">กำลังประมวลผล...</div>
     </div>
 
     <div class="header">
@@ -32,31 +36,107 @@
     </div>
 
     <div class="container" id="main-app" style="display:none;">
+        
         <div class="card">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <img id="profileImg" src="" style="width:45px; height:45px; border-radius:50%; display:none;">
+                <div id="user-avatar-placeholder">
+                    <i class="fa-solid fa-circle-user" style="font-size: 40px; color: #ccc;"></i>
+                </div>
                 <div id="welcome" style="font-weight:600;">สวัสดี, กำลังโหลด...</div>
+                <div style="margin-left: auto;" onclick="forceLogout()">
+                    <i class="fa-solid fa-right-from-bracket" style="color: #ccc;"></i>
+                </div>
             </div>
         </div>
 
         <div class="step-nav">
-            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูล</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ผลงาน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.อุปกรณ์</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.ภารกิจ</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.รูปภาพ</div>
+            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.หลัก</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.งาน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.ซ่อม</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.แผน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.รูป</div>
         </div>
 
         <form id="reportForm">
             <div id="tab-1" class="tab-content active">
                 <div class="card">
                     <label class="form-label">หน่วยงาน</label>
-                    <select id="unit" name="unit"></select>
+                    <select id="unit" name="unit" required></select>
+                    <label class="form-label" style="margin-top:10px;">เดือนที่รายงาน</label>
+                    <select id="month" name="month" required></select>
+                </div>
+                <div class="card">
+                    <label class="form-label">รายชื่อผู้เข้าประชุม</label>
+                    <div id="attendance-list" class="check-list"></div>
                 </div>
             </div>
-            </form>
+
+            <div id="tab-2" class="tab-content">
+                <div class="card">
+                    <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                    <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
+                </div>
+            </div>
+
+            <div id="tab-3" class="tab-content">
+                <div class="card">
+                    <label class="form-label">รายการอุปกรณ์ชำรุด</label>
+                    <div id="eq-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
+                    
+                    <label class="form-label" style="margin-top:20px;">บำรุงรักษาพื้นที่ (Site Maint)</label>
+                    <textarea name="site_detail" rows="4" placeholder="รายละเอียด..."></textarea>
+                </div>
+            </div>
+
+            <div id="tab-4" class="tab-content">
+                <div class="card">
+                    <label class="form-label">ภารกิจมอบหมาย / แผนงาน</label>
+                    <div id="task-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
+                </div>
+                <div class="card">
+                    <label class="form-label">งานจัดซื้อ (Procurement)</label>
+                    <textarea name="procure_detail" rows="3"></textarea>
+                    <label class="form-label" style="margin-top:10px;">ทรัพย์สิน (Assets)</label>
+                    <textarea name="assets_detail" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div id="tab-5" class="tab-content">
+                <div class="card">
+                    <label class="form-label">รูปภาพประกอบรายงาน</label>
+                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                    <div id="image-preview" class="preview-img-container"></div>
+                </div>
+                <div class="card">
+                    <label class="form-label">ข้อมูลอื่นๆ (Visitor / Leave / KM)</label>
+                    <textarea name="other_detail" rows="4"></textarea>
+                </div>
+            </div>
+
+            <input type="hidden" name="recorder_uid" id="recorder_uid">
+            <input type="hidden" name="recorder_line" id="recorder_line">
+            
+            <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin-top: 20px; margin-bottom: 60px;">
+                ✅ บันทึกรายงานทั้งหมด
+            </button>
+        </form>
     </div>
 
+    <script>
+        function showTab(evt, tabId) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
+            document.getElementById(tabId).style.display = "block";
+
+            const tabs = document.getElementsByClassName("step-tab");
+            for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+            evt.currentTarget.classList.add("active");
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
     <script src="script.js?v=5.8"></script>
 </body>
 </html>
