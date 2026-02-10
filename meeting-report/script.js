@@ -29,6 +29,7 @@ window.onload = async () => {
     }
 };
 
+
 function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
         if (!liff.isLoggedIn()) {
@@ -42,6 +43,7 @@ function initLiff() {
         console.error("LIFF Initialization failed", err);
     });
 }
+
 
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
