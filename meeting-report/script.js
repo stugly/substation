@@ -216,33 +216,48 @@ function addEqRow() {
 
 function addTaskRow() {
     const container = document.getElementById('task-container');
-    const rows = container.getElementsByClassName('task-row');
     
-    // ตรวจสอบช่องว่างก่อนเพิ่มแถวใหม่
-    if (rows.length > 0) {
-        const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
-        if (lastInput && lastInput.value.trim() === "") {
-            alert("กรุณากรอกรายละเอียดงานในช่องก่อนหน้าก่อนครับ");
-            lastInput.focus();
-            return;
-        }
-    }
-
     const div = document.createElement('div');
     div.className = "task-row";
     
     div.innerHTML = `
-        <div class="task-header">
-            <select name="task_type[]">
-                <option value="มอบหมาย">🚩 งานมอบหมาย</option>
-                <option value="แผนงาน">📅 แผนประจำเดือน</option>
-            </select>
-            <button type="button" onclick="this.parentElement.parentElement.remove()" 
-                    style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 5px;">
-                <i class="fa-solid fa-trash-can"></i> ลบ
-            </button>
-        </div>
-        <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียดงานที่นี่..." required>
+        <select name="task_type[]">
+            <option value="มอบหมาย">🚩 งานมอบหมาย</option>
+            <option value="แผนงาน">📅 แผนประจำเดือน</option>
+        </select>
+        <input type="text" name="task_detail[]" placeholder="รายละเอียดงาน..." 
+               oninput="validateTaskInput()" required>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); validateTaskInput();">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
+    
+    // ทุกครั้งที่เพิ่มแถวใหม่ ให้ปิดปุ่มเพิ่มไว้ก่อนจนกว่าจะพิมพ์ในแถวใหม่
+    validateTaskInput();
+}
+
+function validateTaskInput() {
+    const container = document.getElementById('task-container');
+    const rows = container.getElementsByClassName('task-row');
+    const addBtn = document.getElementById('btn-add-task');
+
+    if (rows.length === 0) {
+        addBtn.disabled = true;
+        return;
+    }
+
+    // ดึงช่อง Input ของแถวสุดท้าย
+    const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
+    
+    // ถ้าไม่มีข้อมูล หรือ มีแต่ Space bar (.trim() จะได้ค่าว่าง)
+    if (!lastInput || lastInput.value.trim() === "") {
+        addBtn.disabled = true;
+        addBtn.style.opacity = "0.5"; // ทำให้ปุ่มดูจางลงเวลาใช้งานไม่ได้
+        addBtn.style.cursor = "not-allowed";
+    } else {
+        addBtn.disabled = false;
+        addBtn.style.opacity = "1";
+        addBtn.style.cursor = "pointer";
+    }
 }
