@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
+        /* คงไว้เฉพาะ Style ที่จำเป็นสำหรับ Tab และความต่อเนื่องของ UI */
         * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
-        .header { background-color: #06C755 !important; padding: 45px 15px 55px 15px !important; border-radius: 0 0 30px 30px !important; }
-        .container { margin-top: -35px !important; padding-bottom: 50px; }
-
-        /* Folder Tabs Style */
+        
+        /* สไตล์แท็บที่คั่นแฟ้มแบบเชื่อมเนื้อหา */
         .step-nav { display: flex; justify-content: flex-start; margin: 20px 0 0 0; padding: 0 10px; gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .step-tab { flex: 1; min-width: 85px; height: 38px; border-radius: 12px 12px 0 0; border: 1px solid #ddd; border-bottom: none; background: #e9ecef; color: #888; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 1; white-space: nowrap; }
         .step-tab.active { background: #fff !important; color: #06C755 !important; font-weight: 600; height: 44px; margin-top: -6px; border-top: 3px solid #06C755; border-left: 1px solid #ddd; border-right: 1px solid #ddd; z-index: 3; font-size: 12px; }
@@ -39,19 +38,25 @@
     </div>
 
     <div id="main-app" style="display:none;">
-        <div class="header"><h2>Meeting Report</h2></div>
-        
-        <div class="container">
-            <div class="card" style="border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; padding: 15px; border-radius: 15px; background: #fff;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fa-solid fa-circle-user" style="font-size: 28px; color: #06C755;"></i>
-                        <div id="welcome" style="font-weight:600;"></div>
+        <div class="header">
+            <div class="header-content">
+                <h2>Meeting Report</h2>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar-placeholder">
+                        <i class="fa-solid fa-circle-user"></i>
                     </div>
-                    <button type="button" onclick="forceLogout()" style="font-size: 11px; color: #888; border: none; background: none; text-decoration: underline;">สลับบัญชี</button>
+                    <div class="user-details">
+                        <span class="user-name" id="welcome">กำลังโหลด...</span>
+                        <span class="user-status">ออนไลน์</span>
+                    </div>
+                    <div class="logout-btn" onclick="forceLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
                 </div>
             </div>
+        </div>
 
+        <div class="container">
             <div class="step-nav">
                 <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
                 <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ดำเนินงาน</div>
@@ -142,20 +147,17 @@
 
     <script>
         function showTab(evt, tabId) {
-            // 1. ซ่อนทุก Tab Content
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
                 contents[i].style.display = "none";
                 contents[i].classList.remove("active");
             }
-            // 2. แสดง Tab ที่เลือก (ใช้ ID ที่ส่งมา)
             const target = document.getElementById(tabId);
             if (target) {
                 target.style.display = "block";
                 target.classList.add("active");
             }
 
-            // 3. เปลี่ยนสถานะปุ่มเมนู
             const tabs = document.getElementsByClassName("step-tab");
             for (let i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove("active");
