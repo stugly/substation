@@ -3,12 +3,10 @@ const LIFF_ID = "2008876139-kiwCd2kF";
 let staffData = [];
 let selectedImages = [];
 
-// 1. เริ่มรันระบบ
 window.onload = function() {
     initLiff();
 };
 
-// 2. ตรวจสอบการ Login ด้วย LIFF
 async function initLiff() {
     try {
         await liff.init({ liffId: LIFF_ID });
@@ -23,13 +21,11 @@ async function initLiff() {
     }
 }
 
-// 3. ดึงข้อมูลจาก GAS หลัง Login สำเร็จ
 async function loadAppData(profile) {
     try {
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         staffData = data.staff || [];
-        
         setupMetadata(data);
         checkAccess(profile);
     } catch (err) {
@@ -37,7 +33,6 @@ async function loadAppData(profile) {
     }
 }
 
-// 4. เตรียม Dropdown และ Checkbox รายชื่อพนักงาน
 function setupMetadata(data) {
     const uSel = document.getElementById('unit');
     if (uSel) { uSel.innerHTML = ""; data.units.forEach(u => uSel.add(new Option(u, u))); }
@@ -53,13 +48,22 @@ function setupMetadata(data) {
     }
 }
 
-// 5. เช็คสิทธิ์พนักงาน
+// 5. เช็คสิทธิ์และแสดงข้อมูลพนักงาน (ปรับให้เหมือน Argus)
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
     if (user) {
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
-        document.getElementById('welcome').innerText = user.name;
+        
+        // ใส่ชื่อ
+        document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
+        
+        // ใส่รูปโปรไฟล์ลงใน Placeholder ที่เราทำไว้ใน HTML
+        const avatarBox = document.getElementById('user-avatar-placeholder');
+        if (avatarBox && profile.pictureUrl) {
+            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">`;
+        }
+
         document.getElementById('recorder_uid').value = user.uid;
         document.getElementById('recorder_line').value = user.line;
     } else {
@@ -69,7 +73,6 @@ function checkAccess(profile) {
     }
 }
 
-// 6. จัดการรูปภาพ
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
@@ -86,7 +89,6 @@ function handleImageSelect(input) {
     });
 }
 
-// 7. ส่งฟอร์มไป GAS (เพิ่มการเก็บค่าตัวแปรใหม่ๆ ให้ครบทุก Sheet)
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
@@ -96,19 +98,12 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
 
-    // ดึงค่าที่เป็น Array
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.task_detail = Array.from(formData.getAll('task_detail[]'));
     payload.task_type = Array.from(formData.getAll('task_type[]'));
     payload.eq_id = Array.from(formData.getAll('eq_id[]'));
     payload.eq_detail = Array.from(formData.getAll('eq_detail[]'));
 
-    // ดึงค่าตัวแปรจากกล่องข้อความที่เพิ่มเข้ามา (Tab 3-5)
-    payload.site_detail = formData.get('site_detail') || "";
-    payload.procure_detail = formData.get('procure_detail') || "";
-    payload.assets_detail = formData.get('assets_detail') || "";
-    payload.other_detail = formData.get('other_detail') || "";
-    
     payload.images = selectedImages;
 
     try {
@@ -126,10 +121,8 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     }
 };
 
-// 8. เพิ่มแถวไดนามิก (ซ่อมบำรุง และ ภารกิจ)
 function addEqRow() {
     const div = document.createElement('div');
-    div.className = "dynamic-row card-inner"; 
     div.style.marginTop = "10px";
     div.style.padding = "10px";
     div.style.border = "1px solid #eee";
@@ -141,7 +134,6 @@ function addEqRow() {
 
 function addTaskRow() {
     const div = document.createElement('div');
-    div.className = "dynamic-row card-inner";
     div.style.marginTop = "10px";
     div.style.padding = "10px";
     div.style.border = "1px solid #eee";
@@ -151,15 +143,9 @@ function addTaskRow() {
     document.getElementById('task-container').appendChild(div);
 }
 
-// 9. ออกจากระบบ
 function forceLogout() {
     if (confirm("ต้องการสลับไปใช้บัญชีอื่นใช่หรือไม่?")) {
         liff.logout();
         location.reload();
     }
-}
-
-if (profile.pictureUrl) {
-    document.getElementById('user-avatar-placeholder').innerHTML = 
-        `<img src="${profile.pictureUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">`;
 }
