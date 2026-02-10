@@ -76,11 +76,13 @@ function handleImageSelect(input) {
     });
 }
 
-function showTab(evt, tabId) {
+function showTab(evt, tabId, tabName) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     evt.currentTarget.classList.add('active');
+    // อัปเดตชื่อ Tab ที่หัวข้อ
+    document.getElementById('tab-name').innerText = tabName;
 }
 
 document.getElementById('reportForm').onsubmit = async (e) => {

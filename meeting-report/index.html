@@ -5,91 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monthly Meeting Report</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-        /* ตัวหมุนรอขณะโหลด เหมือน Argus */
+        /* บังคับใช้ฟอนต์ Kanit กับทั้งหน้า */
+        * { font-family: 'Kanit', sans-serif !important; }
+        
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; }
-        .tab-content { display: none; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
+        
+        /* สไตล์หน้าเนื้อหา */
+        .tab-content { display: none; margin-top: 10px; }
         .tab-content.active { display: block; }
-        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin: 5px; }
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f9f9f9; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+        
+        /* ปรับแต่ง Tab Nav ให้ดูเป็นระเบียบแบบปุ่มกด */
+        .tab-nav { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { 
+            flex: 0 0 auto; padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; 
+            background: #fff; cursor: pointer; font-size: 13px; transition: 0.3s;
+        }
+        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; font-weight: 500; }
+        
+        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; margin: 5px; border: 1px solid #eee; }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+        
+        /* ตกแต่งส่วนหัว Welcome เพิ่มเติม */
+        .welcome-box { display: flex; align-items: center; gap: 10px; }
+        .welcome-text { font-size: 14px; font-weight: 300; opacity: 0.9; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
+        <div style="margin-top:15px; font-weight: 400; color: #666;">กำลังตรวจสอบสิทธิ์...</div>
+        <div style="margin-top: 30px;">
+            <button type="button" class="btn-secondary" onclick="forceLogout()" style="font-size: 11px; padding: 6px 12px; border-radius: 15px;">
+                Login to another account
+            </button>
+        </div>
     </div>
 
-    <div id="main-app" class="container" style="display:none;">
+    <div id="main-app" style="display:none;">
         <div class="header">
             <h2>Meeting Report</h2>
-            <div id="welcome" style="font-size: 14px; font-weight: 600; color: #28a745;"></div>
         </div>
 
-        <div class="tab-nav" style="display: flex; overflow-x: auto; gap: 5px; margin-bottom: 10px;">
-            <button class="tab-btn active" onclick="showTab(event, 'tab-general')">1. General</button>
-            <button class="tab-btn" onclick="showTab(event, 'tab-op')">2. Operation</button>
-            <button class="tab-btn" onclick="showTab(event, 'tab-maint')">3. Maint</button>
-            <button class="tab-btn" onclick="showTab(event, 'tab-task')">4. Task/Plan</button>
-            <button class="tab-btn" onclick="showTab(event, 'tab-pics')">5. Pics</button>
+        <div class="container">
+            <div class="card" style="margin-bottom: 15px;">
+                <div class="welcome-box">
+                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
+                    <div id="welcome" class="welcome-text">กำลังโหลดข้อมูล...</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; font-weight: 500; font-size: 16px; color: #333;">
+                <i class="fa-solid fa-file-pen" style="color: #28a745; margin-right: 5px;"></i> 
+                บันทึกรายงาน <span id="tab-name" style="color: #28a745;">1. General</span>
+            </div>
+
+            <div class="tab-nav">
+                <button type="button" class="tab-btn active" onclick="showTab(event, 'tab-general', '1. General')">1</button>
+                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-op', '2. Operation')">2</button>
+                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-maint', '3. Maint')">3</button>
+                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-task', '4. Task/Plan')">4</button>
+                <button type="button" class="tab-btn" onclick="showTab(event, 'tab-pics', '5. Pics')">5</button>
+            </div>
+
+            <form id="reportForm">
+                <div id="tab-general" class="tab-content active">
+                    <div class="card">
+                        <label class="form-label">หน่วยงาน</label>
+                        <select name="unit" id="unit" required></select>
+                        <label class="form-label">เดือน</label>
+                        <select name="month" id="month" required></select>
+                        <label class="form-label">วันที่ประชุม</label>
+                        <input type="date" name="date" required>
+                    </div>
+                    <div class="card">
+                        <label class="form-label">รายชื่อผู้เข้าประชุม (Attendance)</label>
+                        <div id="attendance-list" class="check-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-op" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">สรุปผลการดำเนินงาน</label>
+                        <textarea name="op_detail" rows="4" placeholder="กรอกรายละเอียดการดำเนินงาน..."></textarea>
+                    </div>
+                </div>
+
+                <div id="tab-maint" class="tab-content">
+                    <div class="card">
+                        <div id="eq-container"></div>
+                        <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">
+                            <i class="fa-solid fa-plus"></i> เพิ่มอุปกรณ์ชำรุด
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tab-task" class="tab-content">
+                    <div class="card">
+                        <div id="task-container"></div>
+                        <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">
+                            <i class="fa-solid fa-plus"></i> เพิ่มภารกิจ/แผนงาน
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tab-pics" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">แนบรูปภาพ (สร้าง Folder อัตโนมัติ)</label>
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="padding: 10px 0;">
+                        <div id="image-preview" class="preview-container"></div>
+                    </div>
+                    <input type="hidden" name="recorder_uid" id="recorder_uid">
+                    <input type="hidden" name="recorder_line" id="recorder_line">
+                </div>
+
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin-top: 20px; font-size: 18px; padding: 15px;">
+                    ✅ บันทึกรายงานทั้งหมด
+                </button>
+            </form>
         </div>
-
-        <form id="reportForm">
-            <div id="tab-general" class="tab-content active">
-                <div class="card">
-                    <label>หน่วยงาน</label>
-                    <select name="unit" id="unit" required></select>
-                    <label>เดือน</label>
-                    <select name="month" id="month" required></select>
-                    <label>วันที่ประชุม</label>
-                    <input type="date" name="date" required>
-                </div>
-                <div class="card">
-                    <label>รายชื่อผู้เข้าประชุม (Attendance)</label>
-                    <div id="attendance-list" class="check-list"></div>
-                </div>
-            </div>
-
-            <div id="tab-op" class="tab-content">
-                <div class="card">
-                    <label>สรุปผลการดำเนินงาน</label>
-                    <textarea name="op_detail" rows="4"></textarea>
-                </div>
-            </div>
-
-            <div id="tab-maint" class="tab-content">
-                <div class="card">
-                    <div id="eq-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มอุปกรณ์ชำรุด</button>
-                </div>
-            </div>
-
-            <div id="tab-task" class="tab-content">
-                <div class="card">
-                    <div id="task-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ/แผนงาน</button>
-                </div>
-            </div>
-
-            <div id="tab-pics" class="tab-content">
-                <div class="card">
-                    <label>แนบรูปภาพ (สร้าง Folder อัตโนมัติ)</label>
-                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-                    <div id="image-preview" class="preview-container"></div>
-                </div>
-                <input type="hidden" name="recorder_uid" id="recorder_uid">
-                <input type="hidden" name="recorder_line" id="recorder_line">
-            </div>
-
-            <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin-top: 20px; font-size: 18px;">
-                ✅ บันทึกรายงานทั้งหมด
-            </button>
-        </form>
     </div>
 
-    <script src="script.js?v=1.0"></script>
+    <script src="script.js?v=1.1"></script>
 </body>
 </html>
