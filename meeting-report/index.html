@@ -10,55 +10,40 @@
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
         * { font-family: 'Kanit', sans-serif !important; }
+        /* Spinner แบบมาตรฐานไว้รอโหลด Metadata */
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
         
-        /* แก้ Header ให้สีเขียว Argus และมนล่าง */
+        /* สไตล์ Header และ Container แบบ Argus */
         .header { background-color: #06C755 !important; padding: 45px 15px 55px 15px !important; border-radius: 0 0 30px 30px !important; }
-        .header h2 { color: #fff !important; margin: 0; font-weight: 600; }
-
-        /* ปรับ Container ให้เกยขึ้น */
         .container { margin-top: -35px !important; padding-bottom: 50px; }
 
-        /* สไตล์ Tab 1-5 */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .step-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .step-circle { 
-            width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; 
-            background: #fff; font-weight: 600; color: #888; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .step-circle { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; background: #fff; font-weight: 600; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .step-circle.active { background: #06C755 !important; color: #fff !important; border-color: #06C755 !important; transform: scale(1.1); }
-        
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd; }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
-        <div id="spinner-action" style="margin-top: 25px;"></div>
+        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังโหลด...</div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
             <h2>Meeting Report</h2>
         </div>
-
         <div class="container">
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-circle-user" style="font-size: 28px; color: #06C755;"></i>
-                        <div>
-                            <div id="welcome" style="font-weight:600; font-size: 15px;"></div>
-                            <div style="font-size: 11px; color: #888;">ตรวจพบการเข้าสู่ระบบ</div>
-                        </div>
+                        <div id="welcome" style="font-weight:600;"></div>
                     </div>
-                    <button type="button" onclick="forceLogout()" style="font-size: 11px; padding: 6px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #666;">
-                        ไม่ใช่ฉัน? สลับบัญชี
-                    </button>
+                    <button type="button" onclick="forceLogout()" style="font-size: 11px; color: #888; border: none; background: none; text-decoration: underline;">สลับบัญชี</button>
                 </div>
             </div>
 
@@ -70,9 +55,7 @@
                 <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
             </div>
 
-            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px; font-weight: 500;">
-                1. ข้อมูลทั่วไป
-            </h3>
+            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px;">1. ข้อมูลทั่วไป</h3>
 
             <form id="reportForm">
                 <div id="tab-general" class="tab-content active">
@@ -83,28 +66,19 @@
                         <select id="month" name="month" required></select>
                     </div>
                     <div class="card">
-                        <label class="form-label">ผู้เข้าประชุม (Attendance)</label>
+                        <label class="form-label">ผู้เข้าประชุม</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
 
-                <div id="tab-op" class="tab-content">
-                    <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียด..."></textarea>
-                    </div>
-                </div>
-
+                <div id="tab-op" class="tab-content"><div class="card"><textarea name="op_detail" rows="10"></textarea></div></div>
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
-
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0;">
-                    ✅ บันทึกรายงานทั้งหมด
-                </button>
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">✅ บันทึกรายงานทั้งหมด</button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=3.2"></script>
+    <script src="script.js?v=4.0"></script>
 </body>
 </html>
