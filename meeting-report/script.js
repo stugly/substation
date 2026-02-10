@@ -270,8 +270,8 @@ function addTaskRow() {
     
     div.innerHTML = `
         <select name="task_type[]">
-            <option value="มอบหมาย">🚩 มอบหมาย</option>
-            <option value="แผนงาน">📅 แผนงาน</option>
+            <option value="งานที่ได้รับมอบหมาย">🚩 งานที่ได้รับมอบหมาย</option>
+            <option value="แผนงานดำเนินงานประจำเดือน">📅 แผนงานดำเนินงานประจำเดือน</option>
         </select>
         <input type="text" name="task_detail[]" placeholder="รายละเอียด..." 
                oninput="validateTaskInput()" required>
