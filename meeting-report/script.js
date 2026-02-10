@@ -52,24 +52,25 @@ function setupMetadata(data) {
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
     if (user) {
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        
-        // ใส่ชื่อ
+        // 1. ใส่ชื่อพนักงาน
         document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
         
-        // ใส่รูปโปรไฟล์ลงใน Placeholder ที่เราทำไว้ใน HTML
+        // 2. ใส่รูป Profile (ถ้ามี)
         const avatarBox = document.getElementById('user-avatar-placeholder');
         if (avatarBox && profile.pictureUrl) {
-            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">`;
+            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" alt="profile">`;
         }
 
+        // 3. ปิด Spinner และเปิดหน้าแอป
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+
+        // 4. บันทึกค่า UID/LINE
         document.getElementById('recorder_uid').value = user.uid;
         document.getElementById('recorder_line').value = user.line;
     } else {
-        document.getElementById('spinner-text').innerHTML = 
-            `<b style="color:red">ไม่พบสิทธิ์สำหรับ ID: ${profile.userId}</b><br>
-             <button onclick="forceLogout()" style="margin-top:10px; border:1px solid #ccc; padding:5px 10px; border-radius:10px;">สลับบัญชี</button>`;
+        // กรณีไม่มีสิทธิ์...
+        document.getElementById('spinner-text').innerHTML = `<b style="color:red">ไม่พบสิทธิ์การใช้งาน</b>`;
     }
 }
 
