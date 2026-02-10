@@ -2,34 +2,31 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monthly Meeting Report</title>
-    <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-        /* เพิ่มเติมเล็กน้อยเพื่อจัดการ Tab และ Preview รูปภาพ */
-        #main-app { display: none; padding: 15px; }
-        .tab-content { display: none; background: #fff; padding: 20px; border-radius: 8px; margin-top: 10px; }
+        /* ตัวหมุนรอขณะโหลด เหมือน Argus */
+        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; }
+        .tab-content { display: none; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-top: 10px; }
         .tab-content.active { display: block; }
-        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin: 5px; border: 1px solid #ddd; }
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; border-radius: 8px; max-height: 200px; overflow-y: auto; }
-        .btn-line { background: #06C755; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; width: 100%; max-width: 300px; }
+        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin: 5px; }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f9f9f9; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh;">
-        <img src="https://stugly.github.io/substation/logo.png" width="100" style="margin-bottom: 20px;">
-        <h3>Meeting Report System</h3>
-        <p style="margin-bottom: 20px;">กรุณาเข้าสู่ระบบด้วย LINE</p>
-        <button class="btn-line" onclick="liff.login()">Login with LINE</button>
+    <div id="spinner">
+        <div class="loader"></div>
+        <div style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
     </div>
 
-    <div id="main-app">
-        <div class="header" style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #28a745;">Monthly Meeting Report</h2>
-            <p id="user-display" style="font-weight: bold; color: #555;"></p>
+    <div id="main-app" class="container" style="display:none;">
+        <div class="header">
+            <h2>Meeting Report</h2>
+            <div id="welcome" style="font-size: 14px; font-weight: 600; color: #28a745;"></div>
         </div>
 
         <div class="tab-nav" style="display: flex; overflow-x: auto; gap: 5px; margin-bottom: 10px;">
@@ -42,56 +39,53 @@
 
         <form id="reportForm">
             <div id="tab-general" class="tab-content active">
-                <label>หน่วยงาน</label>
-                <select name="unit" id="unit" required></select>
-                
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex: 1;">
-                        <label>เดือน</label>
-                        <select name="month" id="month" required></select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label>วันที่ประชุม</label>
-                        <input type="date" name="date" required>
-                    </div>
+                <div class="card">
+                    <label>หน่วยงาน</label>
+                    <select name="unit" id="unit" required></select>
+                    <label>เดือน</label>
+                    <select name="month" id="month" required></select>
+                    <label>วันที่ประชุม</label>
+                    <input type="date" name="date" required>
                 </div>
-
-                <div style="margin-top: 15px;">
+                <div class="card">
                     <label>รายชื่อผู้เข้าประชุม (Attendance)</label>
                     <div id="attendance-list" class="check-list"></div>
                 </div>
             </div>
 
             <div id="tab-op" class="tab-content">
-                <label>สรุปผลการดำเนินงานด้านจ่ายไฟ</label>
-                <textarea name="op_detail" rows="4" placeholder="กรอกรายละเอียด..."></textarea>
-                <label style="margin-top: 10px;">รายงานความปลอดภัย/รปภ.</label>
-                <textarea name="security_detail" rows="3"></textarea>
+                <div class="card">
+                    <label>สรุปผลการดำเนินงาน</label>
+                    <textarea name="op_detail" rows="4"></textarea>
+                </div>
             </div>
 
             <div id="tab-maint" class="tab-content">
-                <label>รายการอุปกรณ์ชำรุด/งานบำรุงรักษา</label>
-                <div id="eq-container"></div>
-                <button type="button" class="btn-add" style="width: 100%; margin-top: 10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
+                <div class="card">
+                    <div id="eq-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มอุปกรณ์ชำรุด</button>
+                </div>
             </div>
 
             <div id="tab-task" class="tab-content">
-                <label>ภารกิจที่มอบหมาย และแผนงานเดือนถัดไป</label>
-                <div id="task-container"></div>
-                <button type="button" class="btn-add" style="width: 100%; margin-top: 10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ/แผนงาน</button>
+                <div class="card">
+                    <div id="task-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ/แผนงาน</button>
+                </div>
             </div>
 
             <div id="tab-pics" class="tab-content">
-                <label>แนบรูปภาพการประชุม (สร้าง Folder อัตโนมัติ)</label>
-                <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top: 10px;">
-                <div id="image-preview" class="preview-container"></div>
-                
+                <div class="card">
+                    <label>แนบรูปภาพ (สร้าง Folder อัตโนมัติ)</label>
+                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                    <div id="image-preview" class="preview-container"></div>
+                </div>
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
             </div>
 
-            <button type="submit" id="btn-submit" style="width: 100%; background: #28a745; color: white; padding: 15px; border-radius: 8px; border: none; font-size: 18px; margin-top: 20px; cursor: pointer;">
-                💾 บันทึกรายงานทั้งหมด
+            <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin-top: 20px; font-size: 18px;">
+                ✅ บันทึกรายงานทั้งหมด
             </button>
         </form>
     </div>

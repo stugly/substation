@@ -4,53 +4,59 @@ let staffData = [];
 let selectedImages = [];
 
 window.onload = async () => {
-    // 1. ดึงข้อมูลจาก GAS
     try {
+        // 1. ดึง Metadata จาก GAS ก่อน
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         staffData = data.staff;
         setupMetadata(data);
-        // 2. เริ่ม LIFF
+        
+        // 2. รัน LIFF
         initLiff();
     } catch (err) {
-        console.error("Fetch Metadata Error:", err);
+        alert("ไม่สามารถดึงข้อมูลพนักงานได้ กรุณาเช็คอินเทอร์เน็ต");
     }
 };
 
 function initLiff() {
     liff.init({ liffId: LIFF_ID }).then(() => {
-        if (liff.isLoggedIn()) {
-            liff.getProfile().then(profile => checkAccess(profile));
+        if (!liff.isLoggedIn()) {
+            // ถ้ายังไม่ได้ Login ให้เด้งหน้า Login ทันที
+            liff.login();
         } else {
-            document.getElementById('login-screen').style.display = 'flex';
+            // ถ้า Login แล้ว เช็คสิทธิ์พนักงานเลย
+            liff.getProfile().then(profile => checkAccess(profile));
         }
-    }).catch(err => console.error("LIFF Error:", err));
+    }).catch(err => console.error(err));
 }
 
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
     if (user) {
-        document.getElementById('login-screen').style.display = 'none';
+        // ผ่านสิทธิ์! ซ่อน Spinner และโชว์แอปหลัก
+        document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
-        document.getElementById('user-display').innerText = `ผู้บันทึก: ${user.name}`;
+        
+        document.getElementById('welcome').innerText = `ยินดีต้อนรับ: ${user.name}`;
         document.getElementById('recorder_uid').value = user.uid;
         document.getElementById('recorder_line').value = user.line;
     } else {
-        alert("ขออภัย! LINE ID นี้ยังไม่ลงทะเบียนในระบบพนักงาน");
+        // ไม่พบชื่อในระบบพนักงาน
+        alert("ขออภัย! LINE ของคุณยังไม่ได้ลงทะเบียนในระบบ\nID: " + profile.userId);
         liff.logout();
         location.reload();
     }
 }
 
+// ส่วนอื่นๆ คงเดิมตามความต้องการของระบบ
 function setupMetadata(data) {
     const uSel = document.getElementById('unit');
     data.units.forEach(u => uSel.add(new Option(u, u)));
     const mSel = document.getElementById('month');
     data.months.forEach(m => mSel.add(new Option(m, m)));
-    
     const attList = document.getElementById('attendance-list');
     attList.innerHTML = data.staff.map(s => 
-        `<label style="display:block; font-size:14px;"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`
+        `<label><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`
     ).join('');
 }
 
@@ -58,7 +64,6 @@ function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
     selectedImages = [];
-    
     Array.from(input.files).forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -82,50 +87,41 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
-    btn.innerText = "กำลังสร้าง Folder และบันทึกข้อมูล...";
+    btn.innerText = "กำลังส่งข้อมูล...";
 
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
     
-    // จัดการข้อมูลอาเรย์
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.task_detail = Array.from(formData.getAll('task_detail[]'));
     payload.task_type = Array.from(formData.getAll('task_type[]'));
-    payload.eq_id = Array.from(formData.getAll('eq_id[]'));
-    payload.eq_detail = Array.from(formData.getAll('eq_detail[]'));
     payload.images = selectedImages;
 
     try {
-        const response = await fetch(GAS_WEBAPP_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
+        const response = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.text();
         alert(result);
         location.reload();
     } catch (err) {
-        alert("บันทึกไม่สำเร็จ: " + err);
+        alert("บันทึกไม่สำเร็จ");
         btn.disabled = false;
-        btn.innerText = "บันทึกรายงานทั้งหมด";
     }
 };
 
 function addTaskRow() {
     const div = document.createElement('div');
-    div.style = "margin-bottom: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px;";
+    div.className = "card";
     div.innerHTML = `
-        <select name="task_type[]" style="width:100%; margin-bottom:5px;">
-            <option>Assignment</option><option>Plan</option>
-        </select>
-        <input type="text" name="task_detail[]" placeholder="รายละเอียดภารกิจ" style="width:100%;">`;
+        <select name="task_type[]" style="width:100%;"><option>Assignment</option><option>Plan</option></select>
+        <input type="text" name="task_detail[]" placeholder="รายละเอียด..." style="width:100%; margin-top:5px;">`;
     document.getElementById('task-container').appendChild(div);
 }
 
 function addEqRow() {
     const div = document.createElement('div');
-    div.style = "margin-bottom: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px;";
+    div.className = "card";
     div.innerHTML = `
-        <input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์/รหัส" style="width:100%; margin-bottom:5px;">
-        <textarea name="eq_detail[]" placeholder="อาการชำรุด/สถานะ" style="width:100%;"></textarea>`;
+        <input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์" style="width:100%;">
+        <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px;"></textarea>`;
     document.getElementById('eq-container').appendChild(div);
 }
