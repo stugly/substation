@@ -12,80 +12,22 @@
     <style>
         * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
-        
-        /* Header สไตล์ Argus */
         .header { background-color: #06C755 !important; padding: 45px 15px 55px 15px !important; border-radius: 0 0 30px 30px !important; }
         .container { margin-top: -35px !important; padding-bottom: 50px; }
 
-        /* --- สไตล์แท็บที่คั่นแฟ้ม (Folder Tabs) --- */
-        .step-nav {
-            display: flex;
-            justify-content: flex-start;
-            margin: 20px 0 0 0;
-            padding: 0 10px;
-            gap: 2px;
-        }
+        /* Folder Tabs Style */
+        .step-nav { display: flex; justify-content: flex-start; margin: 20px 0 0 0; padding: 0 10px; gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .step-tab { flex: 1; min-width: 80px; height: 38px; border-radius: 12px 12px 0 0; border: 1px solid #ddd; border-bottom: none; background: #e9ecef; color: #888; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 1; white-space: nowrap; }
+        .step-tab.active { background: #fff !important; color: #06C755 !important; font-weight: 600; height: 44px; margin-top: -6px; border-top: 3px solid #06C755; border-left: 1px solid #ddd; border-right: 1px solid #ddd; z-index: 3; font-size: 12px; }
 
-        .step-tab {
-            flex: 1;
-            max-width: 70px;
-            height: 38px;
-            border-radius: 12px 12px 0 0; 
-            border: 1px solid #ddd;
-            border-bottom: none;
-            background: #e9ecef;
-            color: #888;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* แท็บที่ถูกเลือก (Active) */
-        .step-tab.active {
-            background: #fff !important;
-            color: #06C755 !important;
-            font-weight: 600;
-            height: 44px; /* สูงขึ้นเพื่อให้เกย */
-            margin-top: -6px; 
-            border-top: 3px solid #06C755;
-            border-left: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            z-index: 3;
-        }
-
-        /* กล่องเนื้อหาหลัก (เชื่อมกับแท็บ) */
-        .tab-content {
-            display: none;
-            background: #fff;
-            padding: 20px 15px;
-            border-radius: 0 15px 15px 15px; /* มุมซ้ายบนตัดตรงเพื่อให้ติดกับแท็บ */
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            position: relative;
-            z-index: 2;
-            margin-top: -1px; /* เชื่อมเส้นขอบ */
-        }
-        
+        .tab-content { display: none; background: #fff; padding: 20px 15px; border-radius: 0 15px 15px 15px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; z-index: 2; margin-top: -1px; }
         .tab-content.active { display: block; }
-
-        /* ล้างค่า Card ภายใน Tab เพื่อให้ดูเป็นเนื้อเดียวกับ Folder */
-        .tab-content .card {
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin-bottom: 20px !important;
-        }
+        .tab-content .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 20px !important; border-bottom: 1px solid #f0f0f0 !important; padding-bottom: 15px !important; }
 
         .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd;}
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
-        
-        .form-label { font-weight: 500; color: #444; margin-bottom: 8px; display: block; }
+        .form-label { font-weight: 500; color: #444; margin-bottom: 8px; display: block; font-size: 14px; }
+        .section-title { font-size: 15px; font-weight: 600; color: #06C755; margin-bottom: 15px; border-left: 4px solid #06C755; padding-left: 10px; }
     </style>
 </head>
 <body>
@@ -110,58 +52,71 @@
             </div>
 
             <div class="step-nav">
-              <div class="step-tab active" onclick="showTab(event, 'tab-1')"><span>1.ข้อมูลหลัก</span></div>
-              <div class="step-tab" onclick="showTab(event, 'tab-2')"><span>2.ดำเนินงาน</span></div>
-              <div class="step-tab" onclick="showTab(event, 'tab-3')"><span>3.เทคนิค/ซ่อม</span></div>
-              <div class="step-tab" onclick="showTab(event, 'tab-4')"><span>4.พัสดุ/ทรัพย์สิน</span></div>
-              <div class="step-tab" onclick="showTab(event, 'tab-5')"><span>5.บุคคล/อื่นๆ</span></div>
+                <div class="step-tab active" onclick="showTab(event, 'tab-1')"><span>1.ข้อมูลหลัก</span></div>
+                <div class="step-tab" onclick="showTab(event, 'tab-2')"><span>2.ดำเนินงาน</span></div>
+                <div class="step-tab" onclick="showTab(event, 'tab-3')"><span>3.เทคนิค/ซ่อม</span></div>
+                <div class="step-tab" onclick="showTab(event, 'tab-4')"><span>4.พัสดุ/ทรัพย์สิน</span></div>
+                <div class="step-tab" onclick="showTab(event, 'tab-5')"><span>5.บุคคล/อื่นๆ</span></div>
             </div>
 
             <form id="reportForm">
-                <div id="tab-general" class="tab-content active">
+                <div id="tab-1" class="tab-content active">
+                    <div class="section-title">ข้อมูลการประชุม (Meeting)</div>
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
                         <select id="unit" name="unit" required></select>
                         <label class="form-label" style="margin-top:15px;">เดือนที่รายงาน</label>
                         <select id="month" name="month" required></select>
                     </div>
+                    <div class="section-title">ผู้เข้าประชุม (Attendance)</div>
                     <div class="card">
-                        <label class="form-label">รายชื่อผู้เข้าประชุม</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
 
-                <div id="tab-op" class="tab-content">
+                <div id="tab-2" class="tab-content">
+                    <div class="section-title">ความปลอดภัย (Security)</div>
                     <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียดการดำเนินงานในเดือนนี้..."></textarea>
+                        <textarea name="op_detail" rows="5" placeholder="สรุปงานความปลอดภัย..."></textarea>
                     </div>
-                </div>
-
-                <div id="tab-maint" class="tab-content">
+                    <div class="section-title">ภารกิจ/แผนงาน (Task_Plan)</div>
                     <div class="card">
-                        <label class="form-label">รายการอุปกรณ์ชำรุด / ผิดปกติ</label>
-                        <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addEqRow()">
-                            <i class="fa-solid fa-plus"></i> เพิ่มรายการอุปกรณ์
-                        </button>
-                    </div>
-                </div>
-
-                <div id="tab-task" class="tab-content">
-                    <div class="card">
-                        <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addTaskRow()">
-                            <i class="fa-solid fa-plus"></i> เพิ่มภารกิจ
-                        </button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
                     </div>
                 </div>
 
-                <div id="tab-pics" class="tab-content">
+                <div id="tab-3" class="tab-content">
+                    <div class="section-title">อุปกรณ์ชำรุด (Equipment)</div>
                     <div class="card">
-                        <label class="form-label">รูปภาพประกอบรายงาน (สูงสุด 5 รูป)</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-bottom: 10px;">
+                        <div id="eq-container"></div>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addEqRow()">+ เพิ่มอุปกรณ์</button>
+                    </div>
+                    <div class="section-title">บำรุงรักษาพื้นที่ (Site_Maint)</div>
+                    <div class="card">
+                        <textarea name="site_maint_detail" rows="4" placeholder="รายละเอียดการบำรุงรักษาพื้นที่..."></textarea>
+                    </div>
+                </div>
+
+                <div id="tab-4" class="tab-content">
+                    <div class="section-title">งานจัดซื้อ/จ้าง (Procurement)</div>
+                    <div class="card">
+                        <textarea name="procure_detail" rows="4" placeholder="ติดตามสถานะ PO/PR..."></textarea>
+                    </div>
+                    <div class="section-title">ทรัพย์สิน (Assets)</div>
+                    <div class="card">
+                        <textarea name="assets_detail" rows="4" placeholder="การจัดการทรัพย์สิน..."></textarea>
+                    </div>
+                </div>
+
+                <div id="tab-5" class="tab-content">
+                    <div class="section-title">ข้อมูลการลา/บุคคล (Leave)</div>
+                    <div class="card">
+                        <textarea name="leave_detail" rows="3" placeholder="สรุปข้อมูลการลา..."></textarea>
+                    </div>
+                    <div class="section-title">รูปภาพประกอบ (Meeting Pics)</div>
+                    <div class="card">
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
                         <div id="image-preview" class="preview-img-container"></div>
                     </div>
                 </div>
@@ -169,35 +124,28 @@
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
                 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">
-                    ✅ บันทึกรายงานทั้งหมด
-                </button>
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">✅ บันทึกรายงานทั้งหมด</button>
             </form>
         </div>
     </div>
 
     <script>
         function showTab(evt, tabId) {
-            // 1. ซ่อนเนื้อหาทุก Tab
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
                 contents[i].classList.remove("active");
             }
-            // 2. แสดง Tab ที่เลือก
-            document.getElementById(tabId).classList.add("active");
+            const target = document.getElementById(tabId);
+            if(target) target.classList.add("active");
 
-            // 3. ปรับสถานะปุ่มแท็บ
             const tabs = document.getElementsByClassName("step-tab");
             for (let i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove("active");
             }
             evt.currentTarget.classList.add("active");
-
-            // 4. เลื่อนจอกลับขึ้นด้านบน
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    
-    <script src="script.js?v=5.3"></script>
+    <script src="script.js?v=5.4"></script>
 </body>
 </html>
