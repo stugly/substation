@@ -97,24 +97,20 @@ function setupMetadata(data) {
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
-    // ตั้งค่า Dropdown สถานที่ (กรองเฉพาะสถานีใน Unit ตัวเอง)
+    // แก้ไขในส่วนสถานที่ภายในฟังก์ชัน setupMetadata
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         
-        // กรองเอาเฉพาะสถานีที่มี unit ตรงกับผู้ใช้งานที่ login
+        // กรองเฉพาะสถานีใน Unit ตัวเอง
         const myStations = data.stations.filter(s => s.unit === currentUserUnit);
         
         if (myStations.length > 0) {
             myStations.forEach(s => {
-                // ใช้ s.name (ซึ่งคือ SName) แทนการใช้ s ตรงๆ
+                // สำคัญ: Option(Text, Value) -> ให้ใส่ s.name ทั้งคู่
+                // ถ้าตรงนี้ยังขึ้น SID แสดงว่าใน Code.gs คอลัมน์ที่ดึงมาเป็น SID ครับ
                 let opt = new Option(s.name, s.name); 
                 locSel.add(opt);
-            });
-        } else {
-            // กรณีไม่เจอสถานีใน Unit ตัวเอง ให้ดึงทั้งหมดมาแสดงเป็นสำรอง
-            data.stations.forEach(s => {
-                locSel.add(new Option(s.name, s.name));
             });
         }
     }
@@ -130,6 +126,7 @@ function setupMetadata(data) {
             return 0;
         });
 
+        // แก้ไขในส่วนแสดงรายชื่อพนักงานภายในฟังก์ชัน setupMetadata
         attList.innerHTML = filteredStaff.map(s => 
             `<label style="display:block; margin-bottom:8px; font-size:14px;">
                 <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
