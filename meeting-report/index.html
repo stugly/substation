@@ -12,15 +12,24 @@
         * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
         
-        /* หน้าเลือกบัญชีสไตล์ Argus */
-        #account-selection { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f4f7f6; position: fixed; width: 100%; z-index: 9998; top:0; left:0; padding: 20px; text-align: center; }
-        .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #06C755; margin-bottom: 15px; }
-        
+        /* แก้ Header ให้สีเขียว Argus และมนล่าง */
+        .header { background-color: #06C755 !important; padding: 45px 15px 55px 15px !important; border-radius: 0 0 30px 30px !important; }
+        .header h2 { color: #fff !important; margin: 0; font-weight: 600; }
+
+        /* ปรับ Container ให้เกยขึ้น */
+        .container { margin-top: -35px !important; padding-bottom: 50px; }
+
+        /* สไตล์ Tab 1-5 */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #fff; padding: 10px; border-radius: 15px; }
-        .step-circle { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #ddd; background: #fff; font-weight: 600; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .step-circle { 
+            width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; 
+            background: #fff; font-weight: 600; color: #888; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
         .step-circle.active { background: #06C755 !important; color: #fff !important; border-color: #06C755 !important; transform: scale(1.1); }
+        
         .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd; }
     </style>
 </head>
@@ -28,32 +37,28 @@
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังโหลด...</div>
-    </div>
-
-    <div id="account-selection">
-        <img id="user-img" src="https://via.placeholder.com/80" class="user-avatar" alt="User">
-        <h3 id="user-name-label" style="margin-bottom: 5px;">กำลังตรวจสอบ...</h3>
-        <p style="color: #888; font-size: 14px; margin-bottom: 30px;">ตรวจพบการเข้าสู่ระบบค้างไว้</p>
-        
-        <button type="button" class="btn-primary" onclick="enterApp()" style="width: 100%; max-width: 280px; padding: 15px; margin-bottom: 15px; border-radius: 30px; font-size: 18px;">
-            <i class="fa-solid fa-right-to-bracket"></i> เข้าใช้งานด้วยชื่อนี้
-        </button>
-        
-        <button type="button" class="btn-secondary" onclick="forceLogout()" style="width: 100%; max-width: 280px; padding: 12px; border-radius: 30px; background: #fff; color: #666; border: 1px solid #ddd;">
-            <i class="fa-solid fa-user-gear"></i> ใช้บัญชีอื่น (Logout)
-        </button>
+        <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
+        <div id="spinner-action" style="margin-top: 25px;"></div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
             <h2>Meeting Report</h2>
         </div>
+
         <div class="container">
             <div class="card">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #06C755;"></i>
-                    <div id="welcome" style="font-weight:600;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-circle-user" style="font-size: 28px; color: #06C755;"></i>
+                        <div>
+                            <div id="welcome" style="font-weight:600; font-size: 15px;"></div>
+                            <div style="font-size: 11px; color: #888;">ตรวจพบการเข้าสู่ระบบ</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="forceLogout()" style="font-size: 11px; padding: 6px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #666;">
+                        ไม่ใช่ฉัน? สลับบัญชี
+                    </button>
                 </div>
             </div>
 
@@ -65,31 +70,41 @@
                 <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
             </div>
 
-            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px;">1. ข้อมูลทั่วไป</h3>
+            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px; font-weight: 500;">
+                1. ข้อมูลทั่วไป
+            </h3>
 
             <form id="reportForm">
                 <div id="tab-general" class="tab-content active">
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
                         <select id="unit" name="unit" required></select>
-                        <label class="form-label">เดือนที่รายงาน</label>
+                        <label class="form-label" style="margin-top:10px;">เดือนที่รายงาน</label>
                         <select id="month" name="month" required></select>
                     </div>
                     <div class="card">
-                        <label class="form-label">ผู้เข้าประชุม</label>
+                        <label class="form-label">ผู้เข้าประชุม (Attendance)</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
 
-                <div id="tab-op" class="tab-content"><div class="card"><textarea name="op_detail" rows="10"></textarea></div></div>
+                <div id="tab-op" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">สรุปผลการดำเนินงาน</label>
+                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียด..."></textarea>
+                    </div>
+                </div>
+
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">✅ บันทึกรายงานทั้งหมด</button>
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0;">
+                    ✅ บันทึกรายงานทั้งหมด
+                </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=3.1"></script>
+    <script src="script.js?v=3.2"></script>
 </body>
 </html>
