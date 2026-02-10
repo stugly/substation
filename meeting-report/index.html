@@ -27,7 +27,6 @@
       .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
       .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
 
-      /* ใหม่: จัดกลุ่ม Input แบบแนวนอนคู่ */
       .input-group-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .form-inline { display: flex; align-items: center; gap: 8px; }
       .form-inline label { flex: 0 0 auto; white-space: nowrap; font-size: 13px; margin-bottom: 0 !important; color: #555; }
@@ -63,7 +62,6 @@
         </div>
 
         <form id="reportForm">
-           <form id="reportForm">
             <div id="tab-1" class="tab-content active">
                 <div class="card" style="text-align: center; border-bottom: 3px solid #06C755; margin-bottom: 10px;">
                     <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px;">กำลังเตรียมข้อมูล...</h3>
@@ -100,7 +98,7 @@
                     <label class="form-label" style="font-weight: 600; color: #06C755;">
                         <i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม
                     </label>
-                    <div id="attendance-list" class="check-list"></div>
+                    <div id="attendance-list" class="check-list" style="margin-bottom: 20px;"></div>
 
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
@@ -109,34 +107,6 @@
                     </label>
                     <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
                     <div id="image-preview" class="preview-img-container"></div>
-                </div>
-            </div>
-
-            <div id="tab-2" class="tab-content">
-                <div class="card">
-                    <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                    <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
-                </div>
-            </div>
-
-            <div id="tab-3" class="tab-content">
-                <div class="card">
-                    <label class="form-label">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
-                    <div id="eq-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
-                    <textarea name="site_detail" rows="5" style="margin-top:15px;" placeholder="รายละเอียดบำรุงรักษาพื้นที่..."></textarea>
-                </div>
-            </div>
-
-            <div id="tab-4" class="tab-content">
-                <div class="card">
-                    <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
-                    <div id="task-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
-                </div>
-                <div class="card">
-                    <label class="form-label">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
-                    <textarea name="other_detail" rows="6" placeholder="ระบุข้อมูลเพิ่มเติม..."></textarea>
                 </div>
             </div>
 
@@ -189,6 +159,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=6.4"></script>
+    <script src="script.js?v=6.5"></script>
 </body>
 </html>
