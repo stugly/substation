@@ -46,13 +46,13 @@
             z-index: 1;
         }
 
-        /* แท็บที่ถูกเลือก */
+        /* แท็บที่ถูกเลือก (Active) */
         .step-tab.active {
             background: #fff !important;
             color: #06C755 !important;
             font-weight: 600;
-            height: 45px; /* สูงกว่าเพื่อนเล็กน้อย */
-            margin-top: -7px; /* ขยับขึ้นให้ดูเกย */
+            height: 44px; /* สูงขึ้นเพื่อให้เกย */
+            margin-top: -6px; 
             border-top: 3px solid #06C755;
             border-left: 1px solid #ddd;
             border-right: 1px solid #ddd;
@@ -64,17 +64,17 @@
             display: none;
             background: #fff;
             padding: 20px 15px;
-            border-radius: 0 15px 15px 15px; /* มุมซ้ายบนไม่มนเพื่อให้ติดกับแท็บ */
+            border-radius: 0 15px 15px 15px; /* มุมซ้ายบนตัดตรงเพื่อให้ติดกับแท็บ */
             border: 1px solid #ddd;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             position: relative;
             z-index: 2;
-            margin-top: -1px; /* เชื่อมรอยต่อขอบล่างของแท็บ */
+            margin-top: -1px; /* เชื่อมเส้นขอบ */
         }
         
         .tab-content.active { display: block; }
 
-        /* ล้างค่า Card ภายใน Tab เพื่อความเนียน */
+        /* ล้างค่า Card ภายใน Tab เพื่อให้ดูเป็นเนื้อเดียวกับ Folder */
         .tab-content .card {
             border: none !important;
             box-shadow: none !important;
@@ -82,22 +82,24 @@
             margin-bottom: 20px !important;
         }
 
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd;}
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
+        
+        .form-label { font-weight: 500; color: #444; margin-bottom: 8px; display: block; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังโหลด...</div>
+        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังโหลดข้อมูล...</div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header"><h2>Meeting Report</h2></div>
         
         <div class="container">
-            <div class="card" style="border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; padding: 15px;">
+            <div class="card" style="border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; padding: 15px; border-radius: 15px; background: #fff;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-circle-user" style="font-size: 28px; color: #06C755;"></i>
@@ -108,11 +110,11 @@
             </div>
 
             <div class="step-nav">
-                <div class="step-tab active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
+                <div class="step-tab active" onclick="showTab(event, 'tab-general')">1</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-op')">2</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-maint')">3</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-task')">4</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-pics')">5</div>
             </div>
 
             <form id="reportForm">
@@ -124,36 +126,42 @@
                         <select id="month" name="month" required></select>
                     </div>
                     <div class="card">
-                        <label class="form-label">ผู้เข้าประชุม</label>
+                        <label class="form-label">รายชื่อผู้เข้าประชุม</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียด..."></textarea>
+                        <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียดการดำเนินงานในเดือนนี้..."></textarea>
                     </div>
                 </div>
 
                 <div id="tab-maint" class="tab-content">
                     <div class="card">
+                        <label class="form-label">รายการอุปกรณ์ชำรุด / ผิดปกติ</label>
                         <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มอุปกรณ์ชำรุด</button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addEqRow()">
+                            <i class="fa-solid fa-plus"></i> เพิ่มรายการอุปกรณ์
+                        </button>
                     </div>
                 </div>
 
                 <div id="tab-task" class="tab-content">
                     <div class="card">
+                        <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ/แผนงาน</button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addTaskRow()">
+                            <i class="fa-solid fa-plus"></i> เพิ่มภารกิจ
+                        </button>
                     </div>
                 </div>
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
-                        <label class="form-label">อัปโหลดรูปภาพ</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                        <label class="form-label">รูปภาพประกอบรายงาน (สูงสุด 5 รูป)</label>
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-bottom: 10px;">
                         <div id="image-preview" class="preview-img-container"></div>
                     </div>
                 </div>
@@ -161,30 +169,35 @@
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
                 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">✅ บันทึกรายงานทั้งหมด</button>
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">
+                    ✅ บันทึกรายงานทั้งหมด
+                </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=5.2"></script>
     <script>
-        // ฟังก์ชันแก้ไขเพื่อให้สลับ Class สำหรับ Folder Tab โดยเฉพาะ
-        function showTab(evt, tabId, tabName) {
+        function showTab(evt, tabId) {
+            // 1. ซ่อนเนื้อหาทุก Tab
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) {
                 contents[i].classList.remove("active");
             }
+            // 2. แสดง Tab ที่เลือก
             document.getElementById(tabId).classList.add("active");
 
+            // 3. ปรับสถานะปุ่มแท็บ
             const tabs = document.getElementsByClassName("step-tab");
             for (let i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove("active");
             }
             evt.currentTarget.classList.add("active");
 
-            // อัปเดต Title ถ้าจำเป็น (หรือจะลบทิ้งก็ได้เพื่อให้ดูคลีนขึ้น)
-            // document.getElementById('current-tab-title').innerText = tabName;
+            // 4. เลื่อนจอกลับขึ้นด้านบน
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
+    
+    <script src="script.js?v=5.3"></script>
 </body>
 </html>
