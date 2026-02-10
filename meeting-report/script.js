@@ -33,16 +33,15 @@ async function loadAppData(profile) {
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         
-        console.log("Raw Data from GAS:", data); // ติ๊กดูใน Console ว่ามี staff และ stations มาไหม
+        console.log("Raw Data from GAS:", data);
         
-        staffData = data.staff || [];
-        rawAppData = data; 
+        // เก็บข้อมูลลงตัวแปร Global
+        staffData = data.staff || []; 
+        rawAppData = data; // เก็บไว้ใช้ใน setupMetadata
         
-        if (staffData.length === 0) {
-            console.error("Warning: staffData is empty!");
-        }
-        
+        // เรียกฟังก์ชันตรวจสอบสิทธิ์
         checkAccess(profile);
+        
     } catch (err) {
         console.error("Data Load Error:", err);
         document.getElementById('spinner-text').innerHTML = "❌ โหลดข้อมูลไม่สำเร็จ: " + err.message;
@@ -51,28 +50,39 @@ async function loadAppData(profile) {
 
 // 4. เช็คสิทธิ์พนักงานและระบุหน่วยงาน
 function checkAccess(profile) {
-    const user = staffData.find(s => s.line === profile.userId);
-    if (user) {
-        currentUserUnit = user.unit; // ระบุหน่วยงานของผู้ใช้ (จาก cell E)
-        
-        // เมื่อพบตัวตนแล้ว จึงทำการ Setup ข้อมูลในหน้าฟอร์ม
-        setupMetadata(rawAppData);
+    const myLineId = profile.userId.trim();
+    console.log("Comparing:", myLineId);
 
+    // ค้นหา User โดยเทียบไอดี LINE
+    const user = staffData.find(s => s.line && s.line.trim() === myLineId);
+    
+    if (user) {
+        console.log("Access Granted:", user.name);
+        currentUserUnit = user.unit; // เก็บ Unit ของผู้ใช้ไว้กรองสถานี
+        
+        // เรียกฟังก์ชันตั้งค่า Meta Data (วันที่, สถานที่, รายชื่อพนักงาน)
+        setupMetadata(rawAppData);
+        
+        // ปิด Spinner และแสดงหน้าแอป
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
+        
+        // แสดงชื่อผู้ใช้งาน
         document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
         
+        // แสดงรูปโปรไฟล์
         const avatarBox = document.getElementById('user-avatar-placeholder');
         if (avatarBox && profile.pictureUrl) {
-            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" alt="profile">`;
+            avatarBox.innerHTML = `<img src="${profile.pictureUrl}" style="width:100%; height:100%; object-fit:cover;">`;
         }
-
-        document.getElementById('recorder_uid').value = user.uid;
-        document.getElementById('recorder_line').value = user.line;
     } else {
+        console.error("User not found in database.");
         document.getElementById('spinner-text').innerHTML = 
-            `<b style="color:red">ไม่พบสิทธิ์สำหรับ ID: ${profile.userId}</b><br>
-             <button onclick="forceLogout()" style="margin-top:10px; border:1px solid #ccc; padding:5px 10px; border-radius:10px; font-family:Kanit;">สลับบัญชี</button>`;
+            `<div style="padding:20px; color:#d9534f;">
+                <b>ไม่พบข้อมูลผู้ใช้งานในระบบ</b><br>
+                <small style="color:#666;">ID: ${myLineId}</small><br>
+                <p style="font-size:12px; margin-top:10px;">กรุณาแจ้งผู้ดูแลระบบเพื่อเพิ่มสิทธิ์การใช้งาน</p>
+            </div>`;
     }
 }
 
