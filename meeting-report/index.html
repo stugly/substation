@@ -44,84 +44,67 @@
   </div>
 
     <div id="main-app" style="display:none;">
-        <div class="header">
-            <h2>Meeting Report</h2>
-        </div>
-
-        <div class="container">
-            <div class="card">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
-                    <div id="welcome" style="font-weight:600;"></div>
-                </div>
-            </div>
-
-            <div style="margin: 15px 0 5px 5px; font-weight: 600;">
-                <i class="fa-solid fa-file-signature"></i> บันทึกการรายงาน: <span id="tab-name" style="color:#28a745;">1. General</span>
-            </div>
-
-            <div class="step-nav">
-                <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. General')">1</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-op', '2. Operation')">2</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. Maint')">3</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-task', '4. Task/Plan')">4</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. Pics')">5</div>
-            </div>
-
-            <form id="reportForm">
-                <div id="tab-general" class="tab-content active">
-                    <div class="card">
-                        <label class="form-label">หน่วยงาน</label>
-                        <select id="unit" name="unit" required></select>
-                        <label class="form-label">เดือน</label>
-                        <select id="month" name="month" required></select>
-                        <label class="form-label">วันที่ประชุม</label>
-                        <input type="date" name="date" required>
-                    </div>
-                    <div class="card">
-                        <label class="form-label">ผู้เข้าประชุม</label>
-                        <div id="attendance-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
-                    </div>
-                </div>
-
-                <div id="tab-op" class="tab-content">
-                    <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="5"></textarea>
-                    </div>
-                </div>
-
-                <div id="tab-maint" class="tab-content">
-                    <div class="card">
-                        <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">+ เพิ่มอุปกรณ์</button>
-                    </div>
-                </div>
-
-                <div id="tab-task" class="tab-content">
-                    <div class="card">
-                        <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
-                    </div>
-                </div>
-
-                <div id="tab-pics" class="tab-content">
-                    <div class="card">
-                        <label class="form-label">แนบรูปภาพ</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-                        <div id="image-preview" class="preview-img-container"></div>
-                    </div>
-                    <input type="hidden" name="recorder_uid" id="recorder_uid">
-                    <input type="hidden" name="recorder_line" id="recorder_line">
-                </div>
-
-                <button type="submit" id="btn-submit" style="width: 100%; margin-top: 20px;">
-                    ✅ บันทึกรายงานทั้งหมด
-                </button>
-            </form>
-        </div>
+    <div class="header">
+        <h2>Meeting Report</h2>
     </div>
 
-    <script src="script.js?v=1.8"></script>
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
+                <div id="welcome" style="font-weight:600;"></div>
+            </div>
+        </div>
+
+        <div class="step-nav" style="display: flex; justify-content: space-around; margin: 15px 0;">
+            <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
+            <div class="step-circle" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
+            <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
+            <div class="step-circle" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
+            <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
+        </div>
+
+        <h3 id="current-tab-title" style="margin: 10px 5px; color: #28a745; font-size: 18px;">
+            1. ข้อมูลทั่วไป
+        </h3>
+
+        <form id="reportForm">
+            <div id="tab-general" class="tab-content active">
+                <div class="card">
+                    <label class="form-label">หน่วยงาน</label>
+                    <select id="unit" name="unit" required></select>
+                    <label class="form-label">เดือน</label>
+                    <select id="month" name="month" required></select>
+                </div>
+            </div>
+
+            <div id="tab-op" class="tab-content" style="display:none;">
+                <div class="card">
+                    <label class="form-label">สรุปผลการดำเนินงาน</label>
+                    <textarea name="op_detail" rows="10" placeholder="รายละเอียด..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" id="btn-submit" style="width: 100%; margin: 20px 0;">
+                ✅ บันทึกรายงานทั้งหมด
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* CSS เพิ่มเติมสำหรับปุ่มวงกลม */
+    .step-circle {
+        width: 42px; height: 42px; border-radius: 50%; border: 2px solid #ddd;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; color: #888; cursor: pointer; background: #fff;
+    }
+    .step-circle.active {
+        background: #28a745 !important; color: #fff !important; border-color: #28a745 !important;
+    }
+    .tab-content { transition: 0.3s; }
+</style>
+
+    <script src="script.js?v=1.9"></script>
 </body>
 </html>

@@ -106,13 +106,28 @@ function handleImageSelect(input) {
 }
 
 function showTab(evt, tabId, tabName) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    evt.currentTarget.classList.add('active');
-    document.getElementById('tab-name').innerText = tabName;
-}
+    // 1. ซ่อนทุก Tab Content
+    const contents = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < contents.length; i++) {
+        contents[i].style.display = "none";
+    }
 
+    // 2. แสดง Tab ที่เลือก
+    document.getElementById(tabId).style.display = "block";
+
+    // 3. ปรับสีปุ่มตัวเลข
+    const circles = document.getElementsByClassName("step-circle");
+    for (let i = 0; i < circles.length; i++) {
+        circles[i].classList.remove("active");
+    }
+    evt.currentTarget.classList.add("active");
+
+    // 4. อัปเดตชื่อหัวข้อตัวหนังสือ
+    document.getElementById('current-tab-title').innerText = tabName;
+    
+    // เลื่อนหน้าจอกลับขึ้นบน
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
