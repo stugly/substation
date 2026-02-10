@@ -3,47 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Argus</title>
+    <title>Helios - Argus System</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-      #spinner { 
-          display: flex; flex-direction: column; align-items: center; justify-content: center; 
-          height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; 
-      }
-      .loader {
-          border: 4px solid #f3f3f3; border-top: 4px solid #06C755;
-          border-radius: 50%; width: 40px; height: 40px;
-          animation: spin 1s linear infinite;
-      }
+      #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
+      .loader { border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-      #user-avatar-placeholder {
-          width: 45px; height: 45px; border-radius: 50%; 
-          overflow: hidden; background: #eee;
-          display: flex; align-items: center; justify-content: center;
-      }
+      #user-avatar-placeholder { width: 45px; height: 45px; border-radius: 50%; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center; }
       #user-avatar-placeholder img { width: 100%; height: 100%; object-fit: cover; }
       
+      /* Folder Tabs Navigation */
       .step-nav { display: flex; padding: 0 10px; gap: 4px; margin-top: 20px; }
-      .step-tab { flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; }
+      .step-tab { flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; transition: 0.2s; }
       .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; }
+      
       .tab-content { display: none; }
       .tab-content.active { display: block; }
       .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
+      
+      /* Image Preview Style */
+      .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+      .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px; font-family: 'Kanit'; color: #666;">กำลังโหลดข้อมูล...</div>
+        <div id="spinner-text" style="margin-top:15px; font-family: 'Kanit'; color: #666;">HELIOS กำลังเตรียมข้อมูล...</div>
     </div>
 
     <div class="header">
-        <h2>Argus</h2>
+        <h2>HELIOS</h2>
+        <span style="font-size: 10px; opacity: 0.8;">POWERED BY ARGUS</span>
     </div>
 
     <div class="container" id="main-app" style="display:none;">
@@ -52,16 +48,15 @@
                 <div id="user-avatar-placeholder">
                     <i class="fa-solid fa-circle-user" style="font-size: 40px; color: #ccc;"></i>
                 </div>
-                <div id="welcome" style="font-weight:600;">สวัสดี, กำลังโหลด...</div>
+                <div id="welcome" style="font-weight:600;"></div>
             </div>
         </div>
 
         <div class="step-nav">
-            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.หลัก</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.งาน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.ซ่อม</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.แผน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.รูป</div>
+            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ดำเนินงาน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.เทคนิค/ซ่อม</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/อื่นๆ</div>
         </div>
 
         <form id="reportForm">
@@ -76,15 +71,41 @@
                     <label class="form-label">รายชื่อผู้เข้าประชุม</label>
                     <div id="attendance-list" class="check-list"></div>
                 </div>
+                <div class="card">
+                    <label class="form-label"><i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน</label>
+                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                    <div id="image-preview" class="preview-img-container"></div>
+                </div>
             </div>
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
-                    <label class="form-label">สรุปผลดำเนินงาน</label>
+                    <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
                     <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
                 </div>
             </div>
-            
+
+            <div id="tab-3" class="tab-content">
+                <div class="card">
+                    <label class="form-label">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
+                    <div id="eq-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
+                    <textarea name="site_detail" rows="5" style="margin-top:15px;" placeholder="รายละเอียดบำรุงรักษาพื้นที่..."></textarea>
+                </div>
+            </div>
+
+            <div id="tab-4" class="tab-content">
+                <div class="card">
+                    <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
+                    <div id="task-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
+                </div>
+                <div class="card">
+                    <label class="form-label">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
+                    <textarea name="other_detail" rows="6" placeholder="ระบุข้อมูลเพิ่มเติม..."></textarea>
+                </div>
+            </div>
+
             <input type="hidden" name="recorder_uid" id="recorder_uid">
             <input type="hidden" name="recorder_line" id="recorder_line">
             
@@ -99,11 +120,13 @@
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
             document.getElementById(tabId).style.display = "block";
+
             const tabs = document.getElementsByClassName("step-tab");
             for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
             evt.currentTarget.classList.add("active");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=5.9"></script>
+    <script src="script.js?v=6.1"></script>
 </body>
 </html>
