@@ -1,83 +1,101 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Meeting Report</title>
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-      :root { --primary: var(--line-green, #28a745); }
-      body { background-color: #f4f7f6; font-family: 'Kanit', sans-serif; }
-      .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-      .section-title { color: var(--primary); border-left: 5px solid var(--primary); padding-left: 10px; margin: 20px 0 15px; font-weight: bold; }
-      .task-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; background: #f9f9f9; padding: 10px; border-radius: 5px; }
-      .btn-add { background-color: #007bff; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
-      .btn-remove { background-color: #dc3545; color: white; border: none; padding: 8px; border-radius: 4px; }
-      .footer-btn { background-color: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; margin-top: 20px; }
+        /* เพิ่มเติมเล็กน้อยเพื่อจัดการ Tab และ Preview รูปภาพ */
+        #main-app { display: none; padding: 15px; }
+        .tab-content { display: none; background: #fff; padding: 20px; border-radius: 8px; margin-top: 10px; }
+        .tab-content.active { display: block; }
+        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin: 5px; border: 1px solid #ddd; }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fdfdfd; padding: 10px; border: 1px solid #eee; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+        .btn-line { background: #06C755; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; width: 100%; max-width: 300px; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
 
-  <div class="container">
-    <h2 style="text-align: center; color: var(--primary);">📝 บันทึกรายงานการประชุม</h2>
-    <hr>
+    <div id="login-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh;">
+        <img src="https://stugly.github.io/substation/logo.png" width="100" style="margin-bottom: 20px;">
+        <h3>Meeting Report System</h3>
+        <p style="margin-bottom: 20px;">กรุณาเข้าสู่ระบบด้วย LINE</p>
+        <button class="btn-line" onclick="liff.login()">Login with LINE</button>
+    </div>
 
-    <form id="meetingForm">
-      <div class="section-title">ข้อมูลพื้นฐาน</div>
-      <div class="form-group">
-        <label>หน่วยปฏิบัติงาน</label>
-        <select id="unitList" name="unit" required></select>
-      </div>
-      <div class="form-group">
-        <label>ผู้บันทึกประชุม (ดึงจากระบบเดิม)</label>
-        <select id="recorderList" name="recorder" required></select>
-      </div>
-
-      <div class="section-title">วาระการประชุม</div>
-      <div id="agendaArea" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+    <div id="main-app">
+        <div class="header" style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #28a745;">Monthly Meeting Report</h2>
+            <p id="user-display" style="font-weight: bold; color: #555;"></p>
         </div>
 
-      <div class="section-title">งานที่ได้รับมอบหมาย (Action Items)</div>
-      <div id="taskContainer">
+        <div class="tab-nav" style="display: flex; overflow-x: auto; gap: 5px; margin-bottom: 10px;">
+            <button class="tab-btn active" onclick="showTab(event, 'tab-general')">1. General</button>
+            <button class="tab-btn" onclick="showTab(event, 'tab-op')">2. Operation</button>
+            <button class="tab-btn" onclick="showTab(event, 'tab-maint')">3. Maint</button>
+            <button class="tab-btn" onclick="showTab(event, 'tab-task')">4. Task/Plan</button>
+            <button class="tab-btn" onclick="showTab(event, 'tab-pics')">5. Pics</button>
         </div>
-      <button type="button" class="btn-add" onclick="addTaskRow()">+ เพิ่มรายการงาน</button>
 
-      <div class="section-title">แผนงานดำเนินงานประจำเดือน</div>
-      <textarea name="monthlyPlan" rows="4" placeholder="ระบุรายละเอียดแผนงาน..."></textarea>
+        <form id="reportForm">
+            <div id="tab-general" class="tab-content active">
+                <label>หน่วยงาน</label>
+                <select name="unit" id="unit" required></select>
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <label>เดือน</label>
+                        <select name="month" id="month" required></select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>วันที่ประชุม</label>
+                        <input type="date" name="date" required>
+                    </div>
+                </div>
 
-      <button type="submit" class="footer-btn">💾 บันทึกข้อมูลทั้งหมด</button>
-    </form>
-  </div>
+                <div style="margin-top: 15px;">
+                    <label>รายชื่อผู้เข้าประชุม (Attendance)</label>
+                    <div id="attendance-list" class="check-list"></div>
+                </div>
+            </div>
 
-  <script>
-    // ข้อมูลจำลองพนักงาน (ในของจริงจะใช้ google.script.run ดึงมา)
-    function addTaskRow() {
-      const container = document.getElementById('taskContainer');
-      const div = document.createElement('div');
-      div.className = 'task-row';
-      div.innerHTML = `
-        <div style="flex: 2;">
-          <label style="font-size: 0.8em;">รายละเอียดงาน</label>
-          <input type="text" name="taskDesc[]" required>
-        </div>
-        <div style="flex: 1;">
-          <label style="font-size: 0.8em;">ผู้รับผิดชอบ</label>
-          <select name="taskAssignee[]" class="staff-select"></select>
-        </div>
-        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">✕</button>
-      `;
-      container.appendChild(div);
-      // เติมรายชื่อพนักงานใน Dropdown ที่สร้างใหม่
-      fillStaffDropdown(div.querySelector('.staff-select'));
-    }
+            <div id="tab-op" class="tab-content">
+                <label>สรุปผลการดำเนินงานด้านจ่ายไฟ</label>
+                <textarea name="op_detail" rows="4" placeholder="กรอกรายละเอียด..."></textarea>
+                <label style="margin-top: 10px;">รายงานความปลอดภัย/รปภ.</label>
+                <textarea name="security_detail" rows="3"></textarea>
+            </div>
 
-    function fillStaffDropdown(selectElement) {
-       // Logic ดึงรายชื่อพนักงานจาก Backend มาใส่
-    }
+            <div id="tab-maint" class="tab-content">
+                <label>รายการอุปกรณ์ชำรุด/งานบำรุงรักษา</label>
+                <div id="eq-container"></div>
+                <button type="button" class="btn-add" style="width: 100%; margin-top: 10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
+            </div>
 
-    // เริ่มต้นหน้าจอ
-    window.onload = () => {
-      addTaskRow(); // เพิ่มแถวงานว่างๆ 1 แถวเริ่มต้น
-      // เรียกฟังก์ชันดึงข้อมูลจาก Metadata (Units, Agendas, Users)
-    };
-  </script>
-  </body>
+            <div id="tab-task" class="tab-content">
+                <label>ภารกิจที่มอบหมาย และแผนงานเดือนถัดไป</label>
+                <div id="task-container"></div>
+                <button type="button" class="btn-add" style="width: 100%; margin-top: 10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ/แผนงาน</button>
+            </div>
+
+            <div id="tab-pics" class="tab-content">
+                <label>แนบรูปภาพการประชุม (สร้าง Folder อัตโนมัติ)</label>
+                <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top: 10px;">
+                <div id="image-preview" class="preview-container"></div>
+                
+                <input type="hidden" name="recorder_uid" id="recorder_uid">
+                <input type="hidden" name="recorder_line" id="recorder_line">
+            </div>
+
+            <button type="submit" id="btn-submit" style="width: 100%; background: #28a745; color: white; padding: 15px; border-radius: 8px; border: none; font-size: 18px; margin-top: 20px; cursor: pointer;">
+                💾 บันทึกรายงานทั้งหมด
+            </button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
