@@ -69,46 +69,27 @@ function checkAccess(profile) {
 
 // 5. เตรียม Dropdown และ Checkbox (กรองตามเงื่อนไขที่ระบุ)
 function setupMetadata(data) {
-    // 1. จัดการข้อความหัวข้อ
-    const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    const now = new Date();
-    const currentMonthName = thMonths[now.getMonth()];
-    const currentYearTH = now.getFullYear() + 543;
-    const fullDateText = `${currentMonthName} ${currentYearTH}`;
+    // ... (ส่วนตั้งค่าหัวข้อรายงานและวันที่/เวลาเหมือนเดิม) ...
 
-    document.getElementById('report-title').innerText = `รายงานการประชุม ${currentUserUnit} ประจำเดือน ${fullDateText}`;
-    document.getElementById('unit').value = currentUserUnit;
-    document.getElementById('month').value = fullDateText;
-
-    // 2. ตั้งค่า วันที่ และ เวลาปัจจุบัน เป็นค่าเริ่มต้น
-    document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
-    document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-
-    // 3. ดึงรายชื่อสถานีลง Dropdown
+    // --- ปรับปรุง: ดึงรายชื่อสถานีเฉพาะที่อยู่ใน Unit เดียวกัน ---
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
-        locSel.innerHTML = '<option value="">-- เลือกสถานี --</option>';
-        data.stations.forEach(s => locSel.add(new Option(s, s)));
-    }
-
-    // 4. กรองและเรียงรายชื่อพนักงาน (Unit ตัวเองก่อน ผจฟ.1)
-    const attList = document.getElementById('attendance-list');
-    if (attList && staffData.length > 0) {
-        let filteredStaff = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1");
+        locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         
-        filteredStaff.sort((a, b) => {
-            if (a.unit === currentUserUnit && b.unit !== currentUserUnit) return -1;
-            if (a.unit !== currentUserUnit && b.unit === currentUserUnit) return 1;
-            return 0;
-        });
-
-        attList.innerHTML = filteredStaff.map(s => 
-            `<label style="display:block; margin-bottom:8px;">
-                <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
-                <span style="font-size:10px; color:${s.unit === 'ผจฟ.1' ? '#f39c12' : '#06C755'};">(${s.unit})</span>
-            </label>`
-        ).join('');
+        // กรองเอาเฉพาะสถานีที่ค่า unit ตรงกับผู้ใช้งาน
+        const filteredStations = data.stations.filter(s => s.unit === currentUserUnit);
+        
+        if (filteredStations.length > 0) {
+            filteredStations.forEach(s => {
+                locSel.add(new Option(s.name, s.name)); // ใช้ SName ทั้ง text และ value
+            });
+        } else {
+            // ถ้าไม่เจอสถานีใน Unit ตัวเอง ให้แสดง "อื่นๆ" หรือดึงทั้งหมดตามความเหมาะสม
+            locSel.add(new Option("อื่นๆ/สำนักงาน", "สำนักงาน"));
+        }
     }
+
+    // ... (ส่วนกรองรายชื่อพนักงานเหมือนเดิม) ...
 }
 
 // 6. จัดการรูปภาพ

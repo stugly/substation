@@ -27,19 +27,23 @@
       .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
       .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
 
-      /* ใหม่: จัดกลุ่ม 4 ฟิลด์ในบรรทัดเดียว (Row Layout) */
       .input-row-grid { 
           display: grid; 
-          grid-template-columns: repeat(4, 1fr); 
-          gap: 8px; 
+          grid-template-columns: 1.1fr 0.9fr 1.3fr 1fr; /* ปรับสัดส่วนช่องให้เหมาะสมกับเนื้อหา */
+          gap: 5px; 
           align-items: center;
       }
       .form-compact { display: flex; align-items: center; gap: 4px; }
-      .form-compact label { flex: 0 0 auto; white-space: nowrap; font-size: 11px; color: #666; font-weight: 600; margin-bottom: 0 !important; }
+      .form-compact label { flex: 0 0 auto; white-space: nowrap; font-size: 11px; color: #666; font-weight: 600; }
+      
+      /* บังคับความสูงให้เท่ากันทุกลูกลักษณะ (Date, Time, Select) */
       .form-compact input, .form-compact select { 
-          flex: 1; min-width: 0; padding: 4px !important; border: 1px solid #ddd !important; 
-          border-radius: 4px !important; font-size: 11px !important; height: 30px !important; 
+          flex: 1; min-width: 0; padding: 0 5px !important; border: 1px solid #ddd !important; 
+          border-radius: 4px !important; font-size: 11px !important; 
+          height: 32px !important; line-height: 32px !important; /* บังคับความสูง */
+          box-sizing: border-box;
       }
+
 
       /* ปรับเป็น 2x2 ถ้าหน้าจอแคบเกินไป */
       @media (max-width: 480px) {
@@ -175,6 +179,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=6.8"></script>
+    <script src="script.js?v=6.9"></script>
 </body>
 </html>
