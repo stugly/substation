@@ -102,18 +102,26 @@ function setupMetadata(data) {
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         
-        // กรองเฉพาะสถานีใน Unit ตัวเอง
-        const myStations = data.stations.filter(s => s.unit === currentUserUnit);
+        const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
+        // กรองเฉพาะสถานีที่ Unit ตรงกัน
+        const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
         
         if (myStations.length > 0) {
             myStations.forEach(s => {
-                // สำคัญ: Option(Text, Value) -> ให้ใส่ s.name ทั้งคู่
-                // ถ้าตรงนี้ยังขึ้น SID แสดงว่าใน Code.gs คอลัมน์ที่ดึงมาเป็น SID ครับ
-                let opt = new Option(s.name, s.name); 
+                // แสดงผล (Text): สฟฟ. + ชื่อสถานี
+                // ค่าบันทึก (Value): ชื่อสถานีปกติ (SName)
+                let displayText = "สฟฟ." + s.name;
+                let opt = new Option(displayText, s.name); 
                 locSel.add(opt);
+            });
+        } else {
+            // กรณีไม่เจอสถานีใน Unit ตัวเอง ให้ดึงทั้งหมดมาแสดงเป็นสำรอง
+            data.stations.forEach(s => {
+                locSel.add(new Option("สฟฟ." + s.name, s.name));
             });
         }
     }
+
 
     // ตั้งค่ารายชื่อผู้เข้าประชุม (Unit ตัวเองก่อน ตามด้วย ผจฟ.1)
     const attList = document.getElementById('attendance-list');
