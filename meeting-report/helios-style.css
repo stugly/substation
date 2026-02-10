@@ -59,29 +59,36 @@
 .form-compact label { flex: 0 0 auto; font-size: 11px; color: #666; font-weight: 600; }
 
 /* 6. Task Row - แบบแถวเดียว (Tab 2) */
+/* ปรับสไตล์แถวงานใน Tab 2 ให้สมดุลขึ้น */
 .task-row {
     display: flex;
-    flex-direction: row; /* กลับมาเป็นแถวเดียว */
+    flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: 4px; /* ลดช่องว่างระหว่าง element เพื่อเพิ่มพื้นที่พิมพ์ */
     margin-bottom: 8px;
 }
+
 .task-row select {
-    flex: 0 0 105px; /* ล็อกความกว้างประเภทงาน */
+    flex: 0 0 120px; /* เพิ่มความกว้างช่องประเภทงาน (🚩/📅) */
     background-color: #fff;
+    padding: 0 2px !important; /* ลด padding ข้างในเพื่อให้อ่านง่ายขึ้น */
 }
+
 .task-row input[type="text"] {
-    flex: 1; /* ช่องรายละเอียดกินพื้นที่ที่เหลือ */
+    flex: 1; /* ช่องรายละเอียดกว้างที่สุด */
+    min-width: 0; /* ป้องกันช่องดันหน้าจอ */
     padding: 0 8px !important;
 }
+
 .btn-remove-task {
-    flex: 0 0 auto;
+    flex: 0 0 30px; /* ล็อกขนาดปุ่มลบให้เล็กลง */
     background: none;
     border: none;
     color: #ff4d4d;
     cursor: pointer;
-    font-size: 16px;
-    padding: 0 4px;
+    font-size: 14px;
+    padding: 0;
+    text-align: center;
 }
 
 /* 7. Other Components */

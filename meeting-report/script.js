@@ -242,22 +242,45 @@ function validateTaskInput() {
     const rows = container.getElementsByClassName('task-row');
     const addBtn = document.getElementById('btn-add-task');
 
+    // เงื่อนไข 1: ถ้ายังไม่มีแถวเลย ให้กดปุ่ม "เพิ่ม" ได้ทันที
     if (rows.length === 0) {
-        addBtn.disabled = true;
+        addBtn.disabled = false;
+        addBtn.style.opacity = "1";
+        addBtn.style.cursor = "pointer";
         return;
     }
 
-    // ดึงช่อง Input ของแถวสุดท้าย
+    // เงื่อนไข 2: ถ้ามีแถวแล้ว ให้เช็คแถวสุดท้ายว่ามีข้อมูลไหม
     const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
-    
-    // ถ้าไม่มีข้อมูล หรือ มีแต่ Space bar (.trim() จะได้ค่าว่าง)
     if (!lastInput || lastInput.value.trim() === "") {
         addBtn.disabled = true;
-        addBtn.style.opacity = "0.5"; // ทำให้ปุ่มดูจางลงเวลาใช้งานไม่ได้
+        addBtn.style.opacity = "0.5";
         addBtn.style.cursor = "not-allowed";
     } else {
         addBtn.disabled = false;
         addBtn.style.opacity = "1";
         addBtn.style.cursor = "pointer";
     }
+}
+
+function addTaskRow() {
+    const container = document.getElementById('task-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    
+    div.innerHTML = `
+        <select name="task_type[]">
+            <option value="มอบหมาย">🚩 มอบหมาย</option>
+            <option value="แผนงาน">📅 แผนงาน</option>
+        </select>
+        <input type="text" name="task_detail[]" placeholder="รายละเอียด..." 
+               oninput="validateTaskInput()" required>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); validateTaskInput();">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+    
+    // หลังเพิ่มแถวใหม่ ต้องพิมพ์ก่อนถึงจะเพิ่มแถวต่อไปได้
+    validateTaskInput();
 }
