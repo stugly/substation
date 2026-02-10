@@ -3,19 +3,19 @@ const LIFF_ID = "2008876139-kiwCd2kF";
 let staffData = [];
 let selectedImages = [];
 
+// 1. เริ่มรันระบบ
 window.onload = function() {
-    // 1. เรียก LIFF ทันที เพื่อให้ขึ้นหน้า Login ของ LINE (ถ้าไม่มี Cache)
     initLiff();
 };
 
+// 2. ตรวจสอบการ Login ด้วย LIFF (หน้าเขียว LINE จะขึ้นตรงนี้)
 async function initLiff() {
     try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) {
-            // จุดนี้คือจุดที่ LINE จะโชว์หน้า "Log in as..." หรือให้เลือก Profile อื่น
+            // ถ้ายังไม่ Login หรือต้องการเปลี่ยน Account หน้า LINE มาตรฐานจะแสดงตรงนี้
             liff.login(); 
         } else {
-            // ถ้า Login แล้ว ให้ไปดึงข้อมูล Metadata ต่อ
             const profile = await liff.getProfile();
             loadAppData(profile);
         }
@@ -24,19 +24,40 @@ async function initLiff() {
     }
 }
 
+// 3. ดึงข้อมูลจาก GAS หลัง Login สำเร็จ
 async function loadAppData(profile) {
     try {
-        // ดึงข้อมูลพนักงานและหน่วยงานจาก GAS
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         staffData = data.staff || [];
+        
+        // เรียกใช้ฟังก์ชันเตรียมข้อมูล (ที่เคย Error ว่าหาไม่เจอ)
         setupMetadata(data);
+        
+        // ตรวจสอบสิทธิ์พนักงาน
         checkAccess(profile);
     } catch (err) {
         console.error("Data Load Error:", err);
     }
 }
 
+// 4. เตรียม Dropdown และ Checkbox
+function setupMetadata(data) {
+    const uSel = document.getElementById('unit');
+    if (uSel) { uSel.innerHTML = ""; data.units.forEach(u => uSel.add(new Option(u, u))); }
+    
+    const mSel = document.getElementById('month');
+    if (mSel) { mSel.innerHTML = ""; data.months.forEach(m => mSel.add(new Option(m, m))); }
+    
+    const attList = document.getElementById('attendance-list');
+    if (attList) {
+        attList.innerHTML = data.staff.map(s => 
+            `<label><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`
+        ).join('');
+    }
+}
+
+// 5. เช็คสิทธิ์เพื่อเข้าหน้าแอป
 function checkAccess(profile) {
     const user = staffData.find(s => s.line === profile.userId);
     if (user) {
@@ -48,33 +69,26 @@ function checkAccess(profile) {
     } else {
         document.getElementById('spinner-text').innerHTML = 
             `<b style="color:red">ไม่พบสิทธิ์สำหรับ ID: ${profile.userId}</b><br>
-             <button onclick="forceLogout()" class="btn-secondary">สลับบัญชี</button>`;
+             <button onclick="forceLogout()" style="margin-top:10px; border:1px solid #ccc; padding:5px 10px; border-radius:10px;">สลับบัญชี</button>`;
     }
 }
 
-function setupMetadata(data) {
-    const uSel = document.getElementById('unit');
-    if (uSel) { uSel.innerHTML = ""; data.units.forEach(u => uSel.add(new Option(u, u))); }
-    const mSel = document.getElementById('month');
-    if (mSel) { mSel.innerHTML = ""; data.months.forEach(m => mSel.add(new Option(m, m))); }
-    const attList = document.getElementById('attendance-list');
-    if (attList) {
-        attList.innerHTML = data.staff.map(s => 
-            `<label><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`
-        ).join('');
-    }
-}
-
+// 6. จัดการระบบ Tab
 function showTab(evt, tabId, tabName) {
     const contents = document.getElementsByClassName("tab-content");
     for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
-    document.getElementById(tabId).style.display = "block";
+    
+    const target = document.getElementById(tabId);
+    if (target) target.style.display = "block";
+
     const circles = document.getElementsByClassName("step-circle");
     for (let i = 0; i < circles.length; i++) circles[i].classList.remove("active");
+    
     evt.currentTarget.classList.add("active");
     document.getElementById('current-tab-title').innerText = tabName;
 }
 
+// 7. จัดการรูปภาพ
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
@@ -91,11 +105,13 @@ function handleImageSelect(input) {
     });
 }
 
+// 8. ส่งฟอร์มไป GAS
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
     btn.innerText = "⌛ กำลังส่ง...";
+    
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
     payload.attendance = Array.from(formData.getAll('attendance'));
@@ -117,6 +133,7 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     }
 };
 
+// 9. เพิ่มแถวไดนามิก
 function addEqRow() {
     const div = document.createElement('div');
     div.className = "card"; div.style.marginTop = "10px";
@@ -133,6 +150,7 @@ function addTaskRow() {
     document.getElementById('task-container').appendChild(div);
 }
 
+// 10. ออกจากระบบ
 function forceLogout() {
     liff.logout();
     location.reload();
