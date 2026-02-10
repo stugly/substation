@@ -15,20 +15,15 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; }
+        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #fff; padding: 10px; border-radius: 15px; }
         .step-circle { 
             width: 42px; height: 42px; border-radius: 50%; border: 2px solid #ddd; 
             background: #fff; font-weight: 600; color: #888; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
-        .step-circle.active { background: #28a745 !important; color: #fff !important; border-color: #28a745 !important; }
+        .step-circle.active { background: #06C755 !important; color: #fff !important; border-color: #06C755 !important; transform: scale(1.1); }
         
-        /* สไตล์รายชื่อพนักงาน 2 คอลัมน์ */
-        .check-list { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-            padding: 10px; border: 1px solid #eee; border-radius: 10px; 
-            max-height: 200px; overflow-y: auto; background: #fdfdfd;
-        }
+        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd; }
         .check-list label { font-size: 14px; font-weight: 300; display: flex; align-items: center; gap: 5px; }
         .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
@@ -38,8 +33,12 @@
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
-        <div id="spinner-action" style="margin-top: 20px;"></div>
+        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังตรวจสอบสิทธิ์...</div>
+        <div id="spinner-action" style="margin-top: 25px;">
+            <button type="button" class="btn-secondary" onclick="forceLogout()" style="font-size: 12px; padding: 8px 15px; border-radius: 20px;">
+                <i class="fa-solid fa-right-from-bracket"></i> Login another account
+            </button>
+        </div>
     </div>
 
     <div id="main-app" style="display:none;">
@@ -49,9 +48,14 @@
 
         <div class="container">
             <div class="card">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
-                    <div id="welcome" style="font-weight:600;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #06C755;"></i>
+                        <div id="welcome" style="font-weight:600;"></div>
+                    </div>
+                    <button type="button" onclick="forceLogout()" style="font-size: 10px; padding: 4px 8px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; color: #888;">
+                        สลับบัญชี
+                    </button>
                 </div>
             </div>
 
@@ -63,7 +67,7 @@
                 <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
             </div>
 
-            <h3 id="current-tab-title" style="margin: 10px 5px; color: #28a745; font-size: 18px;">
+            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px; font-weight: 500;">
                 1. ข้อมูลทั่วไป
             </h3>
 
@@ -72,7 +76,7 @@
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
                         <select id="unit" name="unit" required></select>
-                        <label class="form-label">เดือน</label>
+                        <label class="form-label">เดือนที่รายงาน</label>
                         <select id="month" name="month" required></select>
                     </div>
                     <div class="card">
@@ -83,8 +87,8 @@
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
+                        <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                        <textarea name="op_detail" rows="10" placeholder="ระบุรายละเอียด..."></textarea>
                     </div>
                 </div>
 
@@ -98,15 +102,15 @@
 
                 <div id="tab-task" class="tab-content">
                     <div class="card">
-                        <label class="form-label">ภารกิจมอบหมาย/แผนงาน</label>
+                        <label class="form-label">ภารกิจมอบหมาย / แผนงาน</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มแผนงาน</button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
                     </div>
                 </div>
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
-                        <label class="form-label">รูปภาพประกอบ</label>
+                        <label class="form-label">แนบรูปภาพ</label>
                         <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
                         <div id="image-preview" class="preview-img-container"></div>
                     </div>
@@ -115,13 +119,13 @@
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 25px 0 50px 0;">
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">
                     ✅ บันทึกรายงานทั้งหมด
                 </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=2.1"></script>
+    <script src="script.js?v=2.3"></script>
 </body>
 </html>
