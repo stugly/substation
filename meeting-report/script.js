@@ -29,14 +29,23 @@ async function initLiff() {
 // 3. ดึงข้อมูลจาก GAS และตั้งค่าเริ่มต้น
 async function loadAppData(profile) {
     try {
+        console.log("Fetching data from GAS...");
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
+        
+        console.log("Raw Data from GAS:", data); // ติ๊กดูใน Console ว่ามี staff และ stations มาไหม
+        
         staffData = data.staff || [];
-        rawAppData = data; // เก็บข้อมูลทั้งหมดไว้ใช้กรองภายหลัง
+        rawAppData = data; 
+        
+        if (staffData.length === 0) {
+            console.error("Warning: staffData is empty!");
+        }
         
         checkAccess(profile);
     } catch (err) {
         console.error("Data Load Error:", err);
+        document.getElementById('spinner-text').innerHTML = "❌ โหลดข้อมูลไม่สำเร็จ: " + err.message;
     }
 }
 
