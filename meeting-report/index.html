@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-      /* ซ่อม Spinner ให้หมุนกลางหน้าจอเหมือน Argus */
       #spinner { 
           display: flex; flex-direction: column; align-items: center; justify-content: center; 
           height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; 
@@ -21,7 +20,6 @@
       }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-      /* ปรับแต่งจุดวางรูป Profile */
       #user-avatar-placeholder {
           width: 45px; height: 45px; border-radius: 50%; 
           overflow: hidden; background: #eee;
@@ -29,19 +27,19 @@
       }
       #user-avatar-placeholder img { width: 100%; height: 100%; object-fit: cover; }
       
-      /* สไตล์ Tab และ Card (ตามที่คุยกันว่าไม่ให้เพี้ยน) */
       .step-nav { display: flex; padding: 0 10px; gap: 4px; margin-top: 20px; }
       .step-tab { flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; }
       .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
+      .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div style="margin-top:15px; font-family: 'Kanit'; color: #666;">กำลังโหลดข้อมูล...</div>
+        <div id="spinner-text" style="margin-top:15px; font-family: 'Kanit'; color: #666;">กำลังโหลดข้อมูล...</div>
     </div>
 
     <div class="header">
@@ -54,9 +52,8 @@
                 <div id="user-avatar-placeholder">
                     <i class="fa-solid fa-circle-user" style="font-size: 40px; color: #ccc;"></i>
                 </div>
-                <div id="welcome" style="font-weight:600;"></div>
+                <div id="welcome" style="font-weight:600;">สวัสดี, กำลังโหลด...</div>
             </div>
-        </div>
         </div>
 
         <div class="step-nav">
@@ -84,7 +81,7 @@
             <div id="tab-2" class="tab-content">
                 <div class="card">
                     <label class="form-label">สรุปผลดำเนินงาน</label>
-                    <textarea name="op_detail" rows="10"></textarea>
+                    <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
                 </div>
             </div>
             
@@ -107,6 +104,6 @@
             evt.currentTarget.classList.add("active");
         }
     </script>
-    <script src="script.js?v=5.8"></script>
+    <script src="script.js?v=5.9"></script>
 </body>
 </html>

@@ -55,22 +55,27 @@ function checkAccess(profile) {
         // 1. ใส่ชื่อพนักงาน
         document.getElementById('welcome').innerText = "สวัสดี, " + user.name;
         
-        // 2. ใส่รูป Profile (ถ้ามี)
+        // 2. จัดการรูปภาพโปรไฟล์
         const avatarBox = document.getElementById('user-avatar-placeholder');
         if (avatarBox && profile.pictureUrl) {
             avatarBox.innerHTML = `<img src="${profile.pictureUrl}" alt="profile">`;
         }
 
-        // 3. ปิด Spinner และเปิดหน้าแอป
+        // 3. ใส่ค่า UID/LINE ลงใน Hidden Inputs
+        document.getElementById('recorder_uid').value = user.uid;
+        document.getElementById('recorder_line').value = user.line;
+
+        // 4. เมื่อทุกอย่างพร้อมแล้ว ปิด Spinner และเปิด Main App
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
 
-        // 4. บันทึกค่า UID/LINE
-        document.getElementById('recorder_uid').value = user.uid;
-        document.getElementById('recorder_line').value = user.line;
     } else {
-        // กรณีไม่มีสิทธิ์...
-        document.getElementById('spinner-text').innerHTML = `<b style="color:red">ไม่พบสิทธิ์การใช้งาน</b>`;
+        // หากไม่พบสิทธิ์
+        const spinnerText = document.getElementById('spinner-text');
+        if(spinnerText) {
+            spinnerText.innerHTML = `<b style="color:red">ไม่พบสิทธิ์การใช้งานสำหรับ ID: ${profile.userId}</b><br>
+            <button onclick="forceLogout()" style="margin-top:10px; border:1px solid #ccc; padding:5px 10px; border-radius:10px; font-family:Kanit;">สลับบัญชี</button>`;
+        }
     }
 }
 
