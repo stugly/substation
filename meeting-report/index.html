@@ -16,7 +16,6 @@
       #user-avatar-placeholder { width: 45px; height: 45px; border-radius: 50%; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center; }
       #user-avatar-placeholder img { width: 100%; height: 100%; object-fit: cover; }
       
-      /* Folder Tabs Navigation */
       .step-nav { display: flex; padding: 0 10px; gap: 4px; margin-top: 20px; }
       .step-tab { flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; transition: 0.2s; }
       .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; }
@@ -25,9 +24,14 @@
       .tab-content.active { display: block; }
       .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
       
-      /* Image Preview Style */
       .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
       .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+
+      /* ใหม่: จัดกลุ่ม Input แบบแนวนอนคู่ */
+      .input-group-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .form-inline { display: flex; align-items: center; gap: 8px; }
+      .form-inline label { flex: 0 0 auto; white-space: nowrap; font-size: 13px; margin-bottom: 0 !important; color: #555; }
+      .form-inline input, .form-inline select { flex: 1; padding: 6px !important; border: 1px solid #ddd !important; border-radius: 5px !important; font-size: 13px !important; height: 35px !important; }
     </style>
 </head>
 <body>
@@ -60,46 +64,48 @@
 
         <form id="reportForm">
             <div id="tab-1" class="tab-content active">
-    <div class="card" style="text-align: center;">
-        <h3 id="report-title" style="margin: 0; color: #333; font-size: 18px;">กำลังเตรียมข้อมูล...</h3>
-        <input type="hidden" id="unit" name="unit">
-        <input type="hidden" id="month" name="month">
-    </div>
+                <div class="card" style="text-align: center; border-bottom: 3px solid #06C755;">
+                    <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px;">กำลังเตรียมข้อมูล...</h3>
+                    <input type="hidden" id="unit" name="unit">
+                    <input type="hidden" id="month" name="month">
+                </div>
 
-    <div class="card">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-                <label class="form-label">วันที่ประชุม</label>
-                <input type="date" name="meeting_date" id="meeting_date" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
+                <div class="card">
+                    <div class="input-group-grid">
+                        <div class="form-inline">
+                            <label>วันที่</label>
+                            <input type="date" name="meeting_date" id="meeting_date" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>เวลา</label>
+                            <input type="time" name="start_time" id="start_time" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>สถานที่</label>
+                            <select id="location" name="location" required></select>
+                        </div>
+                        <div class="form-inline">
+                            <label>วิธีประชุม</label>
+                            <select name="method">
+                                <option value="On-site">On-site</option>
+                                <option value="Online">Online</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <label class="form-label">รายชื่อผู้เข้าประชุม</label>
+                    <div id="attendance-list" class="check-list"></div>
+                </div>
+                
+                <div class="card">
+                    <label class="form-label"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
+                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                    <div id="image-preview" class="preview-img-container"></div>
+                </div>
             </div>
-            <div>
-                <label class="form-label">เวลาเริ่ม</label>
-                <input type="time" name="start_time" id="start_time" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
-            </div>
-        </div>
-        
-        <label class="form-label" style="margin-top:10px;">สถานที่ (สถานี)</label>
-        <select id="location" name="location" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;"></select>
-
-        <label class="form-label" style="margin-top:10px;">วิธีการประชุม</label>
-        <select name="method" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
-            <option value="On-site">On-site (หน้างาน/กะ)</option>
-            <option value="Online">Online (MS Teams/Zoom)</option>
-            <option value="Hybrid">Hybrid</option>
-        </select>
-    </div>
-
-    <div class="card">
-        <label class="form-label">รายชื่อผู้เข้าประชุม</label>
-        <div id="attendance-list" class="check-list"></div>
-    </div>
-    
-    <div class="card">
-        <label class="form-label"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
-        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-        <div id="image-preview" class="preview-img-container"></div>
-    </div>
-</div>
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
