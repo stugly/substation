@@ -63,54 +63,54 @@
 
         <form id="reportForm">
             <div id="tab-1" class="tab-content active">
-    <div class="card">
-        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #06C755; margin-bottom: 20px;">
-            <h3 id="report-title" style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">กำลังเตรียมข้อมูล...</h3>
-            <input type="hidden" id="unit" name="unit">
-            <input type="hidden" id="month" name="month">
-        </div>
+                <div class="card">
+                    <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #06C755; margin-bottom: 20px;">
+                        <h3 id="report-title" style="margin: 0; color: #333; font-size: 18px; font-weight: 600;">กำลังเตรียมข้อมูล...</h3>
+                        <input type="hidden" id="unit" name="unit">
+                        <input type="hidden" id="month" name="month">
+                    </div>
 
-        <div class="input-group-grid">
-            <div class="form-inline">
-                <label>วันที่</label>
-                <input type="date" name="meeting_date" id="meeting_date" required>
+                    <div class="input-group-grid">
+                        <div class="form-inline">
+                            <label>วันที่</label>
+                            <input type="date" name="meeting_date" id="meeting_date" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>เวลา</label>
+                            <input type="time" name="start_time" id="start_time" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>สถานที่</label>
+                            <select id="location" name="location" required></select>
+                        </div>
+                        <div class="form-inline">
+                            <label>วิธีประชุม</label>
+                            <select name="method">
+                                <option value="On-site">On-site</option>
+                                <option value="Online">Online</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 15px;">
+                        <i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม
+                    </label>
+                    <div id="attendance-list" class="check-list" style="margin-top: 10px;"></div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 15px;">
+                        <i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน
+                    </label>
+                    <div style="margin-top: 10px;">
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="font-size: 13px;">
+                        <div id="image-preview" class="preview-img-container"></div>
+                    </div>
+                </div>
             </div>
-            <div class="form-inline">
-                <label>เวลา</label>
-                <input type="time" name="start_time" id="start_time" required>
-            </div>
-            <div class="form-inline">
-                <label>สถานที่</label>
-                <select id="location" name="location" required></select>
-            </div>
-            <div class="form-inline">
-                <label>วิธีประชุม</label>
-                <select name="method">
-                    <option value="On-site">On-site</option>
-                    <option value="Online">Online</option>
-                    <option value="Hybrid">Hybrid</option>
-                </select>
-            </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-
-        <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 15px;">
-            <i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม
-        </label>
-        <div id="attendance-list" class="check-list" style="margin-top: 10px;"></div>
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-
-        <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 15px;">
-            <i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน
-        </label>
-        <div style="margin-top: 10px;">
-            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="font-size: 13px;">
-            <div id="image-preview" class="preview-img-container"></div>
-        </div>
-    </div>
-</div>
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
@@ -161,6 +161,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=6.5"></script>
+    <script src="script.js?v=6.7"></script>
 </body>
 </html>
