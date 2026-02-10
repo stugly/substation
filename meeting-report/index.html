@@ -22,8 +22,16 @@
             display: flex; align-items: center; justify-content: center;
         }
         .step-circle.active { background: #28a745 !important; color: #fff !important; border-color: #28a745 !important; }
+        
+        /* สไตล์รายชื่อพนักงาน 2 คอลัมน์ */
+        .check-list { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+            padding: 10px; border: 1px solid #eee; border-radius: 10px; 
+            max-height: 200px; overflow-y: auto; background: #fdfdfd;
+        }
+        .check-list label { font-size: 14px; font-weight: 300; display: flex; align-items: center; gap: 5px; }
         .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .preview-img-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; }
+        .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -31,7 +39,7 @@
     <div id="spinner">
         <div class="loader"></div>
         <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
-        <div id="spinner-action" style="margin-top: 30px;"></div>
+        <div id="spinner-action" style="margin-top: 20px;"></div>
     </div>
 
     <div id="main-app" style="display:none;">
@@ -67,25 +75,53 @@
                         <label class="form-label">เดือน</label>
                         <select id="month" name="month" required></select>
                     </div>
+                    <div class="card">
+                        <label class="form-label">ผู้เข้าประชุม (Attendance)</label>
+                        <div id="attendance-list" class="check-list"></div>
+                    </div>
                 </div>
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
                         <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="10" placeholder="รายละเอียด..."></textarea>
+                        <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
+                    </div>
+                </div>
+
+                <div id="tab-maint" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">รายการอุปกรณ์ชำรุด</label>
+                        <div id="eq-container"></div>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มอุปกรณ์</button>
+                    </div>
+                </div>
+
+                <div id="tab-task" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">ภารกิจมอบหมาย/แผนงาน</label>
+                        <div id="task-container"></div>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มแผนงาน</button>
+                    </div>
+                </div>
+
+                <div id="tab-pics" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">รูปภาพประกอบ</label>
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                        <div id="image-preview" class="preview-img-container"></div>
                     </div>
                 </div>
 
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0;">
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 25px 0 50px 0;">
                     ✅ บันทึกรายงานทั้งหมด
                 </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=2.0"></script>
+    <script src="script.js?v=2.1"></script>
 </body>
 </html>
