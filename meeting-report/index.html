@@ -10,101 +10,82 @@
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     
     <style>
-        /* 2. เพิ่มเติมเฉพาะส่วนที่ใน CSS หลักไม่มี */
+        * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
-        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* สไตล์ปุ่มตัวเลข 1-5 แบบวงกลม (ใช้ชื่อคลาสไม่ให้ซ้ำของเดิม) */
         .step-nav { display: flex; justify-content: space-around; margin: 15px 0; }
         .step-circle { 
-            width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; 
+            width: 42px; height: 42px; border-radius: 50%; border: 2px solid #ddd; 
             background: #fff; font-weight: 600; color: #888; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
-        .step-circle.active { background: #28a745; color: #fff; border-color: #28a745; }
-        
+        .step-circle.active { background: #28a745 !important; color: #fff !important; border-color: #28a745 !important; }
         .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
         .preview-img-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; }
     </style>
 </head>
 <body>
-/*
+
     <div id="spinner">
         <div class="loader"></div>
-        <div style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
-        <div id="spinner-action"></div>
+        <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
+        <div id="spinner-action" style="margin-top: 30px;"></div>
     </div>
-
-    <div id="spinner">
-    <div class="loader"></div>
-    <div id="spinner-text" style="margin-top:15px;">กำลังตรวจสอบสิทธิ์...</div>
-    <div id="spinner-action" style="margin-top: 30px;"></div>
-  </div>
 
     <div id="main-app" style="display:none;">
-    <div class="header">
-        <h2>Meeting Report</h2>
-    </div>
-
-    <div class="container">
-        <div class="card">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
-                <div id="welcome" style="font-weight:600;"></div>
-            </div>
+        <div class="header">
+            <h2>Meeting Report</h2>
         </div>
 
-        <div class="step-nav" style="display: flex; justify-content: space-around; margin: 15px 0;">
-            <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
-            <div class="step-circle" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
-            <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
-            <div class="step-circle" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
-            <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
-        </div>
-
-        <h3 id="current-tab-title" style="margin: 10px 5px; color: #28a745; font-size: 18px;">
-            1. ข้อมูลทั่วไป
-        </h3>
-
-        <form id="reportForm">
-            <div id="tab-general" class="tab-content active">
-                <div class="card">
-                    <label class="form-label">หน่วยงาน</label>
-                    <select id="unit" name="unit" required></select>
-                    <label class="form-label">เดือน</label>
-                    <select id="month" name="month" required></select>
+        <div class="container">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
+                    <div id="welcome" style="font-weight:600;"></div>
                 </div>
             </div>
 
-            <div id="tab-op" class="tab-content" style="display:none;">
-                <div class="card">
-                    <label class="form-label">สรุปผลการดำเนินงาน</label>
-                    <textarea name="op_detail" rows="10" placeholder="รายละเอียด..."></textarea>
-                </div>
+            <div class="step-nav">
+                <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
+                <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
             </div>
 
-            <button type="submit" id="btn-submit" style="width: 100%; margin: 20px 0;">
-                ✅ บันทึกรายงานทั้งหมด
-            </button>
-        </form>
+            <h3 id="current-tab-title" style="margin: 10px 5px; color: #28a745; font-size: 18px;">
+                1. ข้อมูลทั่วไป
+            </h3>
+
+            <form id="reportForm">
+                <div id="tab-general" class="tab-content active">
+                    <div class="card">
+                        <label class="form-label">หน่วยงาน</label>
+                        <select id="unit" name="unit" required></select>
+                        <label class="form-label">เดือน</label>
+                        <select id="month" name="month" required></select>
+                    </div>
+                </div>
+
+                <div id="tab-op" class="tab-content">
+                    <div class="card">
+                        <label class="form-label">สรุปผลการดำเนินงาน</label>
+                        <textarea name="op_detail" rows="10" placeholder="รายละเอียด..."></textarea>
+                    </div>
+                </div>
+
+                <input type="hidden" name="recorder_uid" id="recorder_uid">
+                <input type="hidden" name="recorder_line" id="recorder_line">
+
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0;">
+                    ✅ บันทึกรายงานทั้งหมด
+                </button>
+            </form>
+        </div>
     </div>
-</div>
 
-<style>
-    /* CSS เพิ่มเติมสำหรับปุ่มวงกลม */
-    .step-circle {
-        width: 42px; height: 42px; border-radius: 50%; border: 2px solid #ddd;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 600; color: #888; cursor: pointer; background: #fff;
-    }
-    .step-circle.active {
-        background: #28a745 !important; color: #fff !important; border-color: #28a745 !important;
-    }
-    .tab-content { transition: 0.3s; }
-</style>
-
-    <script src="script.js?v=1.9"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 </html>

@@ -46,26 +46,42 @@ function initLiff() {
 
 
 function checkAccess(profile) {
+    // 1. ตรวจสอบว่า staffData โหลดมาหรือยัง (ป้องกันการค้างถ้า GAS ตอบช้า)
+    if (!staffData || staffData.length === 0) {
+        console.log("Waiting for staff data...");
+        // ให้ลองเช็คใหม่ทุกๆ 500 มิลลิวินาที จนกว่าข้อมูลจะมา
+        setTimeout(() => checkAccess(profile), 500);
+        return;
+    }
+
     const user = staffData.find(s => s.line === profile.userId);
     
     if (user) {
-        // ✅ ผ่านสิทธิ์: ซ่อนหน้าโหลดทั้งหมด
+        // ✅ ผ่านสิทธิ์: ซ่อนหน้าโหลดและโชว์หน้าแอป
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         
         document.getElementById('welcome').innerText = `ยินดีต้อนรับ: ${user.name}`;
-        document.getElementById('recorder_uid').value = user.uid;
-        document.getElementById('recorder_line').value = user.line;
+        
+        // ตรวจสอบว่ามี Element เหล่านี้ใน HTML หรือไม่ก่อนใส่ค่า
+        const uidEl = document.getElementById('recorder_uid');
+        const lineEl = document.getElementById('recorder_line');
+        if (uidEl) uidEl.value = user.uid;
+        if (lineEl) lineEl.value = user.line;
+        
+        console.log("Access Granted:", user.name);
     } else {
-        // ❌ ไม่พบสิทธิ์: เปลี่ยนข้อความและแสดงปุ่ม Logout ในหน้า Spinner เดิม
-        document.getElementById('spinner-text').innerHTML = `
+        // ❌ ไม่พบสิทธิ์
+        const textEl = document.getElementById('spinner-text');
+        const actionEl = document.getElementById('spinner-action');
+        
+        if (textEl) textEl.innerHTML = `
             <span style="color: #dc3545; font-weight: 500;">❌ ไม่พบสิทธิ์การใช้งานสำหรับบัญชีนี้</span><br>
             <small style="color: #999;">ID: ${profile.userId}</small>
         `;
         
-        // สร้างปุ่มใหม่ขึ้นมาเฉพาะเคสนี้
-        document.getElementById('spinner-action').innerHTML = `
-            <button class="btn-primary" onclick="forceLogout()" style="padding: 12px 25px; border-radius: 25px;">
+        if (actionEl) actionEl.innerHTML = `
+            <button class="btn-primary" onclick="forceLogout()" style="padding: 12px 25px; border-radius: 25px; margin-top: 10px;">
                 Login to another account
             </button>
         `;
