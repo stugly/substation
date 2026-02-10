@@ -37,11 +37,25 @@
       .form-compact label { flex: 0 0 auto; white-space: nowrap; font-size: 11px; color: #666; font-weight: 600; }
       
       /* บังคับความสูงให้เท่ากันทุกลูกลักษณะ (Date, Time, Select) */
+      /* ปรับความสูงช่องกรอกข้อมูลให้เท่ากันทั้งหมด */
       .form-compact input, .form-compact select { 
-          flex: 1; min-width: 0; padding: 0 5px !important; border: 1px solid #ddd !important; 
-          border-radius: 4px !important; font-size: 11px !important; 
-          height: 32px !important; line-height: 32px !important; /* บังคับความสูง */
-          box-sizing: border-box;
+          flex: 1; 
+          min-width: 0; 
+          padding: 0 5px !important; 
+          border: 1px solid #ddd !important; 
+          border-radius: 4px !important; 
+          font-size: 12px !important; 
+          height: 35px !important; /* เพิ่มความสูงเป็น 35px ให้กดง่ายขึ้น */
+          line-height: 35px !important; 
+          box-sizing: border-box; /* บังคับให้ขนาดรวม padding แล้วไม่เกินความสูงที่ตั้งไว้ */
+          background-color: #fff;
+      }
+
+      /* ปรับระยะห่าง Label เล็กน้อย */
+      .form-compact label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #444;  
       }
 
 
@@ -179,6 +193,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=7.2"></script>
+    <script src="script.js?v=7.3"></script>
 </body>
 </html>

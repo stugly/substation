@@ -101,8 +101,20 @@ function setupMetadata(data) {
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
+        
+        // กรองเฉพาะสถานีที่มี Unit ตรงกับผู้ใช้งาน
         const myStations = data.stations.filter(s => s.unit === currentUserUnit);
-        myStations.forEach(s => locSel.add(new Option(s.name, s.name)));
+        
+        if (myStations.length > 0) {
+            myStations.forEach(s => {
+                // s.name คือ SName ที่ส่งมาจาก GAS
+                let opt = new Option(s.name, s.name);
+                locSel.add(opt);
+            });
+        } else {
+            // ถ้าไม่เจอสถานีใน Unit ตัวเอง ให้ดึงทั้งหมดมาแสดงเป็นทางเลือกสำรอง
+            data.stations.forEach(s => locSel.add(new Option(s.name, s.name)));
+        }
     }
 
     // ตั้งค่ารายชื่อผู้เข้าประชุม (Unit ตัวเองก่อน ตามด้วย ผจฟ.1)
