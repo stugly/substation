@@ -1,185 +1,62 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="data:,">
-    <title>Argus - Meeting Report</title>
+    <title>Argus - Meeting</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     
     <style>
-        * { font-family: 'Kanit', sans-serif !important; }
-        
-        /* ปรับแต่ง Header ให้เหมือน Argus เป๊ะๆ */
-        .header { 
-            background-color: #06C755 !important; 
-            padding: 40px 20px 70px 20px !important; /* เพิ่ม Padding ล่างเพื่อให้ Container เกย */
-            border-radius: 0 0 40px 40px !important; 
-            position: relative;
-        }
-
-        .header-content h2 {
-            font-size: 26px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 15px;
-            letter-spacing: 0.5px;
-        }
-
-        /* ปรับส่วนข้อมูลพนักงานใน Header */
-        .user-info {
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.15); /* โปร่งแสงนิดๆ สไตล์แอปสมัยใหม่ */
-            padding: 12px 15px;
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #fff;
-            border: 2px solid #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-        }
-
-        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .user-avatar i { font-size: 32px; color: #ccc; }
-
-        .user-details { flex: 1; }
-        .user-name { color: #fff; font-weight: 600; font-size: 16px; display: block; }
-        .user-status { color: rgba(255,255,255,0.8); font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .user-status::before { content: ''; width: 8px; height: 8px; background: #fff; border-radius: 50%; display: inline-block; }
-
-        .logout-btn { color: #fff; font-size: 18px; padding: 10px; cursor: pointer; opacity: 0.9; }
-
-        /* ปรับให้ Container เกยทับขอบ Header */
-        .container { 
-            margin-top: -40px !important; 
-            padding: 0 15px 50px 15px !important;
-            position: relative;
-            z-index: 5;
-        }
-
-        /* Folder Tabs Style */
-        .step-nav { display: flex; margin-bottom: 0; padding: 0 5px; gap: 2px; }
-        .step-tab { 
-            flex: 1; height: 38px; border-radius: 12px 12px 0 0; 
-            border: 1px solid #ddd; border-bottom: none; background: #f0f0f0;
-            color: #888; font-size: 11px; display: flex; align-items: center; 
-            justify-content: center; cursor: pointer; transition: 0.2s;
-        }
-        .step-tab.active { 
-            background: #fff !important; color: #06C755 !important; 
-            font-weight: 600; height: 44px; margin-top: -6px; 
-            border-top: 3px solid #06C755; z-index: 10; font-size: 12px;
-        }
-
-        .tab-content { 
-            background: #fff; border-radius: 0 15px 15px 15px; 
-            border: 1px solid #ddd; padding: 20px 15px; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
+        /* ส่วนที่ CSS หลักของคุณไม่มี คือ "ที่คั่นแฟ้ม" จึงต้องใส่เพิ่มนิดหน่อยครับ */
+        .step-nav { display: flex; padding: 0 10px; gap: 2px; margin-top: 20px; }
+        .step-tab { flex: 1; height: 35px; background: #e9ecef; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; cursor: pointer; border: 1px solid #ddd; border-bottom: none; }
+        .step-tab.active { background: #fff; color: #06C755; font-weight: 600; border-top: 3px solid #06C755; height: 40px; margin-top: -5px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* ปรับ Container ให้รับกับ CSS หลักของคุณ */
+        .container { margin-top: -30px; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div style="margin-top: 10px;">กำลังตรวจสอบสิทธิ์...</div>
+        <div>กำลังประมวลผล...</div>
     </div>
 
-    <div id="main-app" style="display:none;">
-        <div class="header">
-            <div class="header-content">
-                <h2>Argus Report</h2>
-                <div class="user-info">
-                    <div class="user-avatar" id="user-avatar-placeholder">
-                        <img id="profileImg" src="" style="display:none;">
-                        <i id="defaultAvatar" class="fa-solid fa-circle-user"></i>
-                    </div>
-                    <div class="user-details">
-                        <span class="user-name" id="welcome">Guest</span>
-                        <span class="user-status">ออนไลน์</span>
-                    </div>
-                    <div class="logout-btn" onclick="forceLogout()">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </div>
-                </div>
+    <div class="header">
+        <h2>Argus</h2>
+    </div>
+
+    <div class="container" id="main-app" style="display:none;">
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img id="profileImg" src="" style="width:45px; height:45px; border-radius:50%; display:none;">
+                <div id="welcome" style="font-weight:600;">สวัสดี, กำลังโหลด...</div>
             </div>
         </div>
 
-        <div class="container">
-            <div class="step-nav">
-                <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ดำเนินงาน</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-3')">3.เทคนิค/ซ่อม</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/ทรัพย์สิน</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-5')">5.อื่นๆ</div>
-            </div>
+        <div class="step-nav">
+            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูล</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ผลงาน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.อุปกรณ์</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.ภารกิจ</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.รูปภาพ</div>
+        </div>
 
-            <form id="reportForm">
-                <div id="tab-1" class="tab-content active">
-                    <div class="card" style="border:none; padding:0;">
-                        <span class="section-tag">Sheet: Meeting</span>
-                        <label class="form-label">หน่วยงาน</label>
-                        <select id="unit" name="unit" required></select>
-                        <label class="form-label" style="margin-top:10px;">เดือนที่รายงาน</label>
-                        <select id="month" name="month" required></select>
-                    </div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                    <div class="card" style="border:none; padding:0;">
-                        <span class="section-tag">Sheet: Attendance</span>
-                        <label class="form-label">รายชื่อผู้เข้าประชุม</label>
-                        <div id="attendance-list" class="check-list"></div>
-                    </div>
+        <form id="reportForm">
+            <div id="tab-1" class="tab-content active">
+                <div class="card">
+                    <label class="form-label">หน่วยงาน</label>
+                    <select id="unit" name="unit"></select>
                 </div>
-                
-                <div id="tab-2" class="tab-content" style="display:none;">...</div>
-                <div id="tab-3" class="tab-content" style="display:none;">...</div>
-                <div id="tab-4" class="tab-content" style="display:none;">...</div>
-                <div id="tab-5" class="tab-content" style="display:none;">...</div>
-
-                <input type="hidden" name="recorder_uid" id="recorder_uid">
-                <input type="hidden" name="recorder_line" id="recorder_line">
-                
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">
-                    ✅ บันทึกรายงานทั้งหมด
-                </button>
+            </div>
             </form>
-        </div>
     </div>
 
-    <script>
-        function showTab(evt, tabId) {
-            const contents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < contents.length; i++) {
-                contents[i].style.display = "none";
-                contents[i].classList.remove("active");
-            }
-            document.getElementById(tabId).style.display = "block";
-            document.getElementById(tabId).classList.add("active");
-
-            const tabs = document.getElementsByClassName("step-tab");
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove("active");
-            }
-            evt.currentTarget.classList.add("active");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
-    <script src="script.js?v=5.7"></script>
+    <script src="script.js?v=5.8"></script>
 </body>
 </html>
