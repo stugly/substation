@@ -12,43 +12,106 @@
     
     <style>
         * { font-family: 'Kanit', sans-serif !important; }
-        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
         
-        /* สไตล์แท็บที่คั่นแฟ้มแบบ Folder Tabs (Argus Version) */
-        .step-nav { display: flex; justify-content: flex-start; margin: 20px 0 0 0; padding: 0 10px; gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .step-tab { flex: 1; min-width: 85px; height: 38px; border-radius: 12px 12px 0 0; border: 1px solid #ddd; border-bottom: none; background: #e9ecef; color: #888; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 1; white-space: nowrap; }
-        .step-tab.active { background: #fff !important; color: #06C755 !important; font-weight: 600; height: 44px; margin-top: -6px; border-top: 3px solid #06C755; border-left: 1px solid #ddd; border-right: 1px solid #ddd; z-index: 3; font-size: 12px; }
+        /* ปรับแต่ง Header ให้เหมือน Argus เป๊ะๆ */
+        .header { 
+            background-color: #06C755 !important; 
+            padding: 40px 20px 70px 20px !important; /* เพิ่ม Padding ล่างเพื่อให้ Container เกย */
+            border-radius: 0 0 40px 40px !important; 
+            position: relative;
+        }
 
-        .tab-content { display: none; background: #fff; padding: 20px 15px; border-radius: 0 15px 15px 15px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; z-index: 2; margin-top: -1px; }
-        .tab-content.active { display: block; }
+        .header-content h2 {
+            font-size: 26px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
 
-        /* ล้างค่า Card เดิมใน Tab */
-        .tab-content .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 25px !important; border-bottom: 1px solid #f0f0f0 !important; padding-bottom: 15px !important; border-radius: 0 !important; }
-        .tab-content .card:last-child { border-bottom: none !important; }
+        /* ปรับส่วนข้อมูลพนักงานใน Header */
+        .user-info {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15); /* โปร่งแสงนิดๆ สไตล์แอปสมัยใหม่ */
+            padding: 12px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd;}
-        .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
-        .section-tag { font-size: 11px; color: #06C755; background: #e6f9ed; padding: 2px 8px; border-radius: 10px; font-weight: 400; margin-bottom: 10px; display: inline-block; }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-avatar i { font-size: 32px; color: #ccc; }
+
+        .user-details { flex: 1; }
+        .user-name { color: #fff; font-weight: 600; font-size: 16px; display: block; }
+        .user-status { color: rgba(255,255,255,0.8); font-size: 12px; display: flex; align-items: center; gap: 5px; }
+        .user-status::before { content: ''; width: 8px; height: 8px; background: #fff; border-radius: 50%; display: inline-block; }
+
+        .logout-btn { color: #fff; font-size: 18px; padding: 10px; cursor: pointer; opacity: 0.9; }
+
+        /* ปรับให้ Container เกยทับขอบ Header */
+        .container { 
+            margin-top: -40px !important; 
+            padding: 0 15px 50px 15px !important;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Folder Tabs Style */
+        .step-nav { display: flex; margin-bottom: 0; padding: 0 5px; gap: 2px; }
+        .step-tab { 
+            flex: 1; height: 38px; border-radius: 12px 12px 0 0; 
+            border: 1px solid #ddd; border-bottom: none; background: #f0f0f0;
+            color: #888; font-size: 11px; display: flex; align-items: center; 
+            justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .step-tab.active { 
+            background: #fff !important; color: #06C755 !important; 
+            font-weight: 600; height: 44px; margin-top: -6px; 
+            border-top: 3px solid #06C755; z-index: 10; font-size: 12px;
+        }
+
+        .tab-content { 
+            background: #fff; border-radius: 0 15px 15px 15px; 
+            border: 1px solid #ddd; padding: 20px 15px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div>กำลังประมวลผล...</div>
+        <div style="margin-top: 10px;">กำลังตรวจสอบสิทธิ์...</div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
             <div class="header-content">
-                <h2>Argus</h2>
+                <h2>Argus Report</h2>
                 <div class="user-info">
                     <div class="user-avatar" id="user-avatar-placeholder">
                         <img id="profileImg" src="" style="display:none;">
                         <i id="defaultAvatar" class="fa-solid fa-circle-user"></i>
                     </div>
                     <div class="user-details">
-                        <span class="user-name" id="welcome">กำลังตรวจสอบ...</span>
+                        <span class="user-name" id="welcome">Guest</span>
                         <span class="user-status">ออนไลน์</span>
                     </div>
                     <div class="logout-btn" onclick="forceLogout()">
@@ -69,33 +132,25 @@
 
             <form id="reportForm">
                 <div id="tab-1" class="tab-content active">
-                    <div class="card">
+                    <div class="card" style="border:none; padding:0;">
                         <span class="section-tag">Sheet: Meeting</span>
                         <label class="form-label">หน่วยงาน</label>
                         <select id="unit" name="unit" required></select>
                         <label class="form-label" style="margin-top:10px;">เดือนที่รายงาน</label>
                         <select id="month" name="month" required></select>
                     </div>
-                    <div class="card">
+                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                    <div class="card" style="border:none; padding:0;">
                         <span class="section-tag">Sheet: Attendance</span>
                         <label class="form-label">รายชื่อผู้เข้าประชุม</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
-
-                <div id="tab-2" class="tab-content">
-                    <div class="card">
-                        <span class="section-tag">Sheet: Security / Grid</span>
-                        <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                        <textarea name="op_detail" rows="6" placeholder="กรอกรายละเอียด..."></textarea>
-                    </div>
-                    <div class="card">
-                        <span class="section-tag">Sheet: Task_Plan</span>
-                        <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
-                        <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
-                    </div>
-                </div>
+                
+                <div id="tab-2" class="tab-content" style="display:none;">...</div>
+                <div id="tab-3" class="tab-content" style="display:none;">...</div>
+                <div id="tab-4" class="tab-content" style="display:none;">...</div>
+                <div id="tab-5" class="tab-content" style="display:none;">...</div>
 
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
@@ -124,18 +179,7 @@
             evt.currentTarget.classList.add("active");
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        // เชื่อมรูปโปรไฟล์เมื่อโหลดสำเร็จ
-        function updateProfileUI(profile) {
-            const pImg = document.getElementById('profileImg');
-            const dAvt = document.getElementById('defaultAvatar');
-            if (profile.pictureUrl) {
-                pImg.src = profile.pictureUrl;
-                pImg.style.display = 'block';
-                dAvt.style.display = 'none';
-            }
-        }
     </script>
-    <script src="script.js?v=5.6"></script>
+    <script src="script.js?v=5.7"></script>
 </body>
 </html>
