@@ -28,34 +28,38 @@
       .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
 
       .input-row-grid { 
-          display: grid; 
-          grid-template-columns: 1.1fr 0.9fr 1.3fr 1fr; /* ปรับสัดส่วนช่องให้เหมาะสมกับเนื้อหา */
-          gap: 5px; 
-          align-items: center;
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 8px; 
+      align-items: stretch; /* ให้ทุกช่องสูงเท่ากัน */
       }
-      .form-compact { display: flex; align-items: center; gap: 4px; }
-      .form-compact label { flex: 0 0 auto; white-space: nowrap; font-size: 11px; color: #666; font-weight: 600; }
       
-      /* บังคับความสูงให้เท่ากันทุกลูกลักษณะ (Date, Time, Select) */
-      /* ปรับความสูงช่องกรอกข้อมูลให้เท่ากันทั้งหมด */
-      .form-compact input, .form-compact select { 
-          flex: 1; 
-          min-width: 0; 
-          padding: 0 5px !important; 
-          border: 1px solid #ddd !important; 
-          border-radius: 4px !important; 
-          font-size: 12px !important; 
-          height: 35px !important; /* เพิ่มความสูงเป็น 35px ให้กดง่ายขึ้น */
-          line-height: 35px !important; 
-          box-sizing: border-box; /* บังคับให้ขนาดรวม padding แล้วไม่เกินความสูงที่ตั้งไว้ */
-          background-color: #fff;
+      .form-compact { 
+          display: flex; 
+          align-items: center; /* จัด Label และ Input ให้ตรงกันแนวตั้ง */
+          gap: 4px; 
       }
 
-      /* ปรับระยะห่าง Label เล็กน้อย */
-      .form-compact label {
-          font-size: 12px;
+      .form-compact label { 
+          flex: 0 0 auto; 
+          font-size: 11px; 
+          color: #666; 
           font-weight: 600;
-          color: #444;  
+      }
+
+      /* บังคับความสูงและตำแหน่งให้เท่ากันเป๊ะ */
+      .form-compact input, 
+      .form-compact select { 
+          flex: 1; 
+          min-width: 0; 
+          height: 32px !important; 
+          padding: 0 5px !important; 
+          margin: 0 !important; /* ลบ Margin ที่อาจทำให้เยื้อง */
+          border: 1px solid #ddd !important; 
+          border-radius: 4px !important; 
+          font-size: 11px !important; 
+          box-sizing: border-box;
+          vertical-align: middle; /* บังคับให้อยู่แนวเดียวกัน */
       }
 
 
@@ -193,6 +197,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=7.3"></script>
+    <script src="script.js?v=7.4"></script>
 </body>
 </html>
