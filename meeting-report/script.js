@@ -68,40 +68,31 @@ function checkAccess(profile) {
 }
 
 // 5. เตรียม Dropdown และ Checkbox (กรองตามเงื่อนไขที่ระบุ)
+// แก้ไขฟังก์ชัน setupMetadata
 function setupMetadata(data) {
-    // --- 5.1 ตั้งค่าหน่วยงาน (ดึงจาก staffData และ Auto-select หน่วยงานตัวเอง) ---
-    const uSel = document.getElementById('unit');
-    if (uSel && staffData.length > 0) {
-        uSel.innerHTML = "";
-        const uniqueUnits = [...new Set(staffData.map(s => s.unit).filter(u => u))];
-        uSel.add(new Option("-- เลือกหน่วยงาน --", ""));
-        uniqueUnits.forEach(u => uSel.add(new Option(u, u)));
-        
-        // เลือกหน่วยงานของผู้ใช้ให้อัตโนมัติ
-        if (currentUserUnit) uSel.value = currentUserUnit;
+    // 1. จัดการเรื่องวันที่และเดือนปัจจุบัน
+    const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const now = new Date();
+    const currentMonthName = thMonths[now.getMonth()];
+    const currentYearTH = now.getFullYear() + 543; // แปลง ค.ศ. เป็น พ.ศ.
+    const fullDateText = `${currentMonthName} ${currentYearTH}`;
+
+    // 2. แสดงหัวข้อรายงานและบันทึกค่าลง Hidden Input
+    const reportTitle = document.getElementById('report-title');
+    const unitInput = document.getElementById('unit');
+    const monthInput = document.getElementById('month');
+
+    if (reportTitle) {
+        reportTitle.innerText = `รายงานการประชุม ${currentUserUnit} ประจำเดือน ${fullDateText}`;
     }
     
-    // --- 5.2 ตั้งค่าเดือนปัจจุบันอัตโนมัติ ---
-    const mSel = document.getElementById('month');
-    if (mSel && data.months) {
-        mSel.innerHTML = "";
-        data.months.forEach(m => mSel.add(new Option(m, m)));
-        
-        const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        const currentMonthName = thMonths[new Date().getMonth()];
-        
-        for (let i = 0; i < mSel.options.length; i++) {
-            if (mSel.options[i].text.includes(currentMonthName)) {
-                mSel.selectedIndex = i;
-                break;
-            }
-        }
-    }
-    
-    // --- 5.3 กรองรายชื่อพนักงาน (หน่วยงานเดียวกัน + ผจฟ.1) ---
+    // บันทึกค่าลง Input เพื่อให้ตอน Submit ค่าเหล่านี้จะถูกส่งไปด้วย
+    if (unitInput) unitInput.value = currentUserUnit;
+    if (monthInput) monthInput.value = fullDateText;
+
+    // 3. กรองรายชื่อพนักงาน (หน่วยงานเดียวกัน + ผจฟ.1)
     const attList = document.getElementById('attendance-list');
     if (attList && staffData.length > 0) {
-        // กรองเฉพาะคนที่อยู่หน่วยงานเดียวกับเรา หรือ อยู่หน่วยงาน "ผจฟ.1"
         const filteredStaff = staffData.filter(s => 
             s.unit === currentUserUnit || s.unit === "ผจฟ.1"
         );
