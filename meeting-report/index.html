@@ -9,37 +9,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-        /* บังคับใช้ฟอนต์ Kanit ในจุดที่เพี้ยน */
+        /* บังคับใช้ฟอนต์ Kanit และแก้สีที่เพี้ยน */
         * { font-family: 'Kanit', sans-serif !important; }
         
+        /* แก้ไข Header ให้เหมือน Argus เป๊ะ */
+        .header { 
+            background-color: #28a745; 
+            padding: 30px 15px; 
+            text-align: center; 
+            margin-bottom: 0; /* ลบ margin เพื่อให้ต่อกับ container เนียนๆ */
+        }
+        .header h2 { color: #fff !important; margin: 0; font-weight: 600; letter-spacing: 1px; }
+
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; top:0; left:0; }
         
-        /* แก้ไขส่วน Tab ให้ไม่เบียดกัน */
+        /* จัดการระบบ Tab */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
+        /* สไตล์ปุ่มเลข 1 2 3 4 5 สไตล์วงกลมแบบ Check-in */
         .tab-nav { 
-            display: flex; gap: 10px; margin: 15px 0; overflow-x: auto; 
-            padding: 5px 0; -webkit-overflow-scrolling: touch;
+            display: flex; justify-content: space-around; margin: 15px 0; 
+            background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .tab-btn { 
-            flex: 0 0 auto; min-width: 45px; height: 45px; border-radius: 50%; 
-            border: 2px solid #ddd; background: #fff; font-weight: 600; 
-            color: #666; cursor: pointer; transition: 0.3s;
+            width: 42px; height: 42px; border-radius: 50%; 
+            border: 2px solid #eee; background: #fff; font-weight: 600; 
+            color: #888; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; }
+        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; transform: scale(1.1); }
 
-        /* จัดการรูปภาพ Preview */
-        .preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .preview-container img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
-        
-        /* สไตล์ Card สำหรับ Attendance List */
+        /* ปรับปรุง Card และ Check-list */
+        .card { margin-top: 10px !important; }
         .check-list { 
             display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-            background: #fdfdfd; padding: 12px; border: 1px solid #eee; 
-            border-radius: 8px; max-height: 250px; overflow-y: auto; 
+            padding: 10px; border: 1px solid #eee; border-radius: 8px; 
+            max-height: 200px; overflow-y: auto; background: #fafafa;
         }
-        .check-list label { font-size: 14px; font-weight: 300; display: flex; align-items: center; gap: 5px; }
+        .check-list label { font-size: 13px; font-weight: 300; display: flex; align-items: center; gap: 6px; color: #444; }
+        
+        .preview-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -47,7 +57,9 @@
     <div id="spinner">
         <div class="loader"></div>
         <div style="margin-top:15px; font-weight: 400; color: #666;">กำลังตรวจสอบสิทธิ์...</div>
-        <button type="button" class="btn-secondary" onclick="forceLogout()" style="margin-top:25px; font-size:11px;">Login to another account</button>
+        <button type="button" class="btn-secondary" onclick="forceLogout()" style="margin-top:25px; font-size:11px; padding: 5px 15px; border-radius: 20px;">
+            <i class="fa-solid fa-right-from-bracket"></i> Login to another account
+        </button>
     </div>
 
     <div id="main-app" style="display:none;">
@@ -55,17 +67,16 @@
             <h2>Meeting Report</h2>
         </div>
 
-        <div class="container">
-            <div class="card">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-circle-user" style="font-size: 30px; color: #28a745;"></i>
-                    <div id="welcome" style="font-weight:400; font-size: 15px;"></div>
+        <div class="container" style="margin-top: -20px;"> <div class="card" style="border-top: 4px solid #28a745;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-circle-user" style="font-size: 32px; color: #28a745;"></i>
+                    <div id="welcome" style="font-weight:400; font-size: 15px; color: #333;"></div>
                 </div>
             </div>
 
-            <div style="margin: 15px 0 10px 5px; font-size: 16px; font-weight: 500;">
-                <i class="fa-solid fa-file-signature" style="color:#28a745;"></i> บันทึกการรายงาน: 
-                <span id="tab-name" style="color:#28a745;">1. General</span>
+            <div style="margin: 20px 0 5px 5px; font-size: 15px; font-weight: 500; color: #666;">
+                <i class="fa-solid fa-file-pen" style="color:#28a745;"></i> บันทึกการรายงาน: 
+                <span id="tab-name" style="color:#28a745; font-weight: 600;">1. General</span>
             </div>
 
             <div class="tab-nav">
@@ -80,8 +91,9 @@
                 <div id="tab-general" class="tab-content active">
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
-                        <select name="unit" id="unit" required></select>
-                        <label class="form-label">เดือน/วันที่ประชุม</label>
+                        <select name="unit" id="unit" class="form-control" required></select>
+                        
+                        <label class="form-label" style="margin-top:10px;">เดือน / วันที่ประชุม</label>
                         <div style="display:flex; gap:10px;">
                             <select name="month" id="month" style="flex:1;" required></select>
                             <input type="date" name="date" style="flex:1;" required>
@@ -95,8 +107,8 @@
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
-                        <label class="form-label">สรุปผลดำเนินงาน/ความปลอดภัย</label>
-                        <textarea name="op_detail" rows="6" placeholder="ระบุรายละเอียด..."></textarea>
+                        <label class="form-label">สรุปผลดำเนินงาน / ความปลอดภัย</label>
+                        <textarea name="op_detail" rows="8" placeholder="กรอกรายละเอียด..."></textarea>
                     </div>
                 </div>
 
@@ -104,35 +116,45 @@
                     <div class="card">
                         <label class="form-label">รายการอุปกรณ์ชำรุด</label>
                         <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการ</button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">
+                            <i class="fa-solid fa-plus-circle"></i> เพิ่มรายการอุปกรณ์
+                        </button>
                     </div>
                 </div>
 
                 <div id="tab-task" class="tab-content">
                     <div class="card">
-                        <label class="form-label">ภารกิจมอบหมาย/แผนงาน</label>
+                        <label class="form-label">ภารกิจมอบหมาย / แผนงาน</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มแผนงาน</button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">
+                            <i class="fa-solid fa-calendar-plus"></i> เพิ่มแผนงานใหม่
+                        </button>
                     </div>
                 </div>
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
-                        <label class="form-label">รูปภาพประกอบ</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                        <label class="form-label">รูปภาพประกอบการประชุม</label>
+                        <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 10px; background: #fafafa;">
+                            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="display:none;">
+                            <label for="imageInput" style="cursor:pointer; color:#28a745;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 30px;"></i><br>
+                                คลิกเพื่อเลือกรูปภาพ (หลายรูป)
+                            </label>
+                        </div>
                         <div id="image-preview" class="preview-container"></div>
                     </div>
                     <input type="hidden" name="recorder_uid" id="recorder_uid">
                     <input type="hidden" name="recorder_line" id="recorder_line">
                 </div>
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0; padding: 15px; font-size: 18px;">
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 25px 0 50px 0; padding: 16px; font-size: 18px; font-weight: 500; border-radius: 12px; box-shadow: 0 4px 15px rgba(40,167,69,0.3);">
                     ✅ บันทึกรายงานทั้งหมด
                 </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=1.3"></script>
+    <script src="script.js?v=1.4"></script>
 </body>
 </html>
