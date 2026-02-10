@@ -12,84 +12,76 @@
     <style>
         * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
+        
+        /* Header สไตล์ Argus */
         .header { background-color: #06C755 !important; padding: 45px 15px 55px 15px !important; border-radius: 0 0 30px 30px !important; }
         .container { margin-top: -35px !important; padding-bottom: 50px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* สไตล์แท็บที่คั่นแฟ้ม (Folder Tabs) */
+
+        /* --- สไตล์แท็บที่คั่นแฟ้ม (Folder Tabs) --- */
         .step-nav {
             display: flex;
-            justify-content: flex-start; /* เรียงชิดซ้าย */
-            margin: 20px 0 0 0; /* เอา Margin ล่างออกเพื่อให้ติดกับ Card */
+            justify-content: flex-start;
+            margin: 20px 0 0 0;
             padding: 0 10px;
-            gap: 4px; /* ระยะห่างระหว่างที่คั่น */
+            gap: 2px;
         }
 
-        .step-circle {
-            flex: 1; /* แบ่งความกว้างเท่าๆ กัน */
-            max-width: 80px;
-            height: 35px;
-            /* ทรงที่คั่นแฟ้ม: มนเฉพาะมุมบน */
-            border-radius: 10px 10px 0 0; 
+        .step-tab {
+            flex: 1;
+            max-width: 70px;
+            height: 38px;
+            border-radius: 12px 12px 0 0; 
             border: 1px solid #ddd;
-            border-bottom: none; /* เปิดฐานด้านล่าง */
+            border-bottom: none;
             background: #e9ecef;
-            color: #666;
+            color: #888;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 500;
             font-size: 14px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
             position: relative;
-            bottom: -1px; /* ขยับลงมาทับเส้นขอบ Card เล็กน้อย */
             z-index: 1;
         }
 
-        /* เมื่อแท็บถูกเลือก (Active) */
-        .step-circle.active {
-            background: #fff !important; /* พื้นหลังสีเดียวกับ Card */
-            color: #06C755 !important; /* ตัวหนังสือสีเขียว Argus */
+        /* แท็บที่ถูกเลือก */
+        .step-tab.active {
+            background: #fff !important;
+            color: #06C755 !important;
             font-weight: 600;
-            border-top: 3px solid #06C755; /* เส้นเน้นด้านบน */
-            height: 40px; /* สูงกว่าแท็บอื่นเล็กน้อย */
-            bottom: -2px;
-            z-index: 2; /* ให้อยู่เหนือแท็บอื่น */
+            height: 45px; /* สูงกว่าเพื่อนเล็กน้อย */
+            margin-top: -7px; /* ขยับขึ้นให้ดูเกย */
+            border-top: 3px solid #06C755;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            z-index: 3;
         }
 
-        /* ปรับ Container ของเนื้อหาให้รับกับแท็บ */
+        /* กล่องเนื้อหาหลัก (เชื่อมกับแท็บ) */
         .tab-content {
-            background: #fff;
-            padding: 15px;
-            border-radius: 0 15px 15px 15px; /* มนทุกมุมยกเว้นมุมบนซ้ายที่ติดกับแท็บ */
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             display: none;
+            background: #fff;
+            padding: 20px 15px;
+            border-radius: 0 15px 15px 15px; /* มุมซ้ายบนไม่มนเพื่อให้ติดกับแท็บ */
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 2;
+            margin-top: -1px; /* เชื่อมรอยต่อขอบล่างของแท็บ */
         }
         
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content.active { display: block; }
 
-        /* ซ่อน Card เดิมข้างใน Tab Content เพื่อไม่ให้ขอบซ้อนกัน */
+        /* ล้างค่า Card ภายใน Tab เพื่อความเนียน */
         .tab-content .card {
-            border: none;
-            box-shadow: none;
-            padding: 0;
-            margin: 0;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin-bottom: 20px !important;
         }
-    </style>
 
-<div class="step-nav">
-    <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. General')">1</div>
-    <div class="step-circle" onclick="showTab(event, 'tab-op', '2. Operation')">2</div>
-    <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. Maint')">3</div>
-    <div class="step-circle" onclick="showTab(event, 'tab-task', '4. Task')">4</div>
-    <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. Pics')">5</div>
-</div>
-        .step-circle.active { background: #06C755 !important; color: #fff !important; border-color: #06C755 !important; transform: scale(1.1); }
         .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
     </style>
@@ -103,8 +95,9 @@
 
     <div id="main-app" style="display:none;">
         <div class="header"><h2>Meeting Report</h2></div>
+        
         <div class="container">
-            <div class="card">
+            <div class="card" style="border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 10px; padding: 15px;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-circle-user" style="font-size: 28px; color: #06C755;"></i>
@@ -115,21 +108,19 @@
             </div>
 
             <div class="step-nav">
-                <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
-                <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
+                <div class="step-tab active" onclick="showTab(event, 'tab-general', '1. ข้อมูลทั่วไป')">1</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-op', '2. ผลดำเนินงาน')">2</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-maint', '3. บำรุงรักษา')">3</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-task', '4. ภารกิจ/แผน')">4</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-pics', '5. รูปภาพ')">5</div>
             </div>
-
-            <h3 id="current-tab-title" style="margin: 10px 5px; color: #06C755; font-size: 17px;">1. ข้อมูลทั่วไป</h3>
 
             <form id="reportForm">
                 <div id="tab-general" class="tab-content active">
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
                         <select id="unit" name="unit" required></select>
-                        <label class="form-label" style="margin-top:10px;">เดือนที่รายงาน</label>
+                        <label class="form-label" style="margin-top:15px;">เดือนที่รายงาน</label>
                         <select id="month" name="month" required></select>
                     </div>
                     <div class="card">
@@ -161,6 +152,7 @@
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
+                        <label class="form-label">อัปโหลดรูปภาพ</label>
                         <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
                         <div id="image-preview" class="preview-img-container"></div>
                     </div>
@@ -168,10 +160,31 @@
 
                 <input type="hidden" name="recorder_uid" id="recorder_uid">
                 <input type="hidden" name="recorder_line" id="recorder_line">
+                
                 <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 30px 0 60px 0;">✅ บันทึกรายงานทั้งหมด</button>
             </form>
         </div>
     </div>
-    <script src="script.js?v=5.1"></script>
+
+    <script src="script.js?v=5.2"></script>
+    <script>
+        // ฟังก์ชันแก้ไขเพื่อให้สลับ Class สำหรับ Folder Tab โดยเฉพาะ
+        function showTab(evt, tabId, tabName) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove("active");
+            }
+            document.getElementById(tabId).classList.add("active");
+
+            const tabs = document.getElementsByClassName("step-tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            evt.currentTarget.classList.add("active");
+
+            // อัปเดต Title ถ้าจำเป็น (หรือจะลบทิ้งก็ได้เพื่อให้ดูคลีนขึ้น)
+            // document.getElementById('current-tab-title').innerText = tabName;
+        }
+    </script>
 </body>
 </html>
