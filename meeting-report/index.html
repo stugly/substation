@@ -63,50 +63,82 @@
         </div>
 
         <form id="reportForm">
+           <form id="reportForm">
             <div id="tab-1" class="tab-content active">
-    <div class="card" style="text-align: center; border-bottom: 3px solid #06C755; margin-bottom: 10px;">
-        <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px;">กำลังเตรียมข้อมูล...</h3>
-        <input type="hidden" id="unit" name="unit">
-        <input type="hidden" id="month" name="month">
-    
+                <div class="card" style="text-align: center; border-bottom: 3px solid #06C755; margin-bottom: 10px;">
+                    <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px;">กำลังเตรียมข้อมูล...</h3>
+                    <input type="hidden" id="unit" name="unit">
+                    <input type="hidden" id="month" name="month">
+                </div>
 
-    <div class="card">
-        <div class="input-group-grid">
-            <div class="form-inline">
-                <label>วันที่</label>
-                <input type="date" name="meeting_date" id="meeting_date" required>
+                <div class="card">
+                    <div class="input-group-grid">
+                        <div class="form-inline">
+                            <label>วันที่</label>
+                            <input type="date" name="meeting_date" id="meeting_date" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>เวลา</label>
+                            <input type="time" name="start_time" id="start_time" required>
+                        </div>
+                        <div class="form-inline">
+                            <label>สถานที่</label>
+                            <select id="location" name="location" required></select>
+                        </div>
+                        <div class="form-inline">
+                            <label>วิธีประชุม</label>
+                            <select name="method">
+                                <option value="On-site">On-site</option>
+                                <option value="Online">Online</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+                    <label class="form-label" style="font-weight: 600; color: #06C755;">
+                        <i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม
+                    </label>
+                    <div id="attendance-list" class="check-list"></div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+                    <label class="form-label" style="font-weight: 600; color: #06C755;">
+                        <i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+                    <div id="image-preview" class="preview-img-container"></div>
+                </div>
             </div>
-            <div class="form-inline">
-                <label>เวลา</label>
-                <input type="time" name="start_time" id="start_time" required>
+
+            <div id="tab-2" class="tab-content">
+                <div class="card">
+                    <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                    <textarea name="op_detail" rows="10" placeholder="กรอกรายละเอียด..."></textarea>
+                </div>
             </div>
-            <div class="form-inline">
-                <label>สถานที่</label>
-                <select id="location" name="location" required></select>
+
+            <div id="tab-3" class="tab-content">
+                <div class="card">
+                    <label class="form-label">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
+                    <div id="eq-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
+                    <textarea name="site_detail" rows="5" style="margin-top:15px;" placeholder="รายละเอียดบำรุงรักษาพื้นที่..."></textarea>
+                </div>
             </div>
-            <div class="form-inline">
-                <label>วิธีประชุม</label>
-                <select name="method">
-                    <option value="On-site">On-site</option>
-                    <option value="Online">Online</option>
-                    <option value="Hybrid">Hybrid</option>
-                </select>
+
+            <div id="tab-4" class="tab-content">
+                <div class="card">
+                    <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
+                    <div id="task-container"></div>
+                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
+                </div>
+                <div class="card">
+                    <label class="form-label">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
+                    <textarea name="other_detail" rows="6" placeholder="ระบุข้อมูลเพิ่มเติม..."></textarea>
+                </div>
             </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-        <label class="form-label" style="font-weight: 600; color: #06C755;"><i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม</label>
-        <div id="attendance-list" class="check-list" style="margin-bottom: 20px;"></div>
-
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-        <label class="form-label" style="font-weight: 600; color: #06C755;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน</label>
-        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-        <div id="image-preview" class="preview-img-container"></div>
-    </div>
-    </div>
-</div>
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
