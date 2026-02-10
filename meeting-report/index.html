@@ -9,48 +9,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-        /* บังคับใช้ฟอนต์ Kanit และแก้สีที่เพี้ยน */
-        * { font-family: 'Kanit', sans-serif !important; }
-        
-        /* แก้ไข Header ให้เหมือน Argus เป๊ะ */
-        .header { 
-            background-color: #28a745; 
-            padding: 30px 15px; 
-            text-align: center; 
-            margin-bottom: 0; /* ลบ margin เพื่อให้ต่อกับ container เนียนๆ */
-        }
-        .header h2 { color: #fff !important; margin: 0; font-weight: 600; letter-spacing: 1px; }
+    /* 1. บังคับฟอนต์เหมือนเดิม */
+    * { font-family: 'Kanit', sans-serif !important; }
 
-        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; top:0; left:0; }
-        
-        /* จัดการระบบ Tab */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* สไตล์ปุ่มเลข 1 2 3 4 5 สไตล์วงกลมแบบ Check-in */
-        .tab-nav { 
-            display: flex; justify-content: space-around; margin: 15px 0; 
-            background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .tab-btn { 
-            width: 42px; height: 42px; border-radius: 50%; 
-            border: 2px solid #eee; background: #fff; font-weight: 600; 
-            color: #888; cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; transform: scale(1.1); }
+    /* 2. แก้ไขส่วน Header ให้ใช้สีเดียวกับ Argus */
+    .header {
+        background-color: #28a745 !important; /* หรือลองใช้ #06C755 ซึ่งเป็นเขียว LINE */
+        padding: 35px 15px !important;
+        border-radius: 0 0 25px 25px !important; /* มนล่างแบบ Argus */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 
-        /* ปรับปรุง Card และ Check-list */
-        .card { margin-top: 10px !important; }
-        .check-list { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-            padding: 10px; border: 1px solid #eee; border-radius: 8px; 
-            max-height: 200px; overflow-y: auto; background: #fafafa;
-        }
-        .check-list label { font-size: 13px; font-weight: 300; display: flex; align-items: center; gap: 6px; color: #444; }
-        
-        .preview-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #ddd; }
-    </style>
+    /* 3. ตรวจสอบตัวอักษรใน Header */
+    .header h2 {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* เพิ่มมิติให้ตัวหนังสือ */
+    }
+
+    /* 4. ปรับตำแหน่ง Container ให้เกยขึ้นไปแบบของเดิม */
+    .container {
+        margin-top: -30px !important;
+        padding-bottom: 50px;
+    }
+
+    /* 5. สไตล์ Card */
+    .card {
+        border-radius: 15px !important;
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+    }
+</style>
 </head>
 <body>
 
@@ -61,9 +51,9 @@
     </div>
 
     <div id="main-app" style="display:none;">
-        <div class="header">
-            <h2>Meeting Report</h2>
-        </div>
+      <div class="header">
+        <h2>Meeting Report</h2>
+      </div>
 
         <div class="container" style="margin-top: -20px;"> <div class="card" style="border-top: 4px solid #28a745;">
                 <div style="display: flex; align-items: center; gap: 12px;">
