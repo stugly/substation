@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="data:,">
     <title>Monthly Meeting Report</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -15,8 +16,79 @@
         .container { margin-top: -35px !important; padding-bottom: 50px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .step-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .step-circle { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; background: #fff; font-weight: 600; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* สไตล์แท็บที่คั่นแฟ้ม (Folder Tabs) */
+        .step-nav {
+            display: flex;
+            justify-content: flex-start; /* เรียงชิดซ้าย */
+            margin: 20px 0 0 0; /* เอา Margin ล่างออกเพื่อให้ติดกับ Card */
+            padding: 0 10px;
+            gap: 4px; /* ระยะห่างระหว่างที่คั่น */
+        }
+
+        .step-circle {
+            flex: 1; /* แบ่งความกว้างเท่าๆ กัน */
+            max-width: 80px;
+            height: 35px;
+            /* ทรงที่คั่นแฟ้ม: มนเฉพาะมุมบน */
+            border-radius: 10px 10px 0 0; 
+            border: 1px solid #ddd;
+            border-bottom: none; /* เปิดฐานด้านล่าง */
+            background: #e9ecef;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            bottom: -1px; /* ขยับลงมาทับเส้นขอบ Card เล็กน้อย */
+            z-index: 1;
+        }
+
+        /* เมื่อแท็บถูกเลือก (Active) */
+        .step-circle.active {
+            background: #fff !important; /* พื้นหลังสีเดียวกับ Card */
+            color: #06C755 !important; /* ตัวหนังสือสีเขียว Argus */
+            font-weight: 600;
+            border-top: 3px solid #06C755; /* เส้นเน้นด้านบน */
+            height: 40px; /* สูงกว่าแท็บอื่นเล็กน้อย */
+            bottom: -2px;
+            z-index: 2; /* ให้อยู่เหนือแท็บอื่น */
+        }
+
+        /* ปรับ Container ของเนื้อหาให้รับกับแท็บ */
+        .tab-content {
+            background: #fff;
+            padding: 15px;
+            border-radius: 0 15px 15px 15px; /* มนทุกมุมยกเว้นมุมบนซ้ายที่ติดกับแท็บ */
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ซ่อน Card เดิมข้างใน Tab Content เพื่อไม่ให้ขอบซ้อนกัน */
+        .tab-content .card {
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+
+<div class="step-nav">
+    <div class="step-circle active" onclick="showTab(event, 'tab-general', '1. General')">1</div>
+    <div class="step-circle" onclick="showTab(event, 'tab-op', '2. Operation')">2</div>
+    <div class="step-circle" onclick="showTab(event, 'tab-maint', '3. Maint')">3</div>
+    <div class="step-circle" onclick="showTab(event, 'tab-task', '4. Task')">4</div>
+    <div class="step-circle" onclick="showTab(event, 'tab-pics', '5. Pics')">5</div>
+</div>
         .step-circle.active { background: #06C755 !important; color: #fff !important; border-color: #06C755 !important; transform: scale(1.1); }
         .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; }
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
