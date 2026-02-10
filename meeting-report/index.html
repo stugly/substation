@@ -27,46 +27,16 @@
       .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
       .preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
 
-      .input-row-grid { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      gap: 8px; 
-      align-items: stretch; /* ให้ทุกช่องสูงเท่ากัน */
-      }
-      
-      .form-compact { 
-          display: flex; 
-          align-items: center; /* จัด Label และ Input ให้ตรงกันแนวตั้ง */
-          gap: 4px; 
+      .input-row-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: stretch; }
+      .form-compact { display: flex; align-items: center; gap: 4px; }
+      .form-compact label { flex: 0 0 auto; font-size: 11px; color: #666; font-weight: 600; }
+      .form-compact input, .form-compact select { 
+          flex: 1; min-width: 0; height: 32px !important; padding: 0 5px !important; 
+          margin: 0 !important; border: 1px solid #ddd !important; border-radius: 4px !important; 
+          font-size: 11px !important; box-sizing: border-box; vertical-align: middle; 
       }
 
-      .form-compact label { 
-          flex: 0 0 auto; 
-          font-size: 11px; 
-          color: #666; 
-          font-weight: 600;
-      }
-
-      /* บังคับความสูงและตำแหน่งให้เท่ากันเป๊ะ */
-      .form-compact input, 
-      .form-compact select { 
-          flex: 1; 
-          min-width: 0; 
-          height: 32px !important; 
-          padding: 0 5px !important; 
-          margin: 0 !important; /* ลบ Margin ที่อาจทำให้เยื้อง */
-          border: 1px solid #ddd !important; 
-          border-radius: 4px !important; 
-          font-size: 11px !important; 
-          box-sizing: border-box;
-          vertical-align: middle; /* บังคับให้อยู่แนวเดียวกัน */
-      }
-
-
-      /* ปรับเป็น 2x2 ถ้าหน้าจอแคบเกินไป */
-      @media (max-width: 480px) {
-          .input-row-grid { grid-template-columns: 1fr 1fr; }
-      }
+      @media (max-width: 480px) { .input-row-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -130,14 +100,12 @@
                     </div>
 
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
                     <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
                         <i class="fa-solid fa-users"></i> รายชื่อผู้เข้าประชุม
                     </label>
                     <div id="attendance-list" class="check-list" style="margin-top: 10px;"></div>
 
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
                     <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
                         <i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน
                     </label>
@@ -150,38 +118,39 @@
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
-                    <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                    <div class="card">
-    <label class="form-label" style="color: #06C755; font-weight: 600;">
-        <i class="fa-solid fa-list-check"></i> รายการงานและแผนดำเนินงาน
-    </label>
-    
-    <div id="task-container">
-        <div class="task-row" style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
-            <select name="task_type[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border-radius: 4px; border: 1px solid #ddd;">
-                <option value="มอบหมาย">🚩 งานมอบหมาย</option>
-                <option value="แผนงาน">📅 แผนประจำเดือน</option>
-            </select>
-            <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียดงาน..." 
-                   style="flex: 1; height: 32px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
-            <button type="button" onclick="this.parentElement.remove()" 
-                    style="background: none; border: none; color: #ff4d4d; cursor: pointer;">
-                <i class="fa-solid fa-circle-minus"></i>
-            </button>
-        </div>
-    </div>
+                    <label class="form-label" style="font-weight: 600; color: #06C755;">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
+                    <textarea name="op_detail" rows="5" placeholder="สรุปภาพรวมการทำงานในเดือนนี้..."></textarea>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    
+                    <label class="form-label" style="color: #06C755; font-weight: 600;">
+                        <i class="fa-solid fa-list-check"></i> รายการงานและแผนดำเนินงาน
+                    </label>
+                    
+                    <div id="task-container">
+                        <div class="task-row" style="display: flex; gap: 5px; margin-bottom: 8px; align-items: center;">
+                            <select name="task_type[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="มอบหมาย">🚩 งานมอบหมาย</option>
+                                <option value="แผนงาน">📅 แผนประจำเดือน</option>
+                            </select>
+                            <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียดงาน..." 
+                                   style="flex: 1; height: 32px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+                            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">
+                                <i class="fa-solid fa-circle-minus"></i>
+                            </button>
+                        </div>
+                    </div>
 
-    <button type="button" onclick="addTaskRow()" class="btn-secondary" 
-            style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; background: #f0fdf4; color: #06C755; border: 1px dashed #06C755;">
-        <i class="fa-solid fa-plus"></i> เพิ่มรายการงาน
-    </button>
-</div>
+                    <button type="button" onclick="addTaskRow()" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; background: #f0fdf4; color: #06C755; border: 1px dashed #06C755;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการงาน
+                    </button>
                 </div>
             </div>
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
-                    <label class="form-label">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
+                    <label class="form-label" style="font-weight: 600; color: #06C755;">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
                     <div id="eq-container"></div>
                     <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
                     <textarea name="site_detail" rows="5" style="margin-top:15px;" placeholder="รายละเอียดบำรุงรักษาพื้นที่..."></textarea>
@@ -190,13 +159,8 @@
 
             <div id="tab-4" class="tab-content">
                 <div class="card">
-                    <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
-                    <div id="task-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
-                </div>
-                <div class="card">
-                    <label class="form-label">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
-                    <textarea name="other_detail" rows="6" placeholder="ระบุข้อมูลเพิ่มเติม..."></textarea>
+                    <label class="form-label" style="font-weight: 600; color: #06C755;">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
+                    <textarea name="other_detail" rows="8" placeholder="ระบุข้อมูลเพิ่มเติม (เช่น พัสดุขาดแคลน หรือ ทรัพย์สินที่ต้องติดตาม)..."></textarea>
                 </div>
             </div>
 
@@ -221,6 +185,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=7.6"></script>
+    <script src="script.js?v=7.7"></script>
 </body>
 </html>
