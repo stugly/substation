@@ -125,3 +125,32 @@ function addEqRow() {
         <textarea name="eq_detail[]" placeholder="อาการชำรุด" style="width:100%; margin-top:5px;"></textarea>`;
     document.getElementById('eq-container').appendChild(div);
 }
+
+// ฟังก์ชันสำหรับสลับบัญชี
+function forceLogout() {
+    if (confirm("คุณต้องการออกจากระบบเพื่อเข้าใช้งานด้วยบัญชีอื่นใช่หรือไม่?")) {
+        liff.logout();
+        // หลังจาก logout ให้ reload หน้าเว็บเพื่อให้ liff.login() ทำงานใหม่
+        location.reload();
+    }
+}
+
+// ปรับปรุงฟังก์ชัน checkAccess เล็กน้อยเพื่อให้แสดง Error ชัดเจนถ้าไม่มีสิทธิ์
+function checkAccess(profile) {
+    const user = staffData.find(s => s.line === profile.userId);
+    if (user) {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        document.getElementById('welcome').innerText = `ยินดีต้อนรับ: ${user.name}`;
+        document.getElementById('recorder_uid').value = user.uid;
+        document.getElementById('recorder_line').value = user.line;
+    } else {
+        // หากไม่พบสิทธิ์ ให้หยุดตัวหมุนและโชว์ปุ่ม Logout ชัดๆ
+        document.getElementById('spinner').innerHTML = `
+            <div style="color: red; margin-bottom: 20px;">❌ ไม่พบสิทธิ์การใช้งานสำหรับบัญชีนี้</div>
+            <p style="font-size: 14px; margin-bottom: 20px;">ID: ${profile.userId}</p>
+            <button class="btn-primary" onclick="forceLogout()">Login to another account</button>
+        `;
+    }
+}
