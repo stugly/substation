@@ -4,49 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:,">
-    <title>Monthly Meeting Report</title>
+    <title>Argus - Meeting Report</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
+    
     <style>
-        /* คงไว้เฉพาะ Style ที่จำเป็นสำหรับ Tab และความต่อเนื่องของ UI */
         * { font-family: 'Kanit', sans-serif !important; }
         #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 9999; top:0; left:0; }
         
-        /* สไตล์แท็บที่คั่นแฟ้มแบบเชื่อมเนื้อหา */
+        /* สไตล์แท็บที่คั่นแฟ้มแบบ Folder Tabs (Argus Version) */
         .step-nav { display: flex; justify-content: flex-start; margin: 20px 0 0 0; padding: 0 10px; gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .step-tab { flex: 1; min-width: 85px; height: 38px; border-radius: 12px 12px 0 0; border: 1px solid #ddd; border-bottom: none; background: #e9ecef; color: #888; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 1; white-space: nowrap; }
         .step-tab.active { background: #fff !important; color: #06C755 !important; font-weight: 600; height: 44px; margin-top: -6px; border-top: 3px solid #06C755; border-left: 1px solid #ddd; border-right: 1px solid #ddd; z-index: 3; font-size: 12px; }
 
         .tab-content { display: none; background: #fff; padding: 20px 15px; border-radius: 0 15px 15px 15px; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; z-index: 2; margin-top: -1px; }
         .tab-content.active { display: block; }
-        .tab-content .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 25px !important; border-bottom: 1px solid #f0f0f0 !important; padding-bottom: 15px !important; }
+
+        /* ล้างค่า Card เดิมใน Tab */
+        .tab-content .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin-bottom: 25px !important; border-bottom: 1px solid #f0f0f0 !important; padding-bottom: 15px !important; border-radius: 0 !important; }
         .tab-content .card:last-child { border-bottom: none !important; }
 
         .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 200px; overflow-y: auto; background: #fdfdfd;}
         .preview-img-container img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; margin: 4px; border: 1px solid #eee; }
-        .form-label { font-weight: 600; color: #444; margin-bottom: 8px; display: block; font-size: 14px; }
-        .section-tag { font-size: 11px; color: #06C755; background: #e6f9ed; padding: 2px 8px; border-radius: 10px; font-weight: 400; margin-bottom: 5px; display: inline-block; }
+        .section-tag { font-size: 11px; color: #06C755; background: #e6f9ed; padding: 2px 8px; border-radius: 10px; font-weight: 400; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text" style="margin-top:15px; color: #666;">กำลังโหลดข้อมูล...</div>
+        <div>กำลังประมวลผล...</div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
             <div class="header-content">
-                <h2>Meeting Report</h2>
+                <h2>Argus</h2>
                 <div class="user-info">
                     <div class="user-avatar" id="user-avatar-placeholder">
-                        <i class="fa-solid fa-circle-user"></i>
+                        <img id="profileImg" src="" style="display:none;">
+                        <i id="defaultAvatar" class="fa-solid fa-circle-user"></i>
                     </div>
                     <div class="user-details">
-                        <span class="user-name" id="welcome">กำลังโหลด...</span>
+                        <span class="user-name" id="welcome">กำลังตรวจสอบ...</span>
                         <span class="user-status">ออนไลน์</span>
                     </div>
                     <div class="logout-btn" onclick="forceLogout()">
@@ -62,7 +64,7 @@
                 <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ดำเนินงาน</div>
                 <div class="step-tab" onclick="showTab(event, 'tab-3')">3.เทคนิค/ซ่อม</div>
                 <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/ทรัพย์สิน</div>
-                <div class="step-tab" onclick="showTab(event, 'tab-5')">5.บุคคล/อื่นๆ</div>
+                <div class="step-tab" onclick="showTab(event, 'tab-5')">5.อื่นๆ</div>
             </div>
 
             <form id="reportForm">
@@ -85,53 +87,13 @@
                     <div class="card">
                         <span class="section-tag">Sheet: Security / Grid</span>
                         <label class="form-label">สรุปผลการดำเนินงาน / ความปลอดภัย</label>
-                        <textarea name="op_detail" rows="6" placeholder="สรุปงานความปลอดภัยและการดำเนินงานระบบโครงข่าย..."></textarea>
+                        <textarea name="op_detail" rows="6" placeholder="กรอกรายละเอียด..."></textarea>
                     </div>
                     <div class="card">
                         <span class="section-tag">Sheet: Task_Plan</span>
                         <label class="form-label">ภารกิจมอบหมาย / แผนงานเดือนถัดไป</label>
                         <div id="task-container"></div>
                         <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addTaskRow()">+ เพิ่มภารกิจ</button>
-                    </div>
-                </div>
-
-                <div id="tab-3" class="tab-content">
-                    <div class="card">
-                        <span class="section-tag">Sheet: Equipment</span>
-                        <label class="form-label">รายการอุปกรณ์ชำรุด / ผิดปกติ</label>
-                        <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%; margin-top: 10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
-                    </div>
-                    <div class="card">
-                        <span class="section-tag">Sheet: Site_Maint</span>
-                        <label class="form-label">การบำรุงรักษาพื้นที่และสถานที่</label>
-                        <textarea name="site_detail" rows="4" placeholder="ระบุการปรับปรุงภูมิทัศน์หรือซ่อมแซมอาคาร..."></textarea>
-                    </div>
-                </div>
-
-                <div id="tab-4" class="tab-content">
-                    <div class="card">
-                        <span class="section-tag">Sheet: Procurement</span>
-                        <label class="form-label">งานจัดซื้อ/จ้าง (PR/PO)</label>
-                        <textarea name="procure_detail" rows="4" placeholder="ติดตามสถานะใบสั่งซื้อหรืองานจ้าง..."></textarea>
-                    </div>
-                    <div class="card">
-                        <span class="section-tag">Sheet: Assets</span>
-                        <label class="form-label">การจัดการทรัพย์สิน</label>
-                        <textarea name="assets_detail" rows="4" placeholder="ระบุการรับเข้า/จำหน่าย หรือตรวจสอบทรัพย์สิน..."></textarea>
-                    </div>
-                </div>
-
-                <div id="tab-5" class="tab-content">
-                    <div class="card">
-                        <span class="section-tag">Sheet: Visitor / Leave / KM</span>
-                        <textarea name="other_detail" rows="6" placeholder="ผู้มาติดต่อ / ข้อมูลการลา / งาน KM และนวัตกรรม..."></textarea>
-                    </div>
-                    <div class="card">
-                        <span class="section-tag">Sheet: Meeting (Pics)</span>
-                        <label class="form-label">รูปภาพประกอบรายงาน</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-                        <div id="image-preview" class="preview-img-container"></div>
                     </div>
                 </div>
 
@@ -152,22 +114,28 @@
                 contents[i].style.display = "none";
                 contents[i].classList.remove("active");
             }
-            const target = document.getElementById(tabId);
-            if (target) {
-                target.style.display = "block";
-                target.classList.add("active");
-            }
+            document.getElementById(tabId).style.display = "block";
+            document.getElementById(tabId).classList.add("active");
 
             const tabs = document.getElementsByClassName("step-tab");
             for (let i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove("active");
             }
             evt.currentTarget.classList.add("active");
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
+        // เชื่อมรูปโปรไฟล์เมื่อโหลดสำเร็จ
+        function updateProfileUI(profile) {
+            const pImg = document.getElementById('profileImg');
+            const dAvt = document.getElementById('defaultAvatar');
+            if (profile.pictureUrl) {
+                pImg.src = profile.pictureUrl;
+                pImg.style.display = 'block';
+                dAvt.style.display = 'none';
+            }
+        }
     </script>
-    
-    <script src="script.js?v=5.5"></script>
+    <script src="script.js?v=5.6"></script>
 </body>
 </html>
