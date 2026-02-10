@@ -60,48 +60,46 @@
 
         <form id="reportForm">
             <div id="tab-1" class="tab-content active">
-              <div class="card" style="text-align: center; padding: 20px !important;">
-                  <i class="fa-solid fa-file-signature" style="font-size: 24px; color: #06C755; margin-bottom: 10px;"></i>
-                  <h3 id="report-title" style="margin: 0; color: #333; font-size: 18px;">กำลังเตรียมข้อมูลรายงาน...</h3>
-                  
-                  <input type="hidden" id="unit" name="unit">
-                  <input type="hidden" id="month" name="month">
-              </div>
+    <div class="card" style="text-align: center;">
+        <h3 id="report-title" style="margin: 0; color: #333; font-size: 18px;">กำลังเตรียมข้อมูล...</h3>
+        <input type="hidden" id="unit" name="unit">
+        <input type="hidden" id="month" name="month">
+    </div>
 
-              <div class="card">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div>
-                        <label class="form-label">วันที่ประชุม</label>
-                        <input type="date" name="meeting_date" id="meeting_date" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
-                    </div>
-                    <div>
-                        <label class="form-label">เวลาเริ่ม</label>
-                        <input type="time" name="start_time" id="start_time" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
-                    </div>
-                </div>
-                
-                <label class="form-label" style="margin-top:10px;">สถานที่ (สถานี)</label>
-                <select id="location" name="location" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;"></select>
-
-                <label class="form-label" style="margin-top:10px;">วิธีการประชุม</label>
-                <select name="method" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
-                    <option value="On-site">On-site (หน้างาน/กะ)</option>
-                    <option value="Online">Online (MS Teams/Zoom)</option>
-                    <option value="Hybrid">Hybrid</option>
-                </select>
+    <div class="card">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label class="form-label">วันที่ประชุม</label>
+                <input type="date" name="meeting_date" id="meeting_date" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
             </div>
-
-              <div class="card">
-                  <label class="form-label">รายชื่อผู้เข้าประชุม</label>
-                  <div id="attendance-list" class="check-list"></div>
-              </div>
-              
-              <div class="card">
-                  <label class="form-label"><i class="fa-solid fa-camera"></i> รูปภาพประกอบรายงาน</label>
-                  <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
-                  <div id="image-preview" class="preview-img-container"></div>
-              </div>
+            <div>
+                <label class="form-label">เวลาเริ่ม</label>
+                <input type="time" name="start_time" id="start_time" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
             </div>
+        </div>
+        
+        <label class="form-label" style="margin-top:10px;">สถานที่ (สถานี)</label>
+        <select id="location" name="location" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;"></select>
+
+        <label class="form-label" style="margin-top:10px;">วิธีการประชุม</label>
+        <select name="method" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
+            <option value="On-site">On-site (หน้างาน/กะ)</option>
+            <option value="Online">Online (MS Teams/Zoom)</option>
+            <option value="Hybrid">Hybrid</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <label class="form-label">รายชื่อผู้เข้าประชุม</label>
+        <div id="attendance-list" class="check-list"></div>
+    </div>
+    
+    <div class="card">
+        <label class="form-label"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
+        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
+        <div id="image-preview" class="preview-img-container"></div>
+    </div>
+</div>
 
             <div id="tab-2" class="tab-content">
                 <div class="card">
