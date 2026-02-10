@@ -69,15 +69,15 @@ function checkAccess(profile) {
 
 // 5. เตรียม Dropdown และ Checkbox (กรองตามเงื่อนไขที่ระบุ)
 // แก้ไขฟังก์ชัน setupMetadata
+// 5. เตรียม Dropdown และ Checkbox (ปรับปรุงการเรียงลำดับรายชื่อ)
 function setupMetadata(data) {
-    // 1. จัดการเรื่องวันที่และเดือนปัจจุบัน
+    // --- 5.1 ตั้งค่าหัวข้อรายงานอัตโนมัติ ---
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const now = new Date();
     const currentMonthName = thMonths[now.getMonth()];
-    const currentYearTH = now.getFullYear() + 543; // แปลง ค.ศ. เป็น พ.ศ.
+    const currentYearTH = now.getFullYear() + 543;
     const fullDateText = `${currentMonthName} ${currentYearTH}`;
 
-    // 2. แสดงหัวข้อรายงานและบันทึกค่าลง Hidden Input
     const reportTitle = document.getElementById('report-title');
     const unitInput = document.getElementById('unit');
     const monthInput = document.getElementById('month');
@@ -85,22 +85,32 @@ function setupMetadata(data) {
     if (reportTitle) {
         reportTitle.innerText = `รายงานการประชุม ${currentUserUnit} ประจำเดือน ${fullDateText}`;
     }
-    
-    // บันทึกค่าลง Input เพื่อให้ตอน Submit ค่าเหล่านี้จะถูกส่งไปด้วย
     if (unitInput) unitInput.value = currentUserUnit;
     if (monthInput) monthInput.value = fullDateText;
 
-    // 3. กรองรายชื่อพนักงาน (หน่วยงานเดียวกัน + ผจฟ.1)
+    // --- 5.2 กรองและเรียงลำดับรายชื่อพนักงาน ---
     const attList = document.getElementById('attendance-list');
     if (attList && staffData.length > 0) {
-        const filteredStaff = staffData.filter(s => 
+        
+        // 1. กรองเฉพาะคนใน Unit ตัวเอง และ ผจฟ.1
+        let filteredStaff = staffData.filter(s => 
             s.unit === currentUserUnit || s.unit === "ผจฟ.1"
         );
 
+        // 2. เรียงลำดับ (Sort): ใครอยู่ Unit เดียวกับเราให้ขึ้นก่อน
+        filteredStaff.sort((a, b) => {
+            if (a.unit === currentUserUnit && b.unit !== currentUserUnit) return -1;
+            if (a.unit !== currentUserUnit && b.unit === currentUserUnit) return 1;
+            return 0; // ถ้าอยู่กลุ่มเดียวกันให้เรียงตามเดิม
+        });
+
+        // 3. แสดงผลลงใน HTML
         attList.innerHTML = filteredStaff.map(s => 
-            `<label style="display:block; margin-bottom:5px;">
+            `<label style="display:block; margin-bottom:8px; padding: 5px; border-bottom: 1px solid #f9f9f9;">
                 <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
-                <span style="font-size:10px; color:gray;">(${s.unit})</span>
+                <span style="font-size:10px; color:${s.unit === 'ผจฟ.1' ? '#f39c12' : '#06C755'}; font-weight:bold;">
+                    (${s.unit})
+                </span>
             </label>`
         ).join('');
     }
