@@ -9,29 +9,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://stugly.github.io/substation/style.css">
     <style>
-        /* บังคับใช้ฟอนต์ Kanit กับทั้งหน้า */
+        /* บังคับใช้ฟอนต์ Kanit ในจุดที่เพี้ยน */
         * { font-family: 'Kanit', sans-serif !important; }
         
-        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; }
+        #spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #fff; position: fixed; width: 100%; z-index: 999; top:0; left:0; }
         
-        /* สไตล์หน้าเนื้อหา */
-        .tab-content { display: none; margin-top: 10px; }
+        /* แก้ไขส่วน Tab ให้ไม่เบียดกัน */
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* ปรับแต่ง Tab Nav ให้ดูเป็นระเบียบแบบปุ่มกด */
-        .tab-nav { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { 
-            flex: 0 0 auto; padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd; 
-            background: #fff; cursor: pointer; font-size: 13px; transition: 0.3s;
+        .tab-nav { 
+            display: flex; gap: 10px; margin: 15px 0; overflow-x: auto; 
+            padding: 5px 0; -webkit-overflow-scrolling: touch;
         }
-        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; font-weight: 500; }
+        .tab-btn { 
+            flex: 0 0 auto; min-width: 45px; height: 45px; border-radius: 50%; 
+            border: 2px solid #ddd; background: #fff; font-weight: 600; 
+            color: #666; cursor: pointer; transition: 0.3s;
+        }
+        .tab-btn.active { background: #28a745; color: #fff; border-color: #28a745; }
+
+        /* จัดการรูปภาพ Preview */
+        .preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .preview-container img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
         
-        .preview-container img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; margin: 5px; border: 1px solid #eee; }
-        .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fdfdfd; padding: 12px; border: 1px solid #eee; border-radius: 8px; max-height: 200px; overflow-y: auto; }
-        
-        /* ตกแต่งส่วนหัว Welcome เพิ่มเติม */
-        .welcome-box { display: flex; align-items: center; gap: 10px; }
-        .welcome-text { font-size: 14px; font-weight: 300; opacity: 0.9; }
+        /* สไตล์ Card สำหรับ Attendance List */
+        .check-list { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+            background: #fdfdfd; padding: 12px; border: 1px solid #eee; 
+            border-radius: 8px; max-height: 250px; overflow-y: auto; 
+        }
+        .check-list label { font-size: 14px; font-weight: 300; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
@@ -39,11 +47,7 @@
     <div id="spinner">
         <div class="loader"></div>
         <div style="margin-top:15px; font-weight: 400; color: #666;">กำลังตรวจสอบสิทธิ์...</div>
-        <div style="margin-top: 30px;">
-            <button type="button" class="btn-secondary" onclick="forceLogout()" style="font-size: 11px; padding: 6px 12px; border-radius: 15px;">
-                Login to another account
-            </button>
-        </div>
+        <button type="button" class="btn-secondary" onclick="forceLogout()" style="margin-top:25px; font-size:11px;">Login to another account</button>
     </div>
 
     <div id="main-app" style="display:none;">
@@ -52,16 +56,16 @@
         </div>
 
         <div class="container">
-            <div class="card" style="margin-bottom: 15px;">
-                <div class="welcome-box">
-                    <i class="fa-solid fa-circle-user" style="font-size: 24px; color: #28a745;"></i>
-                    <div id="welcome" class="welcome-text">กำลังโหลดข้อมูล...</div>
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-circle-user" style="font-size: 30px; color: #28a745;"></i>
+                    <div id="welcome" style="font-weight:400; font-size: 15px;"></div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 15px; font-weight: 500; font-size: 16px; color: #333;">
-                <i class="fa-solid fa-file-pen" style="color: #28a745; margin-right: 5px;"></i> 
-                บันทึกรายงาน <span id="tab-name" style="color: #28a745;">1. General</span>
+            <div style="margin: 15px 0 10px 5px; font-size: 16px; font-weight: 500;">
+                <i class="fa-solid fa-file-signature" style="color:#28a745;"></i> บันทึกการรายงาน: 
+                <span id="tab-name" style="color:#28a745;">1. General</span>
             </div>
 
             <div class="tab-nav">
@@ -77,59 +81,58 @@
                     <div class="card">
                         <label class="form-label">หน่วยงาน</label>
                         <select name="unit" id="unit" required></select>
-                        <label class="form-label">เดือน</label>
-                        <select name="month" id="month" required></select>
-                        <label class="form-label">วันที่ประชุม</label>
-                        <input type="date" name="date" required>
+                        <label class="form-label">เดือน/วันที่ประชุม</label>
+                        <div style="display:flex; gap:10px;">
+                            <select name="month" id="month" style="flex:1;" required></select>
+                            <input type="date" name="date" style="flex:1;" required>
+                        </div>
                     </div>
                     <div class="card">
-                        <label class="form-label">รายชื่อผู้เข้าประชุม (Attendance)</label>
+                        <label class="form-label">รายชื่อผู้เข้าร่วมประชุม</label>
                         <div id="attendance-list" class="check-list"></div>
                     </div>
                 </div>
 
                 <div id="tab-op" class="tab-content">
                     <div class="card">
-                        <label class="form-label">สรุปผลการดำเนินงาน</label>
-                        <textarea name="op_detail" rows="4" placeholder="กรอกรายละเอียดการดำเนินงาน..."></textarea>
+                        <label class="form-label">สรุปผลดำเนินงาน/ความปลอดภัย</label>
+                        <textarea name="op_detail" rows="6" placeholder="ระบุรายละเอียด..."></textarea>
                     </div>
                 </div>
 
                 <div id="tab-maint" class="tab-content">
                     <div class="card">
+                        <label class="form-label">รายการอุปกรณ์ชำรุด</label>
                         <div id="eq-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addEqRow()">
-                            <i class="fa-solid fa-plus"></i> เพิ่มอุปกรณ์ชำรุด
-                        </button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการ</button>
                     </div>
                 </div>
 
                 <div id="tab-task" class="tab-content">
                     <div class="card">
+                        <label class="form-label">ภารกิจมอบหมาย/แผนงาน</label>
                         <div id="task-container"></div>
-                        <button type="button" class="btn-secondary" style="width:100%" onclick="addTaskRow()">
-                            <i class="fa-solid fa-plus"></i> เพิ่มภารกิจ/แผนงาน
-                        </button>
+                        <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addTaskRow()">+ เพิ่มแผนงาน</button>
                     </div>
                 </div>
 
                 <div id="tab-pics" class="tab-content">
                     <div class="card">
-                        <label class="form-label">แนบรูปภาพ (สร้าง Folder อัตโนมัติ)</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="padding: 10px 0;">
+                        <label class="form-label">รูปภาพประกอบ</label>
+                        <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)">
                         <div id="image-preview" class="preview-container"></div>
                     </div>
                     <input type="hidden" name="recorder_uid" id="recorder_uid">
                     <input type="hidden" name="recorder_line" id="recorder_line">
                 </div>
 
-                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin-top: 20px; font-size: 18px; padding: 15px;">
+                <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0; padding: 15px; font-size: 18px;">
                     ✅ บันทึกรายงานทั้งหมด
                 </button>
             </form>
         </div>
     </div>
 
-    <script src="script.js?v=1.2"></script>
+    <script src="script.js?v=1.3"></script>
 </body>
 </html>
