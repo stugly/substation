@@ -135,27 +135,41 @@ function addTaskRow(type) {
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
 function setupPowerTab(data) {
-    const container = document.getElementById('power-container');
-    if (!container) return;
+    // 1. เช็คว่า ID นี้มีอยู่จริงในไฟล์ index.html
+    const container = document.getElementById('power-container'); 
+    
+    if (!container) {
+        console.error("หาไอดี power-container ไม่เจอใน HTML");
+        return;
+    }
+    
+    container.innerHTML = ''; // ล้างค่าเก่า
 
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
+    
+    // 2. กรองข้อมูลสถานี (เช็คว่าใน Sheets ของพี่มี Unit ตรงกันไหม)
     const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+
+    if (myStations.length === 0) {
+        container.innerHTML = '<div style="color:red; font-size:12px; padding:10px;">ไม่พบข้อมูลสถานีในสังกัดของคุณ</div>';
+        return;
+    }
 
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
-        div.className = "task-row power-fixed-row";
+        div.className = "task-row"; 
         div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+        
         div.innerHTML = `
-            <div class="task-number">${index + 1}.</div>
-            <div style="flex: 0 0 110px; font-weight:600; font-size:13px;">สฟฟ.${s.name}</div>
+            <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
+            <div style="flex: 0 0 110px; font-weight: 600; font-size: 13px;">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                   style="flex:1; height:32px; font-size:13px; border:1px solid #ddd; border-radius:4px; padding:0 8px;">
-            <div style="flex:0 0 25px;"></div>
+                   style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+            <div style="flex: 0 0 25px;"></div>
         `;
         container.appendChild(div);
     });
-    validateTaskInput('power');
 }
 
 function addPowerDynamicRow() {

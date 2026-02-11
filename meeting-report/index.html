@@ -115,20 +115,11 @@
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
-                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
-                        <i class="fa-solid fa-bolt"></i> รายละเอียดการเปลี่ยนแปลงสภาพการจ่ายไฟ
-                    </label>
+                    <label>รายละเอียดการเปลี่ยนแปลงสภาพการจ่ายไฟ</label>
                     
-                    <div id="power-fixed-container"></div>
+                    <div id="power-container"></div> 
                     
-                    <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-                    
-                    <div id="power-dynamic-container"></div>
-                    
-                    <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-secondary" 
-                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
-                        <i class="fa-solid fa-plus"></i> เพิ่มรายการ
-                    </button>
+                    <button type="button" onclick="addPowerDynamicRow()">เพิ่มสถานีไฟฟ้าอื่นๆ</button>
                 </div>
             </div>
 
@@ -192,6 +183,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=8.6"></script>
+    <script src="script.js?v=8.7"></script>
 </body>
 </html>
