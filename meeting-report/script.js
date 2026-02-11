@@ -83,20 +83,29 @@ function setupMetadata(data) {
     validateTaskInput('plan');
 }
 
-// ฟังก์ชันเพิ่มแถวงาน (แบบใหม่แยกกล่อง)
+// แก้ไขแมพของ Container และ ปุ่ม ให้รองรับครบทุก Tab
+const taskMap = {
+    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
+    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
+    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
+    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
+    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
+    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' }
+};
+
 function addTaskRow(type) {
-    const containerId = type === 'assignment' ? 'assignment-container' : 'plan-container';
-    const container = document.getElementById(containerId);
-    const typeValue = type === 'assignment' ? 'มอบหมาย' : 'แผนงาน';
+    const config = taskMap[type];
+    const container = document.getElementById(config.container);
+    const rowCount = container.getElementsByClassName('task-row').length + 1;
 
     const div = document.createElement('div');
-    div.className = "task-row"; // ใช้ style จาก helios-style.css
-    
+    div.className = "task-row";
     div.innerHTML = `
-        <input type="hidden" name="task_type[]" value="${typeValue}">
+        <div class="task-number">${rowCount}.</div>
+        <input type="hidden" name="task_type[]" value="${config.label}">
         <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." 
                oninput="validateTaskInput('${type}')" required>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); validateTaskInput('${type}');">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
@@ -105,18 +114,16 @@ function addTaskRow(type) {
 }
 
 function validateTaskInput(type) {
-    const containerId = type === 'assignment' ? 'assignment-container' : 'plan-container';
-    const btnId = type === 'assignment' ? 'btn-add-assignment' : 'btn-add-plan';
-    const container = document.getElementById(containerId);
-    const btn = document.getElementById(btnId);
+    const config = taskMap[type];
+    const container = document.getElementById(config.container);
+    const btn = document.getElementById(config.btn);
     if (!btn) return;
 
     const rows = container.getElementsByClassName('task-row');
     if (rows.length === 0) { setBtnState(btn, true); return; }
 
     const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
-    const isValid = lastInput && lastInput.value.trim() !== "";
-    setBtnState(btn, isValid);
+    setBtnState(btn, (lastInput && lastInput.value.trim() !== ""));
 }
 
 function setBtnState(btn, isEnabled) {

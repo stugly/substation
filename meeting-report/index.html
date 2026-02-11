@@ -114,18 +114,54 @@
             </div>
 
             <div id="tab-3" class="tab-content">
-                <div class="card">
-                    <label class="form-label" style="font-weight: 600; color: #06C755;">รายการอุปกรณ์ชำรุด / Site Maintenance</label>
-                    <div id="eq-container"></div>
-                    <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="addEqRow()">+ เพิ่มรายการอุปกรณ์</button>
-                    <textarea name="site_detail" rows="5" style="margin-top:15px;" placeholder="รายละเอียดบำรุงรักษาพื้นที่..."></textarea>
-                </div>
+            <div class="card">
+                <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
+                    <i class="fa-solid fa-bolt"></i> สรุปสภาพการจ่ายไฟ
+                </label>
+                <div id="power-container"></div>
+                <button type="button" id="btn-add-power" onclick="addTaskRow('power')" class="btn-secondary" 
+                        style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
+                    <i class="fa-solid fa-plus"></i> เพิ่มรายการ
+                </button>
             </div>
+        </div>
 
             <div id="tab-4" class="tab-content">
                 <div class="card">
-                    <label class="form-label" style="font-weight: 600; color: #06C755;">พัสดุ / ทรัพย์สิน / ข้อมูลอื่นๆ</label>
-                    <textarea name="other_detail" rows="8" placeholder="ระบุข้อมูลเพิ่มเติม (เช่น พัสดุขาดแคลน หรือ ทรัพย์สินที่ต้องติดตาม)..."></textarea>
+                    <label class="form-label" style="font-weight: 600; color: #d9534f; font-size: 14px;">
+                        <i class="fa-solid fa-tools"></i> รายการอุปกรณ์ชำรุด / การบำรุงรักษา
+                    </label>
+                    <div id="repair-container"></div>
+                    <button type="button" id="btn-add-repair" onclick="addTaskRow('repair')" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #d9534f; color: #d9534f; background: #fff5f5;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการชำรุด
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-5" class="tab-content">
+                <div class="card">
+                    <label class="form-label" style="font-weight: 600; color: #f39c12; font-size: 14px;">
+                        <i class="fa-solid fa-cart-shopping"></i> งานจัดซื้อจัดจ้าง / พัสดุ
+                    </label>
+                    <div id="procure-container"></div>
+                    <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #f39c12; color: #f39c12; background: #fffcf5;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการพัสดุ
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-6" class="tab-content">
+                <div class="card">
+                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
+                        <i class="fa-solid fa-broom"></i> งานทำความสะอาด / กำจัดวัชพืช
+                    </label>
+                    <div id="clean-container"></div>
+                    <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการทำความสะอาด
+                    </button>
                 </div>
             </div>
 
