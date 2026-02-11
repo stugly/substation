@@ -23,15 +23,30 @@
 
 /* 3. Tab Navigation System */
 .step-nav { display: flex; padding: 0 10px; gap: 4px; margin-top: 20px; }
+/* --- ปรับปรุงขนาด Font ชื่อ Tab --- */
 .step-tab { 
-    flex: 1; height: 35px; background: #eee; border-radius: 10px 10px 0 0; 
-    display: flex; align-items: center; justify-content: center; 
-    font-size: 11px; color: #888; cursor: pointer; border: 1px solid #ddd; 
-    border-bottom: none; transition: 0.2s; 
+    flex: 1; 
+    height: 40px; /* เพิ่มความสูงจาก 35px เป็น 40px เพื่อให้ดูไม่เบียด */
+    background: #eee; 
+    border-radius: 10px 10px 0 0; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 14px; /* ปรับเท่ากับหัวข้อ "รายชื่อผู้เข้าประชุม" */
+    color: #888; 
+    cursor: pointer; 
+    border: 1px solid #ddd; 
+    border-bottom: none; 
+    transition: 0.2s; 
 }
+
 .step-tab.active { 
-    background: #fff; color: #06C755; font-weight: 600; 
-    border-top: 3px solid #06C755; height: 40px; margin-top: -5px; 
+    background: #fff; 
+    color: #06C755; 
+    font-weight: 600; 
+    border-top: 3px solid #06C755; 
+    height: 45px; /* ปรับ Tab ที่ Active ให้สูงขึ้นตาม */
+    margin-top: -5px; 
 }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
@@ -60,35 +75,43 @@
 
 /* 6. Task Row - แบบแถวเดียว (Tab 2) */
 /* ปรับสไตล์แถวงานใน Tab 2 ให้สมดุลขึ้น */
+/* --- ปรับปรุงสัดส่วนแถวงานใน Tab 2 --- */
 .task-row {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 4px; /* ลดช่องว่างระหว่าง element เพื่อเพิ่มพื้นที่พิมพ์ */
-    margin-bottom: 8px;
+    gap: 6px; 
+    margin-bottom: 10px;
 }
 
 .task-row select {
-    flex: 0 0 120px; /* เพิ่มความกว้างช่องประเภทงาน (🚩/📅) */
+    flex: 0 0 135px; /* เพิ่มความกว้างจาก 120px เป็น 135px เพื่อให้เห็นข้อความครบ */
+    height: 32px !important;
+    font-size: 11px !important; /* ใช้ขนาด 11px เพื่อให้ข้อความ "📅 แผนประจำเดือน" ไม่ล้น */
+    padding: 0 2px !important; 
     background-color: #fff;
-    padding: 0 2px !important; /* ลด padding ข้างในเพื่อให้อ่านง่ายขึ้น */
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
 }
 
 .task-row input[type="text"] {
-    flex: 1; /* ช่องรายละเอียดกว้างที่สุด */
-    min-width: 0; /* ป้องกันช่องดันหน้าจอ */
+    flex: 1; /* ส่วนที่เหลือทั้งหมดเป็นของช่องรายละเอียด */
+    min-width: 0;
+    height: 32px !important;
+    font-size: 13px !important;
     padding: 0 8px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
 }
 
 .btn-remove-task {
-    flex: 0 0 30px; /* ล็อกขนาดปุ่มลบให้เล็กลง */
+    flex: 0 0 25px; /* ลดขนาดปุ่มถังขยะลงเล็กน้อยเพื่อคืนพื้นที่ให้ช่องพิมพ์ */
+    color: #ff4d4d;
     background: none;
     border: none;
-    color: #ff4d4d;
-    cursor: pointer;
     font-size: 14px;
-    padding: 0;
     text-align: center;
+    cursor: pointer;
 }
 
 /* 7. Other Components */
