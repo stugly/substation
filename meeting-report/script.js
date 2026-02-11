@@ -134,7 +134,7 @@ function addTaskRow(type) {
 }
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
-// 1. แก้ไขฟังก์ชันสร้างแถวเริ่มต้น (Fixed)
+// 1. แถวสถานีหลัก (Fixed)
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container) return;
@@ -145,13 +145,12 @@ function setupPowerTab(data) {
 
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
-        div.className = "task-row"; 
-        // ปรับ style ให้ระยะห่าง (margin-bottom) และการจัดวาง (flex) เท่ากันทุกแถว
+        div.className = "task-row"; // ใช้ Class เดียวกันเพื่อระยะห่างที่เท่ากัน
         div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
         
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
-            <div style="flex: 0 0 110px; font-size: 13px; color: #333;">สฟฟ.${s.name}</div>
+            <div class="power-station-name" style="flex: 0 0 110px; font-size: 13px; color: #333;">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
                    oninput="validateTaskInput('power')"
@@ -163,22 +162,22 @@ function setupPowerTab(data) {
     validateTaskInput('power');
 }
 
-// 2. แก้ไขฟังก์ชันเพิ่มแถวใหม่ (Dynamic)
+// 2. แถวที่เพิ่มเอง (Dynamic)
 function addPowerDynamicRow() {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
 
     const rowCount = container.getElementsByClassName('task-row').length + 1;
     const div = document.createElement('div');
-    div.className = "task-row";
-    // ใช้ CSS เดียวกันกับแถวด้านบนเป๊ะๆ
+    div.className = "task-row"; 
     div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
 
     let stationOptions = rawAppData.stations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
 
     div.innerHTML = `
         <div class="task-number" style="flex: 0 0 25px;">${rowCount}.</div>
-        <select name="power_station[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; padding: 0 4px;">
+        <select name="power_station[]" onchange="validateTaskInput('power')" 
+                style="flex: 0 0 110px; height: 32px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; padding: 0 4px;">
             <option value="">-- เลือก --</option>
             ${stationOptions}
         </select>
@@ -192,7 +191,7 @@ function addPowerDynamicRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power'); // เช็คสถานะปุ่มทันทีที่เพิ่ม
+    validateTaskInput('power');
 }
 
 // 3. ปรับ Logic การตรวจสอบ (Validation)
@@ -204,23 +203,27 @@ function validateTaskInput(type) {
 
     const rows = container.getElementsByClassName('task-row');
     
-    // ถ้าไม่มีแถวเลย (ซึ่ง Tab 3 ปกติจะมีแถว Fixed อยู่แล้ว) ให้กดได้
+    // ถ้าไม่มีแถวเลย ให้กดได้ (แต่ปกติ Tab 3 จะมีแถว Fixed เสมอ)
     if (rows.length === 0) { 
         setBtnState(btn, true); 
         return; 
     }
 
-    // ดึงแถวสุดท้ายมาเช็ค
+    // ดึงแถวสุดท้ายออกมาตรวจสอบ
     const lastRow = rows[rows.length - 1];
     const lastInput = lastRow.querySelector('input[type="text"]');
     const lastSelect = lastRow.querySelector('select');
 
-    // เงื่อนไข: ถ้าเป็นแถวที่มี Select (Dynamic) ต้องเลือกสถานีด้วย 
-    // และช่องรายละเอียดต้องไม่ว่าง (เหมือน Tab 2)
-    let isValid = (lastInput && lastInput.value.trim() !== "");
-    
-    if (lastSelect) {
-        isValid = isValid && (lastSelect.value !== "");
+    let isValid = true;
+
+    // 1. เช็คช่องรายละเอียด (ต้องไม่ว่าง)
+    if (lastInput && lastInput.value.trim() === "") {
+        isValid = false;
+    }
+
+    // 2. เช็ค Dropdown (ถ้ามี ต้องเลือกสถานี)
+    if (lastSelect && lastSelect.value === "") {
+        isValid = false;
     }
 
     setBtnState(btn, isValid);
