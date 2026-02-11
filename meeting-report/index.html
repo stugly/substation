@@ -91,40 +91,46 @@
 
             <div id="tab-2" class="tab-content">
                 <div class="card" style="margin-bottom: 15px;">
-                    <label class="form-label" style="color: #d9534f; font-weight: 600; font-size: 14px;">
-                        <i class="fa-solid fa-thumbtack"></i> 🚩 งานมอบหมาย/ความปลอดภัย
+                    <label class="form-label" style="color: #06C755; font-weight: 600; font-size: 14px;">
+                        <i class="fa-solid fa-thumbtack"></i> 🚩 งานที่ได้รับมอบหมาย
                     </label>
                     <div id="assignment-container"></div>
                     <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-secondary" 
                             style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #d9534f; color: #d9534f; background: #fff5f5;">
-                        <i class="fa-solid fa-plus"></i> เพิ่มงานมอบหมาย
+                        <i class="fa-solid fa-plus"></i> เพิ่มงาน
                     </button>
                 </div>
 
                 <div class="card">
                     <label class="form-label" style="color: #06C755; font-weight: 600; font-size: 14px;">
-                        <i class="fa-solid fa-calendar-check"></i> 📅 แผนการดำเนินงานประจำเดือน
+                        <i class="fa-solid fa-calendar-check"></i> 📅 แผนงานดำเนินงานประจำเดือน
                     </label>
                     <div id="plan-container"></div>
                     <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-secondary" 
                             style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
-                        <i class="fa-solid fa-plus"></i> เพิ่มแผนงาน
+                        <i class="fa-solid fa-plus"></i> เพิ่มงาน
                     </button>
                 </div>
             </div>
 
             <div id="tab-3" class="tab-content">
-            <div class="card">
-                <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
-                    <i class="fa-solid fa-bolt"></i> สรุปสภาพการจ่ายไฟ
-                </label>
-                <div id="power-container"></div>
-                <button type="button" id="btn-add-power" onclick="addTaskRow('power')" class="btn-secondary" 
-                        style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
-                    <i class="fa-solid fa-plus"></i> เพิ่มรายการ
-                </button>
+                <div class="card">
+                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px;">
+                        <i class="fa-solid fa-bolt"></i> รายละเอียดการเปลี่ยนแปลงสภาพการจ่ายไฟ
+                    </label>
+                    
+                    <div id="power-fixed-container"></div>
+                    
+                    <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
+                    
+                    <div id="power-dynamic-container"></div>
+                    
+                    <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการ
+                    </button>
+                </div>
             </div>
-        </div>
 
             <div id="tab-4" class="tab-content">
                 <div class="card">

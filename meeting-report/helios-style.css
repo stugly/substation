@@ -121,3 +121,31 @@
 @media (max-width: 480px) { 
     .input-row-grid { grid-template-columns: 1fr 1fr; } 
 }
+
+/* สไตล์เฉพาะสำหรับ Tab 3 */
+.power-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.power-station-name {
+    flex: 0 0 110px; /* ล็อกความกว้างชื่อสถานี */
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.power-station-select {
+    flex: 0 0 110px;
+    height: 32px !important;
+    font-size: 11px !important;
+}
+
+.power-detail-input {
+    flex: 1;
+    height: 32px !important;
+    font-size: 13px !important;
+    padding: 0 8px !important;
+}

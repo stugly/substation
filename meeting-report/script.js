@@ -82,12 +82,16 @@ function setupMetadata(data) {
         ).join('');
     }
 
-    // ล้างค่าในทุก Container และตั้งสถานะปุ่มเริ่มต้น
+    // ล้างค่าในทุก Container (ยกเว้น Tab 3 ที่จะจัดการแยก)
     Object.keys(taskMap).forEach(key => {
+        if (key === 'power') return; // ข้าม Tab 3 ไปก่อน
         const container = document.getElementById(taskMap[key].container);
         if (container) { container.innerHTML = ''; }
         validateTaskInput(key);
     });
+
+    // --- ส่วนที่เพิ่มสำหรับ Tab 3 ---
+    setupPowerTab(data); 
 }
 
 function updateTaskNumbers(containerId) {
@@ -191,3 +195,70 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
+
+// ฟังก์ชันสร้างแถวสถานีไฟฟ้าในสังกัด (Fixed)
+function setupPowerTab(data) {
+    const container = document.getElementById('power-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
+    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+
+    myStations.forEach((s, index) => {
+        const div = document.createElement('div');
+        div.className = "task-row power-fixed-row"; 
+        div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+        
+        div.innerHTML = `
+            <div class="task-number">${index + 1}.</div>
+            <div class="power-station-name" style="flex: 0 0 110px; font-weight: 600; font-size: 13px;">สฟฟ.${s.name}</div>
+            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+            <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
+                   style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+            <div style="flex: 0 0 25px;"></div> `;
+        container.appendChild(div);
+    });
+    validateTaskInput('power');
+}
+
+// ฟังก์ชันเพิ่มสถานีอื่น (Dynamic)
+function addPowerDynamicRow() {
+    const container = document.getElementById('power-container');
+    if (!container || !rawAppData) return;
+
+    const rowCount = container.getElementsByClassName('task-row').length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+
+    // สร้างตัวเลือกสถานีทั้งหมด
+    let stationOptions = rawAppData.stations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
+
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <select name="power_station[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="">-- เลือก สฟฟ. --</option>
+            ${stationOptions}
+        </select>
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
+               oninput="validateTaskInput('power')"
+               style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+        <button type="button" class="btn-remove-task" 
+                style="background:none; border:none; color:#ff4d4d; cursor:pointer;"
+                onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+    validateTaskInput('power');
+}
+
+// 3. ฟังก์ชันอัปเดตเลขลำดับรวมทั้งหน้า Tab
+function updateAllNumbers() {
+    const allRows = document.querySelectorAll('#tab-3 .task-row');
+    allRows.forEach((row, index) => {
+        const num = row.querySelector('.task-number');
+        if (num) num.innerText = (index + 1) + ".";
+    });
+}
