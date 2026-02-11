@@ -135,6 +135,7 @@ function addTaskRow(type) {
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
 // 1. แถวสถานีหลัก (Fixed)
+// 1. แถวสถานีในสังกัด (Fixed)
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container) return;
@@ -145,12 +146,12 @@ function setupPowerTab(data) {
 
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
-        div.className = "task-row"; // ใช้ Class เดียวกันเพื่อระยะห่างที่เท่ากัน
+        div.className = "task-row"; 
         div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
         
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
-            <div class="power-station-name" style="flex: 0 0 110px; font-size: 13px; color: #333;">สฟฟ.${s.name}</div>
+            <div style="flex: 0 0 110px; font-size: 13px; color: #333;">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
                    oninput="validateTaskInput('power')"
@@ -162,7 +163,7 @@ function setupPowerTab(data) {
     validateTaskInput('power');
 }
 
-// 2. แถวที่เพิ่มเอง (Dynamic)
+// 2. แถวเพิ่มเอง (Dynamic) - แก้ไขให้มี onchange ที่ select
 function addPowerDynamicRow() {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
@@ -182,7 +183,7 @@ function addPowerDynamicRow() {
             ${stationOptions}
         </select>
         <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
-               oninput="validateTaskInput('power')" required
+               oninput="validateTaskInput('power')" 
                style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
         <button type="button" class="btn-remove-task" 
                 style="background:none; border:none; color:#ff4d4d; cursor:pointer; flex: 0 0 25px; padding:0;"
@@ -191,10 +192,10 @@ function addPowerDynamicRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power');
+    validateTaskInput('power'); // เมื่อเพิ่มแถวใหม่ปุ่มจะ Disable ทันทีเพราะ Select ยังว่าง
 }
 
-// 3. ปรับ Logic การตรวจสอบ (Validation)
+// 3. ปรับ Logic Validation ให้รองรับ Tab 3 โดยเฉพาะ
 function validateTaskInput(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
@@ -202,26 +203,23 @@ function validateTaskInput(type) {
     if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
-    
-    // ถ้าไม่มีแถวเลย ให้กดได้ (แต่ปกติ Tab 3 จะมีแถว Fixed เสมอ)
-    if (rows.length === 0) { 
-        setBtnState(btn, true); 
-        return; 
+    if (rows.length === 0) {
+        setBtnState(btn, true);
+        return;
     }
 
-    // ดึงแถวสุดท้ายออกมาตรวจสอบ
     const lastRow = rows[rows.length - 1];
     const lastInput = lastRow.querySelector('input[type="text"]');
     const lastSelect = lastRow.querySelector('select');
 
     let isValid = true;
 
-    // 1. เช็คช่องรายละเอียด (ต้องไม่ว่าง)
-    if (lastInput && lastInput.value.trim() === "") {
+    // เช็คช่องรายละเอียด
+    if (!lastInput || lastInput.value.trim() === "") {
         isValid = false;
     }
 
-    // 2. เช็ค Dropdown (ถ้ามี ต้องเลือกสถานี)
+    // เช็ค Dropdown (เฉพาะแถวที่เพิ่มใหม่)
     if (lastSelect && lastSelect.value === "") {
         isValid = false;
     }

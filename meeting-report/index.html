@@ -115,14 +115,16 @@
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
-                    <div style="display: flex; gap: 8px; margin-bottom: 10px; padding: 0 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <div style="flex: 0 0 25px; font-size: 11px; color: #999; text-align: center;">#</div>
-                    <div style="flex: 0 0 110px; font-size: 11px; color: #999; font-weight: 600;">สถานีไฟฟ้า</div>
-                    <div style="flex: 1; font-size: 11px; color: #999; font-weight: 600;">รายละเอียดการจ่ายไฟ</div>
-                    <div style="flex: 0 0 25px;"></div>
-                </div>
-                <div id="power-container"></div>                                    
-                    <button type="button" onclick="addPowerDynamicRow()">เพิ่มสถานีไฟฟ้าอื่นๆ</button>
+                    <label class="form-label" style="font-weight: 600; color: #06C755; font-size: 14px; margin-bottom: 12px; display: block;">
+                        <i class="fa-solid fa-bolt"></i> รายละเอียดการเปลี่ยนแปลงสภาพการจ่ายไฟ
+                    </label>
+                    
+                    <div id="power-container"></div>
+                    
+                    <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มสถานีไฟฟ้าอื่นๆ
+                    </button>
                 </div>
             </div>
 
@@ -186,6 +188,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=9.0"></script>
+    <script src="script.js?v=9.1"></script>
 </body>
 </html>
