@@ -132,3 +132,23 @@
 @media (max-width: 480px) { 
     .input-row-grid { grid-template-columns: 1fr 1fr; } 
 }
+
+
+/* ลำดับตัวเลขหน้าแถวงาน */
+.task-number {
+    flex: 0 0 25px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    text-align: center;
+}
+
+/* ปรับช่อง Input ให้ขยับตาม */
+.task-row input[type="text"] {
+    flex: 1;
+    height: 32px !important;
+    font-size: 13px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 0 8px !important;
+}
