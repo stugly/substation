@@ -100,17 +100,34 @@ function addTaskRow(type) {
 
     const div = document.createElement('div');
     div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+    
     div.innerHTML = `
         <div class="task-number">${rowCount}.</div>
         <input type="hidden" name="task_type[]" value="${config.label}">
         <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." 
                oninput="validateTaskInput('${type}')" required>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
+        <button type="button" class="btn-remove-task" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
     validateTaskInput(type);
+}
+
+// ฟังก์ชันสำหรับรันเลขลำดับใหม่เมื่อมีการลบแถว
+function updateTaskNumbers(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const rows = container.getElementsByClassName('task-row');
+    Array.from(rows).forEach((row, index) => {
+        const numberDiv = row.querySelector('.task-number');
+        if (numberDiv) {
+            numberDiv.innerText = (index + 1) + ".";
+        }
+    });
 }
 
 function validateTaskInput(type) {
