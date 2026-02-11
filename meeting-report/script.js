@@ -2,10 +2,11 @@ const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwe_OPptH3rOfFH2
 const LIFF_ID = "2008876139-kiwCd2kF";
 
 let staffData = [];
+let rawAppData = null; // เก็บข้อมูลทั้งหมดไว้ดึงรายชื่อสถานี
 let currentUserUnit = "";
 let selectedImages = [];
 
-// แมพของ Container และ ปุ่ม ให้รองรับครบทุก Tab (6 หัวข้อหลัก)
+// แมพของ Container และ ปุ่ม ให้รองรับครบทุก Tab
 const taskMap = {
     assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
     plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
@@ -29,6 +30,7 @@ async function loadAppData(profile) {
     try {
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
+        rawAppData = data; // เก็บข้อมูลดิบไว้ใช้ทั่วแอป
         staffData = data.staff || [];
         const myId = profile.userId.trim();
         const user = staffData.find(s => s.line && s.line.trim() === myId);
@@ -61,6 +63,7 @@ function setupMetadata(data) {
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
+    // ตั้งค่าสถานที่ประชุม (Tab 1)
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
@@ -70,6 +73,7 @@ function setupMetadata(data) {
         targetList.forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
+    // ตั้งค่ารายชื่อพนักงาน
     const attList = document.getElementById('attendance-list');
     if (attList) {
         let filteredStaff = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1");
@@ -82,46 +86,45 @@ function setupMetadata(data) {
         ).join('');
     }
 
-    // ล้างค่าในทุก Container (ยกเว้น Tab 3 ที่จะจัดการแยก)
+    // ล้างค่าและเริ่มต้น Tab ต่างๆ
     Object.keys(taskMap).forEach(key => {
-        if (key === 'power') return; // ข้าม Tab 3 ไปก่อน
         const container = document.getElementById(taskMap[key].container);
-        if (container) { container.innerHTML = ''; }
-        validateTaskInput(key);
+        if (container) container.innerHTML = '';
+        if (key !== 'power') validateTaskInput(key); // Tab อื่นๆ เริ่มแบบว่าง
     });
 
-    // --- ส่วนที่เพิ่มสำหรับ Tab 3 ---
-    setupPowerTab(data); 
+    // เริ่มต้น Tab 3 แบบพิเศษ (ดึงสถานีในสังกัดมาล็อกไว้)
+    setupPowerTab(data);
 }
 
+// --- ฟังก์ชันจัดการ Running Number ---
 function updateTaskNumbers(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     const rows = container.getElementsByClassName('task-row');
     Array.from(rows).forEach((row, index) => {
-        const numberDiv = row.querySelector('.task-number');
-        if (numberDiv) { numberDiv.innerText = (index + 1) + "."; }
+        const numDiv = row.querySelector('.task-number');
+        if (numDiv) numDiv.innerText = (index + 1) + ".";
     });
 }
 
+// --- ฟังก์ชันจัดการแถวงาน (Tab 2, 4, 5, 6) ---
 function addTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
     if (!container) return;
-    
+
     const rowCount = container.getElementsByClassName('task-row').length + 1;
     const div = document.createElement('div');
     div.className = "task-row";
     div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
     
     div.innerHTML = `
-        <div class="task-number" style="flex:0 0 25px; font-weight:600; color:#666;">${rowCount}.</div>
+        <div class="task-number">${rowCount}.</div>
         <input type="hidden" name="task_type[]" value="${config.label}">
         <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." 
-               oninput="validateTaskInput('${type}')" required 
-               style="flex:1; height:32px; font-size:13px; border:1px solid #ddd; border-radius:4px; padding:0 8px;">
+               oninput="validateTaskInput('${type}')" required>
         <button type="button" class="btn-remove-task" 
-                style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:16px;"
                 onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
@@ -130,6 +133,60 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
+// --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
+function setupPowerTab(data) {
+    const container = document.getElementById('power-container');
+    if (!container) return;
+
+    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
+    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+
+    myStations.forEach((s, index) => {
+        const div = document.createElement('div');
+        div.className = "task-row power-fixed-row";
+        div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+        div.innerHTML = `
+            <div class="task-number">${index + 1}.</div>
+            <div style="flex: 0 0 110px; font-weight:600; font-size:13px;">สฟฟ.${s.name}</div>
+            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+            <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
+                   style="flex:1; height:32px; font-size:13px; border:1px solid #ddd; border-radius:4px; padding:0 8px;">
+            <div style="flex:0 0 25px;"></div>
+        `;
+        container.appendChild(div);
+    });
+    validateTaskInput('power');
+}
+
+function addPowerDynamicRow() {
+    const container = document.getElementById('power-container');
+    if (!container || !rawAppData) return;
+
+    const rowCount = container.getElementsByClassName('task-row').length + 1;
+    let stationOptions = rawAppData.stations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
+
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <select name="power_station[]" style="flex:0 0 110px; height:32px; font-size:11px; border:1px solid #ddd; border-radius:4px;">
+            <option value="">-- เลือก สฟฟ. --</option>
+            ${stationOptions}
+        </select>
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
+               oninput="validateTaskInput('power')" required
+               style="flex:1; height:32px; font-size:13px; border:1px solid #ddd; border-radius:4px; padding:0 8px;">
+        <button type="button" class="btn-remove-task" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+    validateTaskInput('power');
+}
+
+// --- ฟังก์ชันตรวจสอบและควบคุมปุ่ม ---
 function validateTaskInput(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
@@ -137,9 +194,12 @@ function validateTaskInput(type) {
     if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { setBtnState(btn, true); return; }
+    if (rows.length === 0 || type === 'power') { // Tab 3 ให้กดเพิ่มได้เสมอ
+        setBtnState(btn, true); 
+        return; 
+    }
 
-    const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
+    const lastInput = rows[rows.length - 1].querySelector('input[type="text"]');
     setBtnState(btn, (lastInput && lastInput.value.trim() !== ""));
 }
 
@@ -149,6 +209,7 @@ function setBtnState(btn, isEnabled) {
     btn.style.cursor = isEnabled ? "pointer" : "not-allowed";
 }
 
+// --- จัดการรูปภาพ ---
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
@@ -165,6 +226,7 @@ function handleImageSelect(input) {
     });
 }
 
+// --- บันทึกฟอร์ม ---
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
@@ -175,9 +237,15 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
+    
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.task_detail = Array.from(formData.getAll('task_detail[]'));
     payload.task_type = Array.from(formData.getAll('task_type[]'));
+    
+    // เก็บข้อมูลจาก Tab 3 แยกออกมา
+    payload.power_station = Array.from(formData.getAll('power_station[]'));
+    payload.power_detail = Array.from(formData.getAll('power_detail[]'));
+    
     payload.images = selectedImages;
 
     try {
@@ -195,70 +263,3 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
-
-// ฟังก์ชันสร้างแถวสถานีไฟฟ้าในสังกัด (Fixed)
-function setupPowerTab(data) {
-    const container = document.getElementById('power-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-
-    myStations.forEach((s, index) => {
-        const div = document.createElement('div');
-        div.className = "task-row power-fixed-row"; 
-        div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
-        
-        div.innerHTML = `
-            <div class="task-number">${index + 1}.</div>
-            <div class="power-station-name" style="flex: 0 0 110px; font-weight: 600; font-size: 13px;">สฟฟ.${s.name}</div>
-            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
-            <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                   style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
-            <div style="flex: 0 0 25px;"></div> `;
-        container.appendChild(div);
-    });
-    validateTaskInput('power');
-}
-
-// ฟังก์ชันเพิ่มสถานีอื่น (Dynamic)
-function addPowerDynamicRow() {
-    const container = document.getElementById('power-container');
-    if (!container || !rawAppData) return;
-
-    const rowCount = container.getElementsByClassName('task-row').length + 1;
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
-
-    // สร้างตัวเลือกสถานีทั้งหมด
-    let stationOptions = rawAppData.stations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
-
-    div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
-        <select name="power_station[]" style="flex: 0 0 110px; height: 32px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px;">
-            <option value="">-- เลือก สฟฟ. --</option>
-            ${stationOptions}
-        </select>
-        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
-               oninput="validateTaskInput('power')"
-               style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
-        <button type="button" class="btn-remove-task" 
-                style="background:none; border:none; color:#ff4d4d; cursor:pointer;"
-                onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    `;
-    container.appendChild(div);
-    validateTaskInput('power');
-}
-
-// 3. ฟังก์ชันอัปเดตเลขลำดับรวมทั้งหน้า Tab
-function updateAllNumbers() {
-    const allRows = document.querySelectorAll('#tab-3 .task-row');
-    allRows.forEach((row, index) => {
-        const num = row.querySelector('.task-number');
-        if (num) num.innerText = (index + 1) + ".";
-    });
-}
