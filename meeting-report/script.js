@@ -237,50 +237,56 @@ function addTaskRow() {
     validateTaskInput();
 }
 
-function validateTaskInput() {
-    const container = document.getElementById('task-container');
+// ฟังก์ชันตรวจสอบช่องว่าง แยกตามประเภท (assignment หรือ plan)
+function validateTaskInput(type) {
+    const containerId = type === 'assignment' ? 'assignment-container' : 'plan-container';
+    const btnId = type === 'assignment' ? 'btn-add-assignment' : 'btn-add-plan';
+    
+    const container = document.getElementById(containerId);
+    const btn = document.getElementById(btnId);
     const rows = container.getElementsByClassName('task-row');
-    const addBtn = document.getElementById('btn-add-task');
 
-    // เงื่อนไข 1: ถ้ายังไม่มีแถวเลย ให้กดปุ่ม "เพิ่ม" ได้ทันที
+    // เงื่อนไข: ถ้าไม่มีแถวเลย ให้กดเพิ่มได้
     if (rows.length === 0) {
-        addBtn.disabled = false;
-        addBtn.style.opacity = "1";
-        addBtn.style.cursor = "pointer";
+        setBtnState(btn, true);
         return;
     }
 
-    // เงื่อนไข 2: ถ้ามีแถวแล้ว ให้เช็คแถวสุดท้ายว่ามีข้อมูลไหม
+    // เช็คแถวสุดท้ายว่าว่าง หรือมีแค่ space bar หรือไม่
     const lastInput = rows[rows.length - 1].querySelector('input[name="task_detail[]"]');
-    if (!lastInput || lastInput.value.trim() === "") {
-        addBtn.disabled = true;
-        addBtn.style.opacity = "0.5";
-        addBtn.style.cursor = "not-allowed";
-    } else {
-        addBtn.disabled = false;
-        addBtn.style.opacity = "1";
-        addBtn.style.cursor = "pointer";
-    }
+    const isValid = lastInput && lastInput.value.trim() !== "";
+    
+    setBtnState(btn, isValid);
 }
 
-function addTaskRow() {
-    const container = document.getElementById('task-container');
+// ฟังก์ชันช่วยปรับสถานะปุ่ม
+function setBtnState(btn, isEnabled) {
+    btn.disabled = !isEnabled;
+    btn.style.opacity = isEnabled ? "1" : "0.5";
+    btn.style.cursor = isEnabled ? "pointer" : "not-allowed";
+}
+
+function addTaskRow(type) {
+    const containerId = type === 'assignment' ? 'assignment-container' : 'plan-container';
+    const container = document.getElementById(containerId);
+    const typeValue = type === 'assignment' ? 'มอบหมาย' : 'แผนงาน';
+
     const div = document.createElement('div');
     div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
     
     div.innerHTML = `
-        <select name="task_type[]">
-            <option value="งานที่ได้รับมอบหมาย">🚩 งานที่ได้รับมอบหมาย</option>
-            <option value="แผนงานดำเนินงานประจำเดือน">📅 แผนงานดำเนินงานประจำเดือน</option>
-        </select>
-        <input type="text" name="task_detail[]" placeholder="รายละเอียด..." 
-               oninput="validateTaskInput()" required>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); validateTaskInput();">
+        <input type="hidden" name="task_type[]" value="${typeValue}">
+        <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." 
+               oninput="validateTaskInput('${type}')"
+               style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+        <button type="button" onclick="this.parentElement.remove(); validateTaskInput('${type}');" 
+                style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 16px;">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
     
-    // หลังเพิ่มแถวใหม่ ต้องพิมพ์ก่อนถึงจะเพิ่มแถวต่อไปได้
-    validateTaskInput();
+    // หลังเพิ่มแถวใหม่ ให้ปิดปุ่มเพิ่มของส่วนนั้นไว้ก่อน จนกว่าจะพิมพ์
+    validateTaskInput(type);
 }

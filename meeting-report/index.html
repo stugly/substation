@@ -34,9 +34,11 @@
 
         <div class="step-nav">
             <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.ดำเนินงาน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.เทคนิค/ซ่อม</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/อื่นๆ</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.การดำเนินงาน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.สภาพการจ่ายไฟ</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.อุปกรณ์ชำรุด</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.จัดซื้อจัดจ้าง</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.ทำความสะอาด/กำจัดวัชพืช</div>
         </div>
 
         <form id="reportForm">
@@ -88,19 +90,28 @@
             </div>
 
             <div id="tab-2" class="tab-content">
-              <div class="card">
-                  <label class="form-label" style="color: #06C755; font-weight: 600;">
-                      <i class="fa-solid fa-list-check"></i> รายการงานและแผนดำเนินงาน
-                  </label>
-                  
-                  <div id="task-container"></div>
+                <div class="card" style="margin-bottom: 15px;">
+                    <label class="form-label" style="color: #d9534f; font-weight: 600; font-size: 14px;">
+                        <i class="fa-solid fa-thumbtack"></i> 🚩 งานมอบหมาย/ความปลอดภัย
+                    </label>
+                    <div id="assignment-container"></div>
+                    <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #d9534f; color: #d9534f; background: #fff5f5;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มงานมอบหมาย
+                    </button>
+                </div>
 
-                  <button type="button" id="btn-add-task" onclick="addTaskRow()" class="btn-secondary" 
-                    style="width: 100%; margin-top: 10px; font-size: 13px; height: 35px; background: #f0fdf4; color: #06C755; border: 1px dashed #06C755; border-radius: 8px;" disabled>
-                    <i class="fa-solid fa-plus"></i> เพิ่มรายการงาน
-                  </button>
-              </div>
-          </div>
+                <div class="card">
+                    <label class="form-label" style="color: #06C755; font-weight: 600; font-size: 14px;">
+                        <i class="fa-solid fa-calendar-check"></i> 📅 แผนการดำเนินงานประจำเดือน
+                    </label>
+                    <div id="plan-container"></div>
+                    <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มแผนงาน
+                    </button>
+                </div>
+            </div>
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
@@ -139,6 +150,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=8.1"></script>
+    <script src="script.js?v=8.2"></script>
 </body>
 </html>
