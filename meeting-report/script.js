@@ -76,7 +76,7 @@ function setupMetadata(data) {
     const assignCont = document.getElementById('assignment-container');
     const planCont = document.getElementById('plan-container');
     if (assignCont) { assignCont.innerHTML = ''; }
-    if (planCont) { planCont.innerHTML = ''; }ฉะพสพพ
+    if (planCont) { planCont.innerHTML = ''; }
     
     // อัปเดตสถานะปุ่ม (เพื่อให้กดปุ่มบวกได้ทันทีที่เปิดแอป)
     validateTaskInput('assignment');
