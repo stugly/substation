@@ -5,6 +5,16 @@ let staffData = [];
 let currentUserUnit = "";
 let selectedImages = [];
 
+// แมพของ Container และ ปุ่ม ให้รองรับครบทุก Tab (6 หัวข้อหลัก)
+const taskMap = {
+    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
+    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
+    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
+    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
+    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
+    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' }
+};
+
 window.onload = function() { initLiff(); };
 
 async function initLiff() {
@@ -35,7 +45,7 @@ async function loadAppData(profile) {
             document.getElementById('recorder_uid').value = user.uid;
             document.getElementById('recorder_line').value = user.line;
         } else {
-            document.getElementById('spinner-text').innerHTML = `<div style="padding:20px; color:#d9534f;"><b>ไม่พบสิทธิ์การใช้งาน</b><br><small>ID: ${myId}</small></div>`;
+            document.getElementById('spinner-text').innerHTML = `<div style="padding:20px; color:#d9534f; font-family:Kanit;"><b>ไม่พบสิทธิ์การใช้งาน</b><br><small>ID: ${myId}</small></div>`;
         }
     } catch (err) { console.error("Data Load Error:", err); }
 }
@@ -51,7 +61,6 @@ function setupMetadata(data) {
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
-    // ตั้งค่าสถานที่
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
@@ -61,53 +70,54 @@ function setupMetadata(data) {
         targetList.forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
-    // ตั้งค่ารายชื่อพนักงาน
     const attList = document.getElementById('attendance-list');
     if (attList) {
         let filteredStaff = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1");
         filteredStaff.sort((a, b) => (a.unit === currentUserUnit ? -1 : 1));
         attList.innerHTML = filteredStaff.map(s => 
-            `<label><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
-            <span style="font-size:10px; color:${s.unit === 'ผจฟ.1' ? '#f39c12' : '#06C755'}; font-weight:bold;">(${s.unit})</span></label>`
+            `<label style="display:block; margin-bottom:8px; font-size:14px;">
+                <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} 
+                <span style="font-size:10px; color:${s.unit === 'ผจฟ.1' ? '#f39c12' : '#06C755'}; font-weight:bold;">(${s.unit})</span>
+            </label>`
         ).join('');
     }
 
-    // ล้างค่าในกล่อง แต่ "ไม่ต้อง" สั่ง addTaskRow() เพื่อให้เปิดมาโล่งๆ
-    const assignCont = document.getElementById('assignment-container');
-    const planCont = document.getElementById('plan-container');
-    if (assignCont) { assignCont.innerHTML = ''; }
-    if (planCont) { planCont.innerHTML = ''; }
-    
-    // อัปเดตสถานะปุ่ม (เพื่อให้กดปุ่มบวกได้ทันทีที่เปิดแอป)
-    validateTaskInput('assignment');
-    validateTaskInput('plan');
+    // ล้างค่าในทุก Container และตั้งสถานะปุ่มเริ่มต้น
+    Object.keys(taskMap).forEach(key => {
+        const container = document.getElementById(taskMap[key].container);
+        if (container) { container.innerHTML = ''; }
+        validateTaskInput(key);
+    });
 }
 
-// แก้ไขแมพของ Container และ ปุ่ม ให้รองรับครบทุก Tab
-const taskMap = {
-    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
-    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
-    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
-    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
-    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
-    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' }
-};
+function updateTaskNumbers(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const rows = container.getElementsByClassName('task-row');
+    Array.from(rows).forEach((row, index) => {
+        const numberDiv = row.querySelector('.task-number');
+        if (numberDiv) { numberDiv.innerText = (index + 1) + "."; }
+    });
+}
 
 function addTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
+    if (!container) return;
+    
     const rowCount = container.getElementsByClassName('task-row').length + 1;
-
     const div = document.createElement('div');
     div.className = "task-row";
     div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
     
     div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
+        <div class="task-number" style="flex:0 0 25px; font-weight:600; color:#666;">${rowCount}.</div>
         <input type="hidden" name="task_type[]" value="${config.label}">
         <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." 
-               oninput="validateTaskInput('${type}')" required>
+               oninput="validateTaskInput('${type}')" required 
+               style="flex:1; height:32px; font-size:13px; border:1px solid #ddd; border-radius:4px; padding:0 8px;">
         <button type="button" class="btn-remove-task" 
+                style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:16px;"
                 onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
@@ -116,25 +126,11 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
-// ฟังก์ชันสำหรับรันเลขลำดับใหม่เมื่อมีการลบแถว
-function updateTaskNumbers(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-    const rows = container.getElementsByClassName('task-row');
-    Array.from(rows).forEach((row, index) => {
-        const numberDiv = row.querySelector('.task-number');
-        if (numberDiv) {
-            numberDiv.innerText = (index + 1) + ".";
-        }
-    });
-}
-
 function validateTaskInput(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
     const btn = document.getElementById(config.btn);
-    if (!btn) return;
+    if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
     if (rows.length === 0) { setBtnState(btn, true); return; }
@@ -149,7 +145,6 @@ function setBtnState(btn, isEnabled) {
     btn.style.cursor = isEnabled ? "pointer" : "not-allowed";
 }
 
-// จัดการรูปภาพ
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
     preview.innerHTML = '';
@@ -166,7 +161,6 @@ function handleImageSelect(input) {
     });
 }
 
-// บันทึกฟอร์ม
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
@@ -183,7 +177,11 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     payload.images = selectedImages;
 
     try {
-        const response = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const response = await fetch(GAS_WEBAPP_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload) 
+        });
         const result = await response.text();
         alert(result);
         location.reload();
@@ -193,14 +191,3 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
-
-function addEqRow() {
-    const container = document.getElementById('eq-container');
-    const div = document.createElement('div');
-    div.style.cssText = "margin-top:10px; padding:10px; border:1px solid #eee; border-radius:8px; background:#fcfcfc;";
-    div.innerHTML = `
-        <input type="text" name="eq_id[]" placeholder="ชื่ออุปกรณ์/รหัส" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px;">
-        <textarea name="eq_detail[]" placeholder="อาการชำรุด/แนวทางแก้ไข" style="width:100%; margin-top:5px; padding:6px; border:1px solid #ddd; border-radius:4px;"></textarea>
-    `;
-    container.appendChild(div);
-}
