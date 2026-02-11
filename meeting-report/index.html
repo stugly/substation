@@ -115,10 +115,13 @@
 
             <div id="tab-3" class="tab-content">
                 <div class="card">
-                    <label>รายละเอียดการเปลี่ยนแปลงสภาพการจ่ายไฟ</label>
-                    
-                    <div id="power-container"></div> 
-                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px; padding: 0 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <div style="flex: 0 0 25px; font-size: 11px; color: #999; text-align: center;">#</div>
+                    <div style="flex: 0 0 110px; font-size: 11px; color: #999; font-weight: 600;">สถานีไฟฟ้า</div>
+                    <div style="flex: 1; font-size: 11px; color: #999; font-weight: 600;">รายละเอียดการจ่ายไฟ</div>
+                    <div style="flex: 0 0 25px;"></div>
+                </div>
+                <div id="power-container"></div>                                    
                     <button type="button" onclick="addPowerDynamicRow()">เพิ่มสถานีไฟฟ้าอื่นๆ</button>
                 </div>
             </div>
