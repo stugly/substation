@@ -135,7 +135,6 @@ function addTaskRow(type) {
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
 // 1. แถวสถานีหลัก (Fixed)
-// 1. แถวสถานีในสังกัด (Fixed)
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container) return;
@@ -147,15 +146,14 @@ function setupPowerTab(data) {
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
-        div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
         
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
-            <div style="flex: 0 0 110px; font-size: 13px; color: #333;">สฟฟ.${s.name}</div>
+            <div class="power-station-name">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
                    oninput="validateTaskInput('power')"
-                   style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+                   style="flex: 1;">
             <div style="flex: 0 0 25px;"></div> 
         `;
         container.appendChild(div);
@@ -163,7 +161,7 @@ function setupPowerTab(data) {
     validateTaskInput('power');
 }
 
-// 2. แถวเพิ่มเอง (Dynamic) - แก้ไขให้มี onchange ที่ select
+// 2. แถวเพิ่มเอง (Dynamic)
 function addPowerDynamicRow() {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
@@ -171,28 +169,25 @@ function addPowerDynamicRow() {
     const rowCount = container.getElementsByClassName('task-row').length + 1;
     const div = document.createElement('div');
     div.className = "task-row"; 
-    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
 
     let stationOptions = rawAppData.stations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
 
     div.innerHTML = `
         <div class="task-number" style="flex: 0 0 25px;">${rowCount}.</div>
-        <select name="power_station[]" onchange="validateTaskInput('power')" 
-                style="flex: 0 0 110px; height: 32px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; padding: 0 4px;">
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 110px;">
             <option value="">-- เลือก --</option>
             ${stationOptions}
         </select>
         <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
-               oninput="validateTaskInput('power')" 
-               style="flex: 1; height: 32px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; padding: 0 8px;">
+               oninput="validateTaskInput('power')" required
+               style="flex: 1;">
         <button type="button" class="btn-remove-task" 
-                style="background:none; border:none; color:#ff4d4d; cursor:pointer; flex: 0 0 25px; padding:0;"
                 onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power'); // เมื่อเพิ่มแถวใหม่ปุ่มจะ Disable ทันทีเพราะ Select ยังว่าง
+    validateTaskInput('power');
 }
 
 // 3. ปรับ Logic Validation ให้รองรับ Tab 3 โดยเฉพาะ
