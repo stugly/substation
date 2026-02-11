@@ -72,11 +72,15 @@ function setupMetadata(data) {
         ).join('');
     }
 
-    // ล้างและเริ่มต้นแถวใน Tab 2 (แก้ไขจุด Error)
+    // ล้างค่าในกล่อง แต่ "ไม่ต้อง" สั่ง addTaskRow() เพื่อให้เปิดมาโล่งๆ
     const assignCont = document.getElementById('assignment-container');
     const planCont = document.getElementById('plan-container');
-    if (assignCont) { assignCont.innerHTML = ''; addTaskRow('assignment'); }
-    if (planCont) { planCont.innerHTML = ''; addTaskRow('plan'); }
+    if (assignCont) { assignCont.innerHTML = ''; }
+    if (planCont) { planCont.innerHTML = ''; }ฉะพสพพ
+    
+    // อัปเดตสถานะปุ่ม (เพื่อให้กดปุ่มบวกได้ทันทีที่เปิดแอป)
+    validateTaskInput('assignment');
+    validateTaskInput('plan');
 }
 
 // ฟังก์ชันเพิ่มแถวงาน (แบบใหม่แยกกล่อง)
