@@ -285,65 +285,54 @@ document.getElementById('reportForm').onsubmit = async (e) => {
 };
 
 // ฟังก์ชันสำหรับ Tab 4: อุปกรณ์ชำรุด
+// ส่วนที่ 1: อุปกรณ์ชำรุด
 function addRepairRow() {
     const container = document.getElementById('repair-container');
-    if (!rawAppData) return;
-
-    // สร้างตัวเลือกสำหรับ Dropdown อุปกรณ์ (Setting A)
-    const eqOptions = rawAppData.settings_eq.map(item => `<option value="${item}">${item}</option>`).join('');
-    
-    // สร้างตัวเลือกสำหรับสถานะ (Setting B)
-    const statusOptions = rawAppData.settings_status_eq.map(item => `<option value="${item}">${item}</option>`).join('');
-
+    const rowCount = container.children.length + 1;
     const div = document.createElement('div');
-    div.className = "task-row";
-    div.style.cssText = "display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;";
-    
+    div.className = "task-row repair-row-wrapper"; 
+
+    let eqOptions = rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    let statusOptions = rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+
     div.innerHTML = `
-        <div class="task-number" style="flex:0 0 20px;">${container.children.length + 1}.</div>
-        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 1 1 30%;">
-        <input type="date" name="repair_date[]" style="flex: 1 1 40%;">
-        <select name="repair_item[]" style="flex: 1 1 45%;">
-            <option value="">-- อุปกรณ์ --</option>
-            ${eqOptions} 
-        </select>
-        <select name="repair_status[]" style="flex: 1 1 45%;">
-            <option value="">-- สถานะ --</option>
-            ${statusOptions}
-        </select>
-        <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 85%;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove();"><i class="fa-solid fa-trash-can"></i></button>
+        <div class="task-number">${rowCount}.</div>
+        <div class="compact-grid">
+            <input type="text" name="repair_id[]" placeholder="รหัส" style="flex: 0 0 18%;">
+            <input type="date" name="repair_date[]" style="flex: 0 0 26%;">
+            <select name="repair_item[]" style="flex: 0 0 25%;">${eqOptions}</select>
+            <select name="repair_status[]" style="flex: 0 0 25%;">${statusOptions}</select>
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 0 95%; margin-top: 4px !important;">
+        </div>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
 }
 
-// ฟังก์ชันเพิ่มรายการจัดซื้อจัดจ้าง
+// ส่วนที่ 2: จัดซื้อจัดจ้าง
 function addProcureRow() {
     const container = document.getElementById('procure-container');
-    if (!container || !rawAppData) return;
-
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
-    div.className = "multi-input-row task-row";
+    div.className = "task-row repair-row-wrapper";
 
-    const typeOptions = rawAppData.settings_procure_type.map(item => `<option value="${item}">${item}</option>`).join('');
-    const statusOptions = rawAppData.settings_procure_status.map(item => `<option value="${item}">${item}</option>`).join('');
+    let typeOptions = rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
+    let statusOptions = rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
         <div class="task-number">${rowCount}.</div>
-        <input type="text" name="procure_id[]" placeholder="รหัส PO" style="flex: 1 1 45%;">
-        <input type="date" name="procure_date[]" style="flex: 1 1 45%;">
-        <select name="procure_type[]" style="flex: 1 1 45%;">
-            <option value="">-- ประเภท --</option>
-            ${typeOptions}
-        </select>
-        <select name="procure_status[]" style="flex: 1 1 45%;">
-            <option value="">-- สถานะ --</option>
-            ${statusOptions}
-        </select>
-        <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 85%;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container');"
-                style="flex: 1 1 10%; color: #ff4d4d;"><i class="fa-solid fa-trash-can"></i></button>
+        <div class="compact-grid">
+            <input type="text" name="procure_id[]" placeholder="รหัส" style="flex: 0 0 18%;">
+            <input type="date" name="procure_date[]" style="flex: 0 0 26%;">
+            <select name="procure_type[]" style="flex: 0 0 25%;">${typeOptions}</select>
+            <select name="procure_status[]" style="flex: 0 0 25%;">${statusOptions}</select>
+            <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 1 0 95%; margin-top: 4px !important;">
+        </div>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
 }

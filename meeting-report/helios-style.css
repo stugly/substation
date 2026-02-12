@@ -150,3 +150,24 @@
     font-size: 12px !important;
     height: 30px !important;
 }
+
+/* จัดการให้ 4 ช่องอยู่บรรทัดเดียวกัน */
+.compact-grid {
+    display: flex;
+    flex-wrap: wrap; /* ให้รายละเอียดหล่นไปบรรทัด 2 ได้ถ้าพื้นที่ไม่พอ */
+    gap: 2px; /* ลดช่องว่างระหว่างช่องให้เหลือน้อยที่สุด */
+    flex: 1;
+}
+
+.repair-row-wrapper {
+    padding: 8px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start !important; /* ให้ตัวเลขอยู่ด้านบน */
+}
+
+/* ลดขนาดตัวอักษรและ padding เฉพาะใน Tab 4 เพื่อให้เบียดลงบรรทัดเดียวได้ */
+.compact-grid input, 
+.compact-grid select {
+    padding: 0 2px !important; 
+    font-size: 11px !important; /* ลดขนาด font ลงเล็กน้อย */
+}
