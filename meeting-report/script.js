@@ -31,6 +31,7 @@ async function loadAppData(profile) {
         const response = await fetch(GAS_WEBAPP_URL);
         const data = await response.json();
         rawAppData = data; // เก็บข้อมูลดิบไว้ใช้ทั่วแอป
+        console.log("Data Loaded:", rawAppData);
         staffData = data.staff || [];
         const myId = profile.userId.trim();
         const user = staffData.find(s => s.line && s.line.trim() === myId);
@@ -283,34 +284,35 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     }
 };
 
-// ฟังก์ชันเพิ่มรายการอุปกรณ์ชำรุด
+// ฟังก์ชันสำหรับ Tab 4: อุปกรณ์ชำรุด
 function addRepairRow() {
     const container = document.getElementById('repair-container');
-    if (!container || !rawAppData) return;
+    if (!rawAppData) return;
 
-    const rowCount = container.children.length + 1;
-    const div = document.createElement('div');
-    div.className = "multi-input-row task-row"; // task-row เพื่อให้รันเลขได้
-
-    // ดึงตัวเลือกจาก Setting
+    // สร้างตัวเลือกสำหรับ Dropdown อุปกรณ์ (Setting A)
     const eqOptions = rawAppData.settings_eq.map(item => `<option value="${item}">${item}</option>`).join('');
+    
+    // สร้างตัวเลือกสำหรับสถานะ (Setting B)
     const statusOptions = rawAppData.settings_status_eq.map(item => `<option value="${item}">${item}</option>`).join('');
 
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.style.cssText = "display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;";
+    
     div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
-        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 1 1 45%;">
-        <input type="date" name="repair_date[]" style="flex: 1 1 45%;">
+        <div class="task-number" style="flex:0 0 20px;">${container.children.length + 1}.</div>
+        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 1 1 30%;">
+        <input type="date" name="repair_date[]" style="flex: 1 1 40%;">
         <select name="repair_item[]" style="flex: 1 1 45%;">
             <option value="">-- อุปกรณ์ --</option>
-            ${eqOptions}
+            ${eqOptions} 
         </select>
         <select name="repair_status[]" style="flex: 1 1 45%;">
             <option value="">-- สถานะ --</option>
             ${statusOptions}
         </select>
         <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 85%;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container');" 
-                style="flex: 1 1 10%; color: #ff4d4d;"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove();"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
 }
