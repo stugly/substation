@@ -203,17 +203,17 @@ function showSpinner(show) {
 function getDeviceInfo() {
     const ua = navigator.userAgent.toLowerCase();
     const platform = navigator.platform.toLowerCase();
-    const screen = window.screen;
     
     let deviceType = "Mobile";
 
-    // 🚩 ตรวจสอบร่องรอย Emulator
+    // 🚩 ตรวจสอบว่าเป็น Emulator หรือรันบนคอมหรือไม่
     const isEmulator = 
-        ua.includes("nexus") || ua.includes("pixel") || // Emulator มักใช้ชื่อรุ่น Google
-        ua.includes("bluestacks") || 
-        ua.includes("nox") ||
-        platform.includes("win") || // ถ้า Platform เป็น Windows แต่ส่งมาเป็น Android = ปลอม
-        (screen.width > 1024 && !ua.includes("ipad")); // จอใหญ่เกินมือถือปกติ
+        ua.includes("x86_64") || 
+        ua.includes("i686") || 
+        ua.includes("x86") ||
+        platform.includes("win") || 
+        platform.includes("mac") || 
+        platform.includes("linux x86_64"); // ⬅️ เคสที่พี่เจอคืออันนี้เลย
 
     if (isEmulator) {
         deviceType = "🛑 EMULATOR/PC";
@@ -223,7 +223,6 @@ function getDeviceInfo() {
         deviceType = "iOS";
     }
 
-    // ส่งค่ากลับไปบันทึก (ระบุรุ่นละเอียดเพื่อให้เรามาไล่ดูเองได้ด้วย)
     return `${deviceType} | ${ua.split('(')[1] ? ua.split('(')[1].split(')')[0] : ua}`;
 }
 
