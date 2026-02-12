@@ -213,7 +213,7 @@ function getDeviceInfo() {
         ua.includes("x86") ||
         platform.includes("win") || 
         platform.includes("mac") || 
-        platform.includes("linux x86_64"); // ⬅️ เคสที่พี่เจอคืออันนี้เลย
+        platform.includes("linux x86_64"); 
 
     if (isEmulator) {
         deviceType = "🛑 EMULATOR/PC";
