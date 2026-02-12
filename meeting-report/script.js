@@ -200,25 +200,25 @@ function validateTaskInput(type) {
 
     const rows = container.getElementsByClassName('task-row');
     if (rows.length === 0) {
-        setBtnState(btn, true);
+        setBtnState(btn, true); // ถ้าไม่มีแถวเลยให้กดเพิ่มได้
         return;
     }
 
+    // ตรวจสอบแถวสุดท้าย
     const lastRow = rows[rows.length - 1];
-    const lastInput = lastRow.querySelector('input[type="text"]');
-    const lastSelect = lastRow.querySelector('select');
-
+    const inputs = lastRow.querySelectorAll('input, select');
     let isValid = true;
 
-    // เช็คช่องรายละเอียด
-    if (!lastInput || lastInput.value.trim() === "") {
-        isValid = false;
-    }
-
-    // เช็ค Dropdown (เฉพาะแถวที่เพิ่มใหม่)
-    if (lastSelect && lastSelect.value === "") {
-        isValid = false;
-    }
+    inputs.forEach(el => {
+        const val = el.value.trim(); // ตัดช่องว่างหน้า-หลังออก
+        
+        // เงื่อนไข: 
+        // 1. ห้ามว่าง (val === "")
+        // 2. ถ้าเป็นช่องรายละเอียด (repair_detail) ห้ามเป็นค่าว่างหลัง trim
+        if (val === "" || val.length === 0) {
+            isValid = false;
+        }
+    });
 
     setBtnState(btn, isValid);
 }
@@ -286,29 +286,35 @@ document.getElementById('reportForm').onsubmit = async (e) => {
 
 // ฟังก์ชันสำหรับ Tab 4: อุปกรณ์ชำรุด
 // ส่วนที่ 1: อุปกรณ์ชำรุด
+// แก้ไขส่วนสร้างแถว (ใช้เหมือนกันทั้ง Repair และ Procure)
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper"; 
 
-    let eqOptions = rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
-    let statusOptions = rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    // ทำค่าเริ่มต้นให้เป็นค่าว่างทั้งหมด
+    let eqOptions = `<option value="">-- อุปกรณ์ --</option>` + 
+                   rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    let statusOptions = `<option value="">-- สถานะ --</option>` + 
+                       rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
         <div class="task-number">${rowCount}.</div>
         <div class="compact-grid">
-            <input type="text" name="repair_id[]" placeholder="รหัส" style="flex: 0 0 18%;">
-            <input type="date" name="repair_date[]" style="flex: 0 0 26%;">
-            <select name="repair_item[]" style="flex: 0 0 25%;">${eqOptions}</select>
-            <select name="repair_status[]" style="flex: 0 0 25%;">${statusOptions}</select>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 0 95%; margin-top: 4px !important;">
+            <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')">
+            <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
+            <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOptions}</select>
+            <select name="repair_status[]" onchange="validateTaskInput('repair')">${statusOptions}</select>
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." 
+                   oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container');">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
+    validateTaskInput('repair'); // ล็อกปุ่มทันทีที่เพิ่มแถวใหม่
 }
 
 // ส่วนที่ 2: จัดซื้อจัดจ้าง
