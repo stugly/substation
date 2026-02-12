@@ -282,3 +282,66 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
+
+// ฟังก์ชันเพิ่มรายการอุปกรณ์ชำรุด
+function addRepairRow() {
+    const container = document.getElementById('repair-container');
+    if (!container || !rawAppData) return;
+
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "multi-input-row task-row"; // task-row เพื่อให้รันเลขได้
+
+    // ดึงตัวเลือกจาก Setting
+    const eqOptions = rawAppData.settings_eq.map(item => `<option value="${item}">${item}</option>`).join('');
+    const statusOptions = rawAppData.settings_status_eq.map(item => `<option value="${item}">${item}</option>`).join('');
+
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 1 1 45%;">
+        <input type="date" name="repair_date[]" style="flex: 1 1 45%;">
+        <select name="repair_item[]" style="flex: 1 1 45%;">
+            <option value="">-- อุปกรณ์ --</option>
+            ${eqOptions}
+        </select>
+        <select name="repair_status[]" style="flex: 1 1 45%;">
+            <option value="">-- สถานะ --</option>
+            ${statusOptions}
+        </select>
+        <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 85%;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container');" 
+                style="flex: 1 1 10%; color: #ff4d4d;"><i class="fa-solid fa-trash-can"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+// ฟังก์ชันเพิ่มรายการจัดซื้อจัดจ้าง
+function addProcureRow() {
+    const container = document.getElementById('procure-container');
+    if (!container || !rawAppData) return;
+
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "multi-input-row task-row";
+
+    const typeOptions = rawAppData.settings_procure_type.map(item => `<option value="${item}">${item}</option>`).join('');
+    const statusOptions = rawAppData.settings_procure_status.map(item => `<option value="${item}">${item}</option>`).join('');
+
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <input type="text" name="procure_id[]" placeholder="รหัส PO" style="flex: 1 1 45%;">
+        <input type="date" name="procure_date[]" style="flex: 1 1 45%;">
+        <select name="procure_type[]" style="flex: 1 1 45%;">
+            <option value="">-- ประเภท --</option>
+            ${typeOptions}
+        </select>
+        <select name="procure_status[]" style="flex: 1 1 45%;">
+            <option value="">-- สถานะ --</option>
+            ${statusOptions}
+        </select>
+        <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 85%;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container');"
+                style="flex: 1 1 10%; color: #ff4d4d;"><i class="fa-solid fa-trash-can"></i></button>
+    `;
+    container.appendChild(div);
+}

@@ -125,3 +125,28 @@
 @media (max-width: 480px) { 
     .input-row-grid { grid-template-columns: 1fr 1fr; } 
 }
+
+/* สไตล์พิเศษสำหรับแถวที่มีข้อมูลเยอะ (Tab 4) */
+.multi-input-row {
+    display: flex;
+    flex-wrap: wrap; /* ให้ขึ้นบรรทัดใหม่ได้ในแถวเดียวกัน */
+    gap: 4px;
+    background: #fdfdfd;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.multi-input-row .task-number {
+    position: absolute;
+    left: -20px;
+    top: 12px;
+}
+
+.multi-input-row select, 
+.multi-input-row input {
+    font-size: 12px !important;
+    height: 30px !important;
+}

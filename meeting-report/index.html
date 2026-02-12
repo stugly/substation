@@ -96,7 +96,7 @@
                     </label>
                     <div id="assignment-container"></div>
                     <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-secondary" 
-                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #d9534f; color: #d9534f; background: #fff5f5;">
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
                         <i class="fa-solid fa-plus"></i> เพิ่มงาน
                     </button>
                 </div>
@@ -123,20 +123,31 @@
                     
                     <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-secondary" 
                             style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #06C755; color: #06C755; background: #f0fdf4;">
-                        <i class="fa-solid fa-plus"></i> เพิ่มสถานีไฟฟ้าอื่นๆ
+                        <i class="fa-solid fa-plus"></i> เพิ่มสถานีไฟฟ้า
                     </button>
                 </div>
             </div>
 
             <div id="tab-4" class="tab-content">
-                <div class="card">
-                    <label class="form-label" style="font-weight: 600; color: #d9534f; font-size: 14px;">
-                        <i class="fa-solid fa-tools"></i> รายการอุปกรณ์ชำรุด / การบำรุงรักษา
+                <div class="card" style="margin-bottom: 15px;">
+                    <label class="form-label" style="color: #d9534f; font-weight: 600; font-size: 14px;">
+                        <i class="fa-solid fa-tools"></i> 🛠️ รายการอุปกรณ์ชำรุด
                     </label>
                     <div id="repair-container"></div>
-                    <button type="button" id="btn-add-repair" onclick="addTaskRow('repair')" class="btn-secondary" 
+                    <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-secondary" 
                             style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #d9534f; color: #d9534f; background: #fff5f5;">
                         <i class="fa-solid fa-plus"></i> เพิ่มรายการชำรุด
+                    </button>
+                </div>
+
+                <div class="card">
+                    <label class="form-label" style="color: #f39c12; font-weight: 600; font-size: 14px;">
+                        <i class="fa-solid fa-cart-shopping"></i> 🛒 งานจัดซื้อจัดจ้าง / พัสดุ
+                    </label>
+                    <div id="procure-container"></div>
+                    <button type="button" id="btn-add-procure" onclick="addProcureRow()" class="btn-secondary" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px; height: 32px; border: 1px dashed #f39c12; color: #f39c12; background: #fffcf5;">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการจัดซื้อจัดจ้าง
                     </button>
                 </div>
             </div>
