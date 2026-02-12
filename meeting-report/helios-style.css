@@ -62,37 +62,39 @@
 .form-compact { display: flex; flex-direction: column; gap: 4px; }
 .form-compact label { font-size: 14px; color: #333; font-weight: 600; }
 
-/* 6. Global Task Row (ใช้ร่วมกันทุก Tab เพื่อความเท่ากันเป๊ะ) */
+/* 6. Global Task Row - ฉบับบีบระยะให้กระชับ */
 .task-row {
     display: flex;
     flex-direction: row;
     align-items: center; 
-    gap: 8px; 
-    margin-bottom: 8px; /* ล็อกระยะห่างเท่ากันทุกบรรทัด */
+    gap: 4px; /* ลดระยะห่างระหว่างช่องจาก 8px เหลือ 4px */
+    margin-bottom: 5px; /* ลดระยะห่างระหว่างบรรทัดจาก 8px เหลือ 5px */
     min-height: 32px;
 }
 
 .task-number {
-    flex: 0 0 25px;
-    font-size: 13px;
+    flex: 0 0 20px; /* ลดความกว้างตัวเลขจาก 25px เหลือ 20px */
+    font-size: 12px;
     font-weight: 600;
-    color: #666;
+    color: #888;
     text-align: center;
 }
 
-/* ล็อกความกว้างชื่อสถานี (Tab 3) และ Select ให้ตรงกัน */
+/* ล็อกความกว้างชื่อสถานี และ Select ให้พอดี */
 .power-station-name, 
 .task-row select {
-    flex: 0 0 110px;
+    flex: 0 0 105px; /* ลดความกว้างจาก 110px เหลือ 105px เพื่อประหยัดพื้นที่ */
     font-size: 13px;
     color: #333;
     line-height: 32px;
+    padding: 0 4px !important; /* บีบพื้นที่ข้างใน Select */
 }
 
 .task-row input[type="text"] {
     flex: 1;
     min-width: 0;
-    padding: 0 8px !important;
+    padding: 0 6px !important; /* ลด padding ในช่องกรอกเพื่อให้เห็นข้อความมากขึ้น */
+    height: 30px !important; /* ลดความสูงลงเล็กน้อยให้ดู compact */
 }
 
 .btn-remove-task {
@@ -100,8 +102,8 @@
     color: #ff4d4d;
     background: none;
     border: none;
-    font-size: 16px;
-    text-align: center;
+    font-size: 14px;
+    padding: 0;
     cursor: pointer;
 }
 

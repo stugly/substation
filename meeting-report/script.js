@@ -116,8 +116,7 @@ function addTaskRow(type) {
 
     const rowCount = container.getElementsByClassName('task-row').length + 1;
     const div = document.createElement('div');
-    div.className = "task-row";
-    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+    div.className = "task-row"; 
     
     div.innerHTML = `
         <div class="task-number">${rowCount}.</div>
