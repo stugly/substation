@@ -41,133 +41,70 @@
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* 4. Global Input/Select Alignment */
-.form-compact input, 
-.form-compact select,
-.task-row input,
-.task-row select { 
+/* 4. Global Input/Select Standards */
+.task-row input, .task-row select { 
     height: 32px !important; 
     border: 1px solid #ddd !important; 
     border-radius: 4px !important; 
     font-size: 13px !important; 
     box-sizing: border-box;
-    vertical-align: middle;
     margin: 0 !important;
 }
 
 /* 5. Tab 1: Layout & Labels */
-.input-row-grid { 
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px;
-}
+.input-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
 .form-compact { display: flex; flex-direction: column; gap: 4px; }
 .form-compact label { font-size: 14px; color: #333; font-weight: 600; }
 
-/* 6. Global Task Row - ฉบับบีบระยะให้กระชับ */
+/* 6. Global Task Row (Tab 2, 3, 5, 6) */
 .task-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center; 
-    gap: 4px; /* ลดระยะห่างระหว่างช่องจาก 8px เหลือ 4px */
-    margin-bottom: 5px; /* ลดระยะห่างระหว่างบรรทัดจาก 8px เหลือ 5px */
-    min-height: 32px;
+    display: flex; flex-direction: row; align-items: center; 
+    gap: 4px; margin-bottom: 5px; min-height: 32px;
 }
-
 .task-number {
-    flex: 0 0 20px; /* ลดความกว้างตัวเลขจาก 25px เหลือ 20px */
-    font-size: 12px;
-    font-weight: 600;
-    color: #888;
-    text-align: center;
+    flex: 0 0 20px; font-size: 12px; font-weight: 600; 
+    color: #888; text-align: center;
 }
-
-/* ล็อกความกว้างชื่อสถานี และ Select ให้พอดี */
-.power-station-name, 
-.task-row select {
-    flex: 0 0 105px; /* ลดความกว้างจาก 110px เหลือ 105px เพื่อประหยัดพื้นที่ */
-    font-size: 13px;
-    color: #333;
-    line-height: 32px;
-    padding: 0 4px !important; /* บีบพื้นที่ข้างใน Select */
+.power-station-name, .task-row select {
+    flex: 0 0 105px; font-size: 13px; line-height: 32px; padding: 0 4px !important;
 }
+.task-row input[type="text"] { flex: 1; padding: 0 6px !important; }
 
-.task-row input[type="text"] {
-    flex: 1;
-    min-width: 0;
-    padding: 0 6px !important; /* ลด padding ในช่องกรอกเพื่อให้เห็นข้อความมากขึ้น */
-    height: 30px !important; /* ลดความสูงลงเล็กน้อยให้ดู compact */
+/* 7. Tab 4 Special: Compact Multi-line Row */
+.repair-row-wrapper {
+    display: flex; flex-direction: row; gap: 4px;
+    padding: 8px 2px; border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start !important;
+}
+.compact-grid { display: flex; flex-wrap: wrap; gap: 2px; flex: 1; }
+
+/* 4 ช่องหลักในบรรทัดเดียว */
+.compact-grid input[name*="_id"] { flex: 0 0 16%; }
+.compact-grid input[type="date"] { flex: 0 0 28%; font-size: 11px !important; }
+.compact-grid select:nth-of-type(1) { flex: 0 0 25%; font-size: 11px !important; }
+.compact-grid select:nth-of-type(2) { flex: 0 0 25%; font-size: 11px !important; }
+
+/* รายละเอียดหล่นลงบรรทัดสอง */
+.compact-grid input[name*="_detail"] {
+    flex: 0 0 98%; margin-top: 4px !important;
+    height: 32px !important; font-size: 13px !important;
 }
 
 .btn-remove-task {
-    flex: 0 0 25px;
-    color: #ff4d4d;
-    background: none;
-    border: none;
-    font-size: 14px;
-    padding: 0;
-    cursor: pointer;
+    flex: 0 0 25px; color: #ff4d4d; background: none; border: none;
+    font-size: 16px; cursor: pointer; text-align: center;
 }
 
-/* 7. Attendance & Images */
+/* 8. Attendance & Images */
 .check-list { 
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
     padding: 10px; border: 1px solid #eee; border-radius: 10px; 
     max-height: 220px; overflow-y: auto; 
 }
-.preview-img-container { 
-    display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; 
-}
+.preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .preview-img-container img { 
     width: 65px; height: 65px; object-fit: cover; 
     border-radius: 8px; border: 1px solid #ddd; 
 }
 
-/* 8. Responsive Mobile */
-@media (max-width: 480px) { 
-    .input-row-grid { grid-template-columns: 1fr 1fr; } 
-}
-
-/* สไตล์พิเศษสำหรับแถวที่มีข้อมูลเยอะ (Tab 4) */
-.multi-input-row {
-    display: flex;
-    flex-wrap: wrap; /* ให้ขึ้นบรรทัดใหม่ได้ในแถวเดียวกัน */
-    gap: 4px;
-    background: #fdfdfd;
-    padding: 8px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    position: relative;
-}
-
-.multi-input-row .task-number {
-    position: absolute;
-    left: -20px;
-    top: 12px;
-}
-
-.multi-input-row select, 
-.multi-input-row input {
-    font-size: 12px !important;
-    height: 30px !important;
-}
-
-/* จัดการให้ 4 ช่องอยู่บรรทัดเดียวกัน */
-.compact-grid {
-    display: flex;
-    flex-wrap: wrap; /* ให้รายละเอียดหล่นไปบรรทัด 2 ได้ถ้าพื้นที่ไม่พอ */
-    gap: 2px; /* ลดช่องว่างระหว่างช่องให้เหลือน้อยที่สุด */
-    flex: 1;
-}
-
-.repair-row-wrapper {
-    padding: 8px 4px;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: flex-start !important; /* ให้ตัวเลขอยู่ด้านบน */
-}
-
-/* ลดขนาดตัวอักษรและ padding เฉพาะใน Tab 4 เพื่อให้เบียดลงบรรทัดเดียวได้ */
-.compact-grid input, 
-.compact-grid select {
-    padding: 0 2px !important; 
-    font-size: 11px !important; /* ลดขนาด font ลงเล็กน้อย */
-}
+@media (max-width: 480px) { .input-row-grid { grid-template-columns: 1fr 1fr; } }
