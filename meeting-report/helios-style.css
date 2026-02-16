@@ -41,14 +41,40 @@
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* 4. Global Input/Select Standards */
-.task-row input, .task-row select { 
+/* 4. Global Input/Select Alignment - แก้ไขให้กลับมามนและสวยเหมือนเดิม */
+.form-compact input, 
+.form-compact select,
+.task-row input,
+.task-row select { 
     height: 32px !important; 
     border: 1px solid #ddd !important; 
-    border-radius: 4px !important; 
+    border-radius: 6px !important; /* เพิ่มความโค้งมนเป็น 6px ให้ดูนุ่มนวล */
     font-size: 13px !important; 
     box-sizing: border-box;
+    vertical-align: middle;
     margin: 0 !important;
+    background-color: #fff !important;
+    
+    /* บังคับให้มือถือยอมใช้ขอบมนที่เราตั้งค่าไว้ */
+    -webkit-appearance: none; 
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* เฉพาะช่องวันที่และเวลา ต้องบังคับ Radius ซ้ำอีกรอบเพื่อกันเหนียว */
+input[type="date"], 
+input[type="time"] {
+    border-radius: 6px !important;
+    padding: 0 8px !important;
+    min-width: 0; /* กันมันล้นในมือถือจอเล็ก */
+}
+
+/* เพิ่มให้ Dropdown มีลูกศรสวยๆ และขอบมน */
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 25px !important;
 }
 
 /* 5. Tab 1: Layout & Labels */
