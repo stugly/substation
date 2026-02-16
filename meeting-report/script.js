@@ -142,8 +142,7 @@ function addTaskRow(type) {
     validateTaskInput(type); // ล็อกปุ่มเพิ่มจนกว่าจะพิมพ์แถวนี้
 }
 
-// --- Tab 4: Repair & Procure (ปรับระดับความสูงช่องวันที่ให้เท่ากัน) ---
-// --- Tab 4: Repair (ใส่อ้างอิง Label ทุกช่อง) ---
+// --- Tab 4: Repair (ปรับ Label เป็นสีเขียวขนาด 14px) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -153,33 +152,33 @@ function addRepairRow() {
     let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
     div.innerHTML = `
-        <div class="task-number" style="padding-top: 15px;">${rowCount}.</div>
+        <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
             <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">รหัส</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
                 <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')">
             </div>
             <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
                 <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
             </div>
             <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
                 <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOptions}</select>
             </div>
             <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="repair_status[]" onchange="validateTaskInput('repair')">${statusOptions}</select>
             </div>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 15px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
     validateTaskInput('repair');
 }
 
-// --- Tab 4: Procure (ใส่อ้างอิง Label ทุกช่อง) ---
+// --- Tab 4: Procure (ปรับ Label เป็นสีเขียวขนาด 14px) ---
 function addProcureRow() {
     const container = document.getElementById('procure-container');
     const rowCount = container.children.length + 1;
@@ -189,27 +188,27 @@ function addProcureRow() {
     let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
     
     div.innerHTML = `
-        <div class="task-number" style="padding-top: 15px;">${rowCount}.</div>
+        <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
             <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">รหัส</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
                 <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')">
             </div>
             <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่จัดซื้อ</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่จัดซื้อ</span>
                 <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
             </div>
             <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">ประเภท</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">ประเภท</span>
                 <select name="procure_type[]" onchange="validateTaskInput('procure')">${typeOptions}</select>
             </div>
             <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
-                <span style="font-size: 9px; color: #888; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOptions}</select>
             </div>
             <input type="text" name="procure_detail[]" placeholder="รายละเอียดการจัดซื้อ/จ้าง..." oninput="validateTaskInput('procure')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 15px;" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
     validateTaskInput('procure');
