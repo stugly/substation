@@ -144,7 +144,12 @@ function addRepairRow() {
         <div class="task-number">${rowCount}.</div>
         <div class="compact-grid">
             <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')">
-            <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
+            
+            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
+                <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 1px;">วันที่ชำรุด</span>
+                <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
+            </div>
+
             <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOptions}</select>
             <select name="repair_status[]" onchange="validateTaskInput('repair')">${statusOptions}</select>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
@@ -168,7 +173,12 @@ function addProcureRow() {
         <div class="task-number">${rowCount}.</div>
         <div class="compact-grid">
             <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')">
-            <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
+            
+            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
+                <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 1px;">วันที่จัดซื้อ</span>
+                <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')" style="width: 100%;">
+            </div>
+
             <select name="procure_type[]" onchange="validateTaskInput('procure')">${typeOptions}</select>
             <select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOptions}</select>
             <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('procure')" style="flex: 0 0 98%; margin-top: 4px !important;">
@@ -187,13 +197,20 @@ function validateTaskInput(type) {
     if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { setBtnState(btn, true); return; }
+    if (rows.length === 0) { 
+        setBtnState(btn, true); 
+        return; 
+    }
 
     const lastRow = rows[rows.length - 1];
-    const inputs = lastRow.querySelectorAll('input, select');
+    
+    // --- แก้ตรงนี้ครับ: ให้เลือกเฉพาะ input ที่ไม่ใช่ hidden ---
+    const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
+    
     let isValid = true;
 
     inputs.forEach(el => {
+        // เช็คว่ามีค่า และไม่ใช่แค่ Space bar
         if (el.value.trim().length === 0) isValid = false;
     });
 
