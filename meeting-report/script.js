@@ -141,31 +141,41 @@ function setupPowerTab(data) {
     if (!container || !rawAppData) return;
     container.innerHTML = '';
 
-    // 1. ดึงชื่อหน่วยของคน Login (เช่น "ผจฟ.1", "สฟฟ.ทุ่งสง")
+    // 1. ดึงชื่อ "หน่วย/สถานี" ที่ User คนนี้สังกัดอยู่จริงๆ (เช่น "สฟฟ.ทุ่งสง")
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
 
-    // 2. กรองเฉพาะสถานีที่อยู่ในสังกัดของคน Login เท่านั้น
-    // โดยเช็คว่า s.unit ในข้อมูลสถานี ตรงกับ currentUserUnit ของเรา
-    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-
-    // 3. วาดแถวสถานีในสังกัด
-    myStations.forEach((s, index) => {
+    // 2. ถ้าสังกัดของ User ขึ้นต้นด้วย "สฟฟ." ให้แสดงแค่ที่นั่นที่เดียว
+    if (myUnit.startsWith("สฟฟ.")) {
         const div = document.createElement('div');
         div.className = "task-row"; 
-        
         div.innerHTML = `
-            <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
-            <div class="power-station-name">สฟฟ.${s.name}</div>
-            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+            <div class="task-number" style="flex: 0 0 25px;">1.</div>
+            <div class="power-station-name">${myUnit}</div>
+            <input type="hidden" name="power_station[]" value="${myUnit}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                   oninput="validateTaskInput('power')"
-                   style="flex: 1;">
+                   oninput="validateTaskInput('power')" style="flex: 1;">
             <div style="flex: 0 0 25px;"></div> 
         `;
         container.appendChild(div);
-    });
+    } 
+    // 3. แต่ถ้า User สังกัดหน่วยคุม (เช่น ผจฟ.1) ให้ดึงสถานีลูกทั้งหมดในหน่วยนั้นมาแสดงเหมือนเดิม
+    else {
+        const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+        myStations.forEach((s, index) => {
+            const div = document.createElement('div');
+            div.className = "task-row"; 
+            div.innerHTML = `
+                <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
+                <div class="power-station-name">สฟฟ.${s.name}</div>
+                <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+                <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
+                       oninput="validateTaskInput('power')" style="flex: 1;">
+                <div style="flex: 0 0 25px;"></div> 
+            `;
+            container.appendChild(div);
+        });
+    }
 
-    // 4. ถ้าหน่วยนี้ไม่มีสถานีลูก (เช่น เป็นหน่วยสนับสนุน) ก็จะเริ่มแบบว่างให้กดเพิ่มเอง
     validateTaskInput('power');
 }
 
