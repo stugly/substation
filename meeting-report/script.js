@@ -142,7 +142,7 @@ function addTaskRow(type) {
     validateTaskInput(type); // ล็อกปุ่มเพิ่มจนกว่าจะพิมพ์แถวนี้
 }
 
-// --- Tab 4: Repair (ปรับ Label เป็นสีเขียวขนาด 14px) ---
+// --- Tab 4: Repair (อุปกรณ์ชำรุด) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -151,9 +151,6 @@ function addRepairRow() {
     let eqOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
-    // --- ส่วนของ Tab 4: Repair ---
-    // ปรับสัดส่วนใหม่: รหัส(20%) วันที่(30%) อุปกรณ์(23%) สถานะ(23%) รวมเป็น 96% (เหลือพื้นที่ขอบนิดหน่อย)
-
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
@@ -181,7 +178,7 @@ function addRepairRow() {
     validateTaskInput('repair');
 }
 
-// --- Tab 4: Procure (ปรับ Label เป็นสีเขียวขนาด 14px) ---
+// --- Tab 4: Procure (จัดซื้อจัดจ้าง) ---
 function addProcureRow() {
     const container = document.getElementById('procure-container');
     const rowCount = container.children.length + 1;
@@ -193,21 +190,21 @@ function addProcureRow() {
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 20%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
-                <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')">
+                <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่จัดซื้อ</span>
-                <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
+                <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">ประเภท</span>
-                <select name="procure_type[]" onchange="validateTaskInput('procure')">${typeOptions}</select>
+                <select name="procure_type[]" onchange="validateTaskInput('procure')" style="width: 100%;">${typeOptions}</select>
             </div>
-            <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
-                <select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOptions}</select>
+                <select name="procure_status[]" onchange="validateTaskInput('procure')" style="width: 100%;">${statusOptions}</select>
             </div>
             <input type="text" name="procure_detail[]" placeholder="รายละเอียดการจัดซื้อ/จ้าง..." oninput="validateTaskInput('procure')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
