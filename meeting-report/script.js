@@ -136,19 +136,20 @@ function addTaskRow(type) {
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
 // 1. แถวสถานีหลัก (Fixed)
+// --- ฟังก์ชันพิเศษสำหรับ Tab 3 (Logic เดียวกับ Tab 1 เป๊ะ) ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
-    if (!container || !rawAppData || !data.stations) return;
+    if (!container || !data.stations) return;
     container.innerHTML = '';
 
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
     
-    // ใช้ Logic เดียวกับ Tab 1: 
-    // กรองเอาเฉพาะสถานีที่ Unit ตรงกัน ถ้าไม่เจอเลยค่อยเอาทั้งหมด (หรือปล่อยว่างตามความเหมาะสม)
+    // Logic เดียวกับที่พี่ใช้ตั้งค่าสถานที่ใน Tab 1
     const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-    
-    // ถ้าเป็นพนักงานประจำสถานี (myStations มีข้อมูล) ให้ Loop วางแถว Fixed เลย
-    myStations.forEach((s, index) => {
+    const targetList = myStations.length > 0 ? myStations : data.stations; 
+
+    // วางแถว Fixed ตามรายชื่อที่ได้จาก targetList
+    targetList.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
         
