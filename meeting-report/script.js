@@ -151,24 +151,27 @@ function addRepairRow() {
     let eqOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
+    // --- ส่วนของ Tab 4: Repair ---
+    // ปรับสัดส่วนใหม่: รหัส(20%) วันที่(30%) อุปกรณ์(23%) สถานะ(23%) รวมเป็น 96% (เหลือพื้นที่ขอบนิดหน่อย)
+
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 20%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
-                <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')">
+                <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
-                <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
+                <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
-                <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOptions}</select>
+                <select name="repair_item[]" onchange="validateTaskInput('repair')" style="width: 100%;">${eqOptions}</select>
             </div>
-            <div style="flex: 0 0 24%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
-                <select name="repair_status[]" onchange="validateTaskInput('repair')">${statusOptions}</select>
+                <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
             </div>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
