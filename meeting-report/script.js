@@ -12,7 +12,11 @@ const taskMap = {
     power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
     repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
     procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
-    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' }
+    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' },
+    permit: { container: 'permit-container', btn: 'btn-add-permit', label: 'Work Permit' },
+    asset: { container: 'asset-container', btn: 'btn-add-asset', label: 'ทรัพย์สิน' },
+    km: { container: 'km-container', btn: 'btn-add-km', label: 'KM/ความคิดสร้างสรรค์' },
+    other: { container: 'other-container', btn: 'btn-add-other', label: 'เรื่องอื่นๆ' }
 };
 
 window.onload = function() { initLiff(); };
@@ -54,6 +58,7 @@ function setupMetadata(data) {
     const now = new Date();
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
@@ -62,10 +67,8 @@ function setupMetadata(data) {
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
-        const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-        const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-        const targetList = myStations.length > 0 ? myStations : data.stations;
-        targetList.forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
+        const myStations = data.stations.filter(s => s.unit === currentUserUnit);
+        (myStations.length > 0 ? myStations : data.stations).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
     const attList = document.getElementById('attendance-list');
@@ -75,16 +78,51 @@ function setupMetadata(data) {
             `<label style="display:block; margin-bottom:8px;"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} </label>`
         ).join('');
     }
+
+    const leaveList = document.getElementById('leave-summary-list');
+    if (leaveList) {
+        let myStaff = staffData.filter(s => s.unit === currentUserUnit);
+        leaveList.innerHTML = myStaff.map(s => `
+            <div class="task-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <div style="flex: 1; font-size: 14px;">${s.name}</div>
+                <select name="leave_type_${s.uid}" style="flex: 0 0 100px;">
+                    <option value="ปกติ">ปกติ</option>
+                    <option value="ลากิจ">ลากิจ</option>
+                    <option value="ลาป่วย">ลาป่วย</option>
+                    <option value="ลาพักร้อน">ลาพักร้อน</option>
+                </select>
+                <input type="number" name="leave_days_${s.uid}" value="0" style="flex: 0 0 50px;" min="0">
+            </div>
+        `).join('');
+    }
+
     setupPowerTab(data);
 }
 
-// --- Tab 3: Power Status ---
+function addTaskRow(type) {
+    const config = taskMap[type];
+    const container = document.getElementById(config.container);
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <input type="hidden" name="${type}_type[]" value="${config.label}">
+        <input type="text" name="${type}_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('${type}')" required style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+    validateTaskInput(type);
+}
+
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
     container.innerHTML = '';
-    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+    const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
@@ -93,7 +131,6 @@ function setupPowerTab(data) {
             <div class="power-station-name">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" oninput="validateTaskInput('power')" style="flex: 1;">
-            <div style="flex: 0 0 25px;"></div> 
         `;
         container.appendChild(div);
     });
@@ -102,8 +139,7 @@ function setupPowerTab(data) {
 
 function addPowerDynamicRow() {
     const container = document.getElementById('power-container');
-    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+    const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
     let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
@@ -119,30 +155,9 @@ function addPowerDynamicRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power'); // ล็อกทันทีเพื่อบังคับกรอกแถวที่เพิ่งเพิ่ม
+    validateTaskInput('power');
 }
 
-// --- Tab 2, 5, 6: General Tasks ---
-function addTaskRow(type) {
-    const config = taskMap[type];
-    const container = document.getElementById(config.container);
-    const rowCount = container.getElementsByClassName('task-row').length + 1;
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
-    div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
-        <input type="hidden" name="task_type[]" value="${config.label}">
-        <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('${type}')" required>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    `;
-    container.appendChild(div);
-    validateTaskInput(type); // ล็อกปุ่มเพิ่มจนกว่าจะพิมพ์แถวนี้
-}
-
-// --- Tab 4: Repair (อุปกรณ์ชำรุด) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -170,7 +185,7 @@ function addRepairRow() {
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
             </div>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
         <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
     `;
@@ -178,44 +193,41 @@ function addRepairRow() {
     validateTaskInput('repair');
 }
 
-// --- Tab 4: Procure (จัดซื้อจัดจ้าง) ---
-function addProcureRow() {
-    const container = document.getElementById('procure-container');
+function addPermitRow() {
+    const container = document.getElementById('permit-container');
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
-    let typeOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
-    let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
-    
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 20%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
-                <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')" style="width: 100%;">
+            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">เลขที่ WP</span>
+                <input type="text" name="wp_no[]" placeholder="เลขที่" oninput="validateTaskInput('permit')">
+            </div>
+            <div style="flex: 0 0 35%; display: flex; flex-direction: column;">
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">บริษัท</span>
+                <input type="text" name="wp_company[]" placeholder="บริษัท" oninput="validateTaskInput('permit')">
             </div>
             <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่จัดซื้อ</span>
-                <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')" style="width: 100%;">
-            </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">ประเภท</span>
-                <select name="procure_type[]" onchange="validateTaskInput('procure')" style="width: 100%;">${typeOptions}</select>
-            </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
-                <select name="procure_status[]" onchange="validateTaskInput('procure')" style="width: 100%;">${statusOptions}</select>
+                <select name="wp_status[]" onchange="validateTaskInput('permit')">
+                    <option value="">-- เลือก --</option>
+                    <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
+                    <option value="ปิดใบงานแล้ว">ปิดใบงานแล้ว</option>
+                </select>
             </div>
-            <input type="text" name="procure_detail[]" placeholder="รายละเอียดการจัดซื้อ/จ้าง..." oninput="validateTaskInput('procure')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <input type="text" name="wp_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('permit')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('permit-container'); validateTaskInput('permit');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
-    validateTaskInput('procure');
+    validateTaskInput('permit');
 }
 
 function validateTaskInput(type) {
     const config = taskMap[type];
+    if(!config) return;
     const container = document.getElementById(config.container);
     const btn = document.getElementById(config.btn);
     if (!btn || !container) return;
@@ -224,16 +236,14 @@ function validateTaskInput(type) {
     const lastRow = rows[rows.length - 1];
     const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
     let isComplete = true;
-    inputs.forEach(el => {
-        if (el.value.trim().length === 0) isComplete = false;
-    });
+    inputs.forEach(el => { if (el.required && el.value.trim().length === 0) isComplete = false; });
     setBtnState(btn, isComplete);
 }
 
 function setBtnState(btn, isEnabled) {
+    if(!btn) return;
     btn.disabled = !isEnabled;
     btn.style.opacity = isEnabled ? "1" : "0.5";
-    btn.style.cursor = isEnabled ? "pointer" : "not-allowed";
 }
 
 function updateTaskNumbers(containerId) {
@@ -266,25 +276,24 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
     const btn = document.getElementById('btn-submit');
     btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
+    
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
+    Object.keys(taskMap).forEach(key => {
+        payload[key+'_detail'] = Array.from(formData.getAll(key+'_detail[]'));
+    });
     payload.attendance = Array.from(formData.getAll('attendance'));
-    payload.task_detail = Array.from(formData.getAll('task_detail[]'));
-    payload.task_type = Array.from(formData.getAll('task_type[]'));
-    payload.power_station = Array.from(formData.getAll('power_station[]'));
-    payload.power_detail = Array.from(formData.getAll('power_detail[]'));
     payload.images = selectedImages;
+
     try {
         const response = await fetch(GAS_WEBAPP_URL, { 
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload) 
         });
-        const result = await response.text();
-        alert(result);
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
         location.reload();
     } catch (err) {
-        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
-        btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+        alert("บันทึกไม่สำเร็จ: " + err.message);
+        btn.disabled = false;
     }
 };
