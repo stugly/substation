@@ -138,12 +138,17 @@ function addTaskRow(type) {
 // 1. แถวสถานีหลัก (Fixed)
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
-    if (!container) return;
+    if (!container || !rawAppData) return;
     container.innerHTML = '';
 
+    // 1. ดึงชื่อหน่วยของคน Login (เช่น "ผจฟ.1", "สฟฟ.ทุ่งสง")
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
 
+    // 2. กรองเฉพาะสถานีที่อยู่ในสังกัดของคน Login เท่านั้น
+    // โดยเช็คว่า s.unit ในข้อมูลสถานี ตรงกับ currentUserUnit ของเรา
+    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+
+    // 3. วาดแถวสถานีในสังกัด
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
@@ -159,6 +164,8 @@ function setupPowerTab(data) {
         `;
         container.appendChild(div);
     });
+
+    // 4. ถ้าหน่วยนี้ไม่มีสถานีลูก (เช่น เป็นหน่วยสนับสนุน) ก็จะเริ่มแบบว่างให้กดเพิ่มเอง
     validateTaskInput('power');
 }
 
