@@ -136,35 +136,61 @@ function addTaskRow(type) {
 
 // --- ฟังก์ชันพิเศษสำหรับ Tab 3 (สภาพการจ่ายไฟ) ---
 // 1. แถวสถานีหลัก (Fixed)
-// --- ฟังก์ชันพิเศษสำหรับ Tab 3 (Logic เดียวกับ Tab 1 เป๊ะ) ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
-    if (!container || !data.stations) return;
+    if (!container || !rawAppData) return;
     container.innerHTML = '';
 
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
     
-    // Logic เดียวกับที่พี่ใช้ตั้งค่าสถานที่ใน Tab 1
-    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-    const targetList = myStations.length > 0 ? myStations : data.stations; 
-
-    // วางแถว Fixed ตามรายชื่อที่ได้จาก targetList
-    targetList.forEach((s, index) => {
+    // Logic: กรองเฉพาะสถานีที่ Unit ตรงกับคน Login (ชุดเดียวกับ Tab 1)
+    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+    
+    // วางแถวเริ่มต้นตามรายชื่อสถานีในสังกัด
+    myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
-        
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
             <div class="power-station-name">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                   oninput="validateTaskInput('power')"
-                   style="flex: 1;">
-            <div style="flex: 0 0 25px;"></div> 
-        `;
+                   oninput="validateTaskInput('power')" style="flex: 1;">
+            <div style="flex: 0 0 25px;"></div> `;
         container.appendChild(div);
     });
 
+    validateTaskInput('power');
+}
+
+// 2. ฟังก์ชันปุ่มเพิ่มแถว (ดึงเฉพาะรายชื่อสถานีในสังกัดมาให้เลือก)
+function addPowerDynamicRow() {
+    const container = document.getElementById('power-container');
+    if (!container || !rawAppData) return;
+
+    const rowCount = container.getElementsByClassName('task-row').length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row"; 
+
+    const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
+    // กรองรายชื่อสถานีเฉพาะในสังกัด เพื่อเอามาใส่ใน Dropdown
+    const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+    let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
+
+    div.innerHTML = `
+        <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 105px;">
+            <option value="">-- เลือก --</option>
+            ${stationOptions}
+        </select>
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." 
+               oninput="validateTaskInput('power')" required style="flex: 1;">
+        <button type="button" class="btn-remove-task" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
     validateTaskInput('power');
 }
 
