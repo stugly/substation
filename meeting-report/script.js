@@ -197,24 +197,30 @@ function validateTaskInput(type) {
     if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
+    
+    // ถ้ายังไม่มีแถวเลย ให้กดปุ่มเพิ่มแถวแรกได้
     if (rows.length === 0) { 
         setBtnState(btn, true); 
         return; 
     }
 
+    // ตรวจสอบ "แถวสุดท้าย" ที่มีอยู่ในปัจจุบัน
     const lastRow = rows[rows.length - 1];
     
-    // --- แก้ตรงนี้ครับ: ให้เลือกเฉพาะ input ที่ไม่ใช่ hidden ---
+    // เลือกเฉพาะ input ที่ไม่ใช่ hidden และไม่ใช่ปุ่ม
     const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
     
-    let isValid = true;
+    let isLastRowComplete = true;
 
     inputs.forEach(el => {
-        // เช็คว่ามีค่า และไม่ใช่แค่ Space bar
-        if (el.value.trim().length === 0) isValid = false;
+        // ถ้ามีช่องใดช่องหนึ่งในแถวล่าสุดว่าง (หลัง trim) ให้ถือว่าแถวยังไม่เสร็จ
+        if (el.value.trim().length === 0) {
+            isLastRowComplete = false;
+        }
     });
 
-    setBtnState(btn, isValid);
+    // ปุ่ม "เพิ่มรายการ" จะกดได้ก็ต่อเมื่อแถวล่าสุดกรอกครบแล้วเท่านั้น
+    setBtnState(btn, isLastRowComplete);
 }
 
 function setBtnState(btn, isEnabled) {
