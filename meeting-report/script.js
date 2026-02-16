@@ -138,43 +138,31 @@ function addTaskRow(type) {
 // 1. แถวสถานีหลัก (Fixed)
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
-    if (!container || !rawAppData) return;
+    if (!container || !rawAppData || !data.stations) return;
     container.innerHTML = '';
 
-    // 1. ดึงชื่อ "หน่วย/สถานี" ที่ User คนนี้สังกัดอยู่จริงๆ (เช่น "สฟฟ.ทุ่งสง")
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
-
-    // 2. ถ้าสังกัดของ User ขึ้นต้นด้วย "สฟฟ." ให้แสดงแค่ที่นั่นที่เดียว
-    if (myUnit.startsWith("สฟฟ.")) {
+    
+    // ใช้ Logic เดียวกับ Tab 1: 
+    // กรองเอาเฉพาะสถานีที่ Unit ตรงกัน ถ้าไม่เจอเลยค่อยเอาทั้งหมด (หรือปล่อยว่างตามความเหมาะสม)
+    const myStations = data.stations.filter(s => s.unit && s.unit.trim() === myUnit);
+    
+    // ถ้าเป็นพนักงานประจำสถานี (myStations มีข้อมูล) ให้ Loop วางแถว Fixed เลย
+    myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
+        
         div.innerHTML = `
-            <div class="task-number" style="flex: 0 0 25px;">1.</div>
-            <div class="power-station-name">${myUnit}</div>
-            <input type="hidden" name="power_station[]" value="${myUnit}">
+            <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
+            <div class="power-station-name">สฟฟ.${s.name}</div>
+            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                   oninput="validateTaskInput('power')" style="flex: 1;">
+                   oninput="validateTaskInput('power')"
+                   style="flex: 1;">
             <div style="flex: 0 0 25px;"></div> 
         `;
         container.appendChild(div);
-    } 
-    // 3. แต่ถ้า User สังกัดหน่วยคุม (เช่น ผจฟ.1) ให้ดึงสถานีลูกทั้งหมดในหน่วยนั้นมาแสดงเหมือนเดิม
-    else {
-        const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
-        myStations.forEach((s, index) => {
-            const div = document.createElement('div');
-            div.className = "task-row"; 
-            div.innerHTML = `
-                <div class="task-number" style="flex: 0 0 25px;">${index + 1}.</div>
-                <div class="power-station-name">สฟฟ.${s.name}</div>
-                <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
-                <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" 
-                       oninput="validateTaskInput('power')" style="flex: 1;">
-                <div style="flex: 0 0 25px;"></div> 
-            `;
-            container.appendChild(div);
-        });
-    }
+    });
 
     validateTaskInput('power');
 }
