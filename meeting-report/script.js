@@ -60,7 +60,6 @@ function setupMetadata(data) {
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
-    // ตั้งค่าสถานที่ (Tab 1)
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
@@ -70,7 +69,6 @@ function setupMetadata(data) {
         targetList.forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
-    // ตั้งค่ารายชื่อพนักงาน (Tab 2)
     const attList = document.getElementById('attendance-list');
     if (attList) {
         let filteredStaff = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1");
@@ -79,16 +77,14 @@ function setupMetadata(data) {
         ).join('');
     }
 
-    // ล้างค่าและเริ่มต้น Tab 3 (Fixed Rows)
     setupPowerTab(data);
 }
 
-// --- ฟังก์ชันจัดการ Tab 3 (Power Status) ---
+// --- Tab 3: Power Status ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
     container.innerHTML = '';
-
     const myUnit = currentUserUnit ? currentUserUnit.trim() : "";
     const myStations = rawAppData.stations.filter(s => s.unit && s.unit.trim() === myUnit);
     
@@ -104,7 +100,7 @@ function setupPowerTab(data) {
         `;
         container.appendChild(div);
     });
-    validateTaskInput('power');
+    setBtnState(document.getElementById('btn-add-power'), true);
 }
 
 function addPowerDynamicRow() {
@@ -127,16 +123,35 @@ function addPowerDynamicRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power');
+    setBtnState(document.getElementById('btn-add-power'), true);
 }
 
-// --- ฟังก์ชันจัดการ Tab 4 (Repair & Procure) ---
+// --- Tab 2, 5, 6: General Tasks ---
+function addTaskRow(type) {
+    const config = taskMap[type];
+    const container = document.getElementById(config.container);
+    const rowCount = container.getElementsByClassName('task-row').length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
+    div.innerHTML = `
+        <div class="task-number">${rowCount}.</div>
+        <input type="hidden" name="task_type[]" value="${config.label}">
+        <input type="text" name="task_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('${type}')" required>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+    setBtnState(document.getElementById(config.btn), true);
+}
+
+// --- Tab 4: Repair & Procure ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper"; 
-
     let eqOptions = `<option value="">-- อุปกรณ์ --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     let statusOptions = `<option value="">-- สถานะ --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
 
@@ -144,12 +159,10 @@ function addRepairRow() {
         <div class="task-number">${rowCount}.</div>
         <div class="compact-grid">
             <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')">
-            
             <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
                 <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 1px;">วันที่ชำรุด</span>
                 <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
             </div>
-
             <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOptions}</select>
             <select name="repair_status[]" onchange="validateTaskInput('repair')">${statusOptions}</select>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
@@ -157,7 +170,7 @@ function addRepairRow() {
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
-    validateTaskInput('repair');
+    setBtnState(document.getElementById('btn-add-repair'), true);
 }
 
 function addProcureRow() {
@@ -165,7 +178,6 @@ function addProcureRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
-
     let typeOptions = `<option value="">-- ประเภท --</option>` + rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
     let statusOptions = `<option value="">-- สถานะ --</option>` + rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
 
@@ -173,12 +185,10 @@ function addProcureRow() {
         <div class="task-number">${rowCount}.</div>
         <div class="compact-grid">
             <input type="text" name="procure_id[]" placeholder="รหัส" oninput="validateTaskInput('procure')">
-            
             <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
                 <span style="font-size: 9px; color: #06C755; font-weight: bold; margin-bottom: 1px;">วันที่จัดซื้อ</span>
                 <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')" style="width: 100%;">
             </div>
-
             <select name="procure_type[]" onchange="validateTaskInput('procure')">${typeOptions}</select>
             <select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOptions}</select>
             <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('procure')" style="flex: 0 0 98%; margin-top: 4px !important;">
@@ -186,7 +196,7 @@ function addProcureRow() {
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
-    validateTaskInput('procure');
+    setBtnState(document.getElementById('btn-add-procure'), true);
 }
 
 // --- Common Functions ---
@@ -197,30 +207,15 @@ function validateTaskInput(type) {
     if (!btn || !container) return;
 
     const rows = container.getElementsByClassName('task-row');
-    
-    // ถ้ายังไม่มีแถวเลย ให้กดปุ่มเพิ่มแถวแรกได้
-    if (rows.length === 0) { 
-        setBtnState(btn, true); 
-        return; 
-    }
+    if (rows.length === 0) { setBtnState(btn, true); return; }
 
-    // ตรวจสอบ "แถวสุดท้าย" ที่มีอยู่ในปัจจุบัน
     const lastRow = rows[rows.length - 1];
-    
-    // เลือกเฉพาะ input ที่ไม่ใช่ hidden และไม่ใช่ปุ่ม
     const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
-    
-    let isLastRowComplete = true;
-
+    let isComplete = true;
     inputs.forEach(el => {
-        // ถ้ามีช่องใดช่องหนึ่งในแถวล่าสุดว่าง (หลัง trim) ให้ถือว่าแถวยังไม่เสร็จ
-        if (el.value.trim().length === 0) {
-            isLastRowComplete = false;
-        }
+        if (el.value.trim().length === 0) isComplete = false;
     });
-
-    // ปุ่ม "เพิ่มรายการ" จะกดได้ก็ต่อเมื่อแถวล่าสุดกรอกครบแล้วเท่านั้น
-    setBtnState(btn, isLastRowComplete);
+    setBtnState(btn, isComplete);
 }
 
 function setBtnState(btn, isEnabled) {
@@ -234,3 +229,49 @@ function updateTaskNumbers(containerId) {
     const rows = container.getElementsByClassName('task-row');
     Array.from(rows).forEach((row, i) => { row.querySelector('.task-number').innerText = (i + 1) + "."; });
 }
+
+function handleImageSelect(input) {
+    const preview = document.getElementById('image-preview');
+    preview.innerHTML = '';
+    selectedImages = [];
+    Array.from(input.files).slice(0, 5).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedImages.push({ name: file.name, data: e.target.result });
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+document.getElementById('reportForm').onsubmit = async (e) => {
+    e.preventDefault();
+    if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
+    
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+    payload.attendance = Array.from(formData.getAll('attendance'));
+    payload.task_detail = Array.from(formData.getAll('task_detail[]'));
+    payload.task_type = Array.from(formData.getAll('task_type[]'));
+    payload.power_station = Array.from(formData.getAll('power_station[]'));
+    payload.power_detail = Array.from(formData.getAll('power_detail[]'));
+    payload.images = selectedImages;
+
+    try {
+        const response = await fetch(GAS_WEBAPP_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload) 
+        });
+        const result = await response.text();
+        alert(result);
+        location.reload();
+    } catch (err) {
+        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
+        btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+    }
+};
