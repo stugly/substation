@@ -11,35 +11,45 @@
     <link rel="stylesheet" href="helios-style.css">
 </head>
 <body>
+
     <div id="spinner">
         <div class="loader"></div>
-        <div id="spinner-text">กำลังเตรียมข้อมูล...</div>
+        <div id="spinner-text" style="margin-top:15px; font-family: 'Kanit'; color: #666;">กำลังเตรียมข้อมูล...</div>
     </div>
-    <div class="header"><h2>Helios</h2></div>
+
+    <div class="header">
+        <h2>Helios</h2>
+    </div>
+
     <div class="container" id="main-app" style="display:none;">
         <div class="card">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div id="user-avatar-placeholder"><i class="fa-solid fa-circle-user" style="font-size: 40px; color: #ccc;"></i></div>
+                <div id="user-avatar-placeholder">
+                    <i class="fa-solid fa-circle-user" style="font-size: 40px; color: #ccc;"></i>
+                </div>
                 <div id="welcome" style="font-weight:600;"></div>
             </div>
         </div>
-        <div class="step-nav">
+
+        <div class="step-nav" style="display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;">
             <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
             <div class="step-tab" onclick="showTab(event, 'tab-2')">2.การดำเนินงาน</div>
             <div class="step-tab" onclick="showTab(event, 'tab-3')">3.สภาพจ่ายไฟ</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/อุปกรณ์</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.ทำความสะอาด</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.บุคคลภายนอก</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-7')">7.ทรัพย์สิน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-8')">8.KM/สร้างสรรค์</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-9')">9.สรุปการลา</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-10')">10.เรื่องอื่นๆ</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.อุปกรณ์ชำรุด</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.จัดซื้อจัดจ้าง</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.ทำความสะอาด</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-7')">7.บุคคลภายนอก</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-8')">8.ทรัพย์สิน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-9')">9.KM/สร้างสรรค์</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-10')">10.สรุปการลา</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-11')">11.เรื่องอื่นๆ</div>
         </div>
+
         <form id="reportForm">
             <div id="tab-1" class="tab-content active">
                 <div class="card">
                     <div style="text-align: center; padding-bottom: 15px; border-bottom: 2px solid #06C755; margin-bottom: 15px;">
-                        <h3 id="report-title">รายงานการประชุม...</h3>
+                        <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">รายงานการประชุม...</h3>
                         <input type="hidden" id="unit" name="unit">
                         <input type="hidden" id="month" name="month">
                     </div>
@@ -48,37 +58,113 @@
                         <div class="form-compact"><label>เวลา</label><input type="time" name="start_time" id="start_time" required></div>
                         <div class="form-compact"><label>สถานที่ประชุม</label><select id="location" name="location" required></select></div>
                         <div class="form-compact"><label>วิธีการประชุม</label>
-                            <select name="method"><option value="On-site">On-site</option><option value="Online">Online</option></select>
+                            <select name="method">
+                                <option value="On-site">On-site</option>
+                                <option value="Online">Online</option>
+                            </select>
                         </div>
                     </div>
-                    <hr>
-                    <label style="font-weight:600; color:#06C755; font-size:14px;"><i class="fa-solid fa-users"></i> ผู้เข้าประชุม</label>
-                    <div id="attendance-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; padding:10px; border:1px solid #eee; border-radius:10px;"></div>
-                    <hr>
-                    <label style="font-weight:600; color:#06C755; font-size:14px;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
+                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                    <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-users"></i> ผู้เข้าประชุม</label>
+                    <div id="attendance-list" class="check-list" style="margin-top:10px;"></div>
+                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                    <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
                     <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top:10px;">
-                    <div id="image-preview"></div>
+                    <div id="image-preview" class="preview-img-container"></div>
                 </div>
             </div>
+
             <div id="tab-2" class="tab-content">
-                <div class="card" style="margin-bottom:15px;"><label style="color:#06C755; font-weight:600;">มอบหมายงาน</label><div id="assignment-container"></div><button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-add-dynamic">+ เพิ่มงาน</button></div>
-                <div class="card"><label style="color:#06C755; font-weight:600;">แผนงานประจำเดือน</label><div id="plan-container"></div><button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-add-dynamic">+ เพิ่มงาน</button></div>
+                <div class="card" style="margin-bottom:15px;">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-thumbtack"></i> มอบหมายงาน</label>
+                    <div id="assignment-container"></div>
+                    <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-add-dynamic">+ เพิ่มงาน</button>
+                </div>
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-check"></i> แผนงานประจำเดือน</label>
+                    <div id="plan-container"></div>
+                    <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-add-dynamic">+ เพิ่มงาน</button>
+                </div>
             </div>
-            <div id="tab-3" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">สภาพการจ่ายไฟฟ้า</label><div id="power-container"></div><button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-add-dynamic">+ เพิ่มสถานี</button></div></div>
+
+            <div id="tab-3" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-bolt"></i> สภาพการจ่ายไฟฟ้า</label>
+                    <div id="power-container"></div>
+                    <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-add-dynamic">+ เพิ่มสถานี</button>
+                </div>
+            </div>
+
             <div id="tab-4" class="tab-content">
-                <div class="card" style="margin-bottom: 15px;"><label style="color:#06C755; font-weight:600;">อุปกรณ์ชำรุด</label><div id="repair-container"></div><button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic">+ เพิ่มรายการชำรุด</button></div>
-                <div class="card"><label style="color:#06C755; font-weight:600;">จัดซื้อจัดจ้าง</label><div id="procure-container"></div><button type="button" id="btn-add-procure" onclick="addProcureRow()" class="btn-add-dynamic">+ เพิ่มรายการพัสดุ</button></div>
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-tools"></i> อุปกรณ์ชำรุด</label>
+                    <div id="repair-container"></div>
+                    <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic" style="border-color:#d9534f; color:#d9534f;">+ เพิ่มรายการ</button>
+                </div>
             </div>
-            <div id="tab-5" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">ทำความสะอาด</label><div id="clean-container"></div><button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button></div></div>
-            <div id="tab-6" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">บุคคลภายนอก (WP)</label><div id="permit-container"></div><button type="button" id="btn-add-permit" onclick="addPermitRow()" class="btn-add-dynamic">+ เพิ่ม WP</button></div></div>
-            <div id="tab-7" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">ทรัพย์สิน</label><div id="asset-container"></div><button type="button" id="btn-add-asset" onclick="addTaskRow('asset')" class="btn-add-dynamic">+ เพิ่มรายการ</button></div></div>
-            <div id="tab-8" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">KM/สร้างสรรค์</label><div id="km-container"></div><button type="button" id="btn-add-km" onclick="addTaskRow('km')" class="btn-add-dynamic">+ เพิ่มไอเดีย</button></div></div>
-            <div id="tab-9" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">สรุปการลา</label><div id="leave-summary-list"></div></div></div>
-            <div id="tab-10" class="tab-content"><div class="card"><label style="color:#06C755; font-weight:600;">เรื่องอื่นๆ</label><div id="other-container"></div><button type="button" id="btn-add-other" onclick="addTaskRow('other')" class="btn-add-dynamic">+ เพิ่มบันทึก</button></div></div>
+
+            <div id="tab-5" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> จัดซื้อจัดจ้าง</label>
+                    <div id="procure-container"></div>
+                    <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic" style="border-color:#f39c12; color:#f39c12;">+ เพิ่มรายการ</button>
+                </div>
+            </div>
+
+            <div id="tab-6" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-broom"></i> ทำความสะอาด / กำจัดวัชพืช</label>
+                    <div id="clean-container"></div>
+                    <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
+                </div>
+            </div>
+
+            <div id="tab-7" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-hard-hat"></i> บุคคลภายนอก (WP)</label>
+                    <div id="permit-container"></div>
+                    <button type="button" id="btn-add-permit" onclick="addPermitRow()" class="btn-add-dynamic" style="border-color:#3498db; color:#3498db;">+ เพิ่มใบงาน WP</button>
+                </div>
+            </div>
+
+            <div id="tab-8" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-boxes-stacked"></i> ทรัพย์สิน</label>
+                    <div id="asset-container"></div>
+                    <button type="button" id="btn-add-asset" onclick="addTaskRow('asset')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
+                </div>
+            </div>
+
+            <div id="tab-9" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-lightbulb"></i> KM / ความคิดสร้างสรรค์</label>
+                    <div id="km-container"></div>
+                    <button type="button" id="btn-add-km" onclick="addTaskRow('km')" class="btn-add-dynamic">+ เพิ่มไอเดีย</button>
+                </div>
+            </div>
+
+            <div id="tab-10" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-minus"></i> สรุปการลาประจำเดือน</label>
+                    <div id="leave-summary-list"></div>
+                </div>
+            </div>
+
+            <div id="tab-11" class="tab-content">
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-ellipsis"></i> เรื่องอื่นๆ / รปภ.</label>
+                    <div id="other-container"></div>
+                    <button type="button" id="btn-add-other" onclick="addTaskRow('other')" class="btn-add-dynamic">+ เพิ่มบันทึก</button>
+                </div>
+            </div>
+
             <input type="hidden" name="recorder_uid" id="recorder_uid">
-            <button type="submit" id="btn-submit" class="btn-primary" style="margin-top:20px; margin-bottom:50px;">✅ บันทึกรายงานทั้งหมด</button>
+            <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0 50px 0;">
+                ✅ บันทึกรายงานทั้งหมด
+            </button>
         </form>
     </div>
+
     <script>
         function showTab(evt, tabId) {
             const contents = document.getElementsByClassName("tab-content");
@@ -90,6 +176,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=13.0"></script>
+    <script src="script.js?v=11.2"></script>
 </body>
 </html>
