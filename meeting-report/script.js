@@ -127,7 +127,7 @@ function setupPowerTab(data) {
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
-        div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ปรับระยะห่างบรรทัด
+        div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; 
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
             <div style="flex: 0 0 110px; font-size: 13px; font-weight: 600; color: #333; text-align: left;">สฟฟ.${s.name}</div> 
@@ -162,7 +162,7 @@ function addPowerDynamicRow() {
     validateTaskInput('power');
 }
 
-// --- Tab 4: Repair (จูนระยะห่างและสัดส่วนช่องรหัส) ---
+// --- Tab 4: Repair (ขยายช่องรหัสและช่องวันที่) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
