@@ -35,14 +35,13 @@
             <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
             <div class="step-tab" onclick="showTab(event, 'tab-2')">2.การดำเนินงาน</div>
             <div class="step-tab" onclick="showTab(event, 'tab-3')">3.สภาพจ่ายไฟ</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.อุปกรณ์ชำรุด</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.จัดซื้อจัดจ้าง</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.ทำความสะอาด</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-7')">7.บุคคลภายนอก</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-8')">8.ทรัพย์สิน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-9')">9.KM/สร้างสรรค์</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-10')">10.สรุปการลา</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-11')">11.เรื่องอื่นๆ</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ/อุปกรณ์</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.ทำความสะอาด</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.บุคคลภายนอก</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-7')">7.ทรัพย์สิน</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-8')">8.KM/สร้างสรรค์</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-9')">9.สรุปการลา</div>
+            <div class="step-tab" onclick="showTab(event, 'tab-10')">10.เรื่องอื่นๆ</div>
         </div>
 
         <form id="reportForm">
@@ -96,18 +95,23 @@
             </div>
 
             <div id="tab-4" class="tab-content">
-                <div class="card">
+                <div class="card" style="margin-bottom:15px;">
                     <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-tools"></i> อุปกรณ์ชำรุด</label>
                     <div id="repair-container"></div>
-                    <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic" style="border-color:#d9534f; color:#d9534f;">+ เพิ่มรายการ</button>
+                    <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic">+ เพิ่มรายการชำรุด</button>
+                </div>
+                <div class="card">
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> งานจัดซื้อจัดจ้าง</label>
+                    <div id="procure-container"></div>
+                    <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic">+ เพิ่มรายการจัดซื้อ</button>
                 </div>
             </div>
 
             <div id="tab-5" class="tab-content">
                 <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> จัดซื้อจัดจ้าง</label>
-                    <div id="procure-container"></div>
-                    <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic" style="border-color:#f39c12; color:#f39c12;">+ เพิ่มรายการ</button>
+                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-broom"></i> ทำความสะอาด / กำจัดวัชพืช</label>
+                    <div id="clean-container"></div>
+                    <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
                 </div>
             </div>
 
@@ -176,6 +180,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-    <script src="script.js?v=11.3"></script>
+    <script src="script.js?v=11.7"></script>
 </body>
 </html>
