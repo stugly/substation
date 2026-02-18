@@ -1,76 +1,68 @@
-/* --- Helios Custom Project Styles (Updated for Symmetry) --- */
+/* --- Helios Custom Project Styles --- */
 
-/* ... ส่วนที่ 1-3 คงเดิม ... */
+#spinner { 
+    display: flex; flex-direction: column; align-items: center; 
+    justify-content: center; height: 100vh; background: #fff; 
+    position: fixed; width: 100%; z-index: 9999; top:0; left:0; 
+}
+.loader { 
+    border: 4px solid #f3f3f3; border-top: 4px solid #06C755; 
+    border-radius: 50%; width: 40px; height: 40px; 
+    animation: spin 1s linear infinite; 
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* 4. Global Input/Select Alignment - เน้นความมนและสมมาตร */
-.form-compact input, 
-.form-compact select,
-.task-row input,
-.task-row select { 
-    height: 36px !important; /* ปรับให้สูงขึ้นอีกนิดเพื่อความกดง่ายในมือถือ */
-    border: 1px solid #ddd !important; 
-    border-radius: 10px !important; /* มนให้เข้ากับ Card */
-    font-size: 14px !important; 
-    box-sizing: border-box;
-    vertical-align: middle;
-    margin: 0 !important;
-    background-color: #fff !important;
-    padding: 0 10px !important;
-    -webkit-appearance: none !important; 
-    appearance: none !important;
-    outline: none;
+.step-nav { 
+    display: flex; padding: 10px; gap: 8px; margin-top: 15px; 
+    overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; 
+    background: #fff; border-bottom: 1px solid #eee;
+}
+.step-nav::-webkit-scrollbar { display: none; }
+.step-tab { 
+    flex: 0 0 auto; padding: 8px 15px; background: #f0f0f0; 
+    border-radius: 20px; font-size: 13px; color: #666; cursor: pointer; 
+}
+.step-tab.active { background: #06C755; color: white; font-weight: 600; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Global Inputs */
+input, select { 
+    height: 36px !important; border: 1px solid #ddd !important; 
+    border-radius: 10px !important; font-size: 14px !important; 
+    padding: 0 10px !important; box-sizing: border-box; outline: none;
+    -webkit-appearance: none; appearance: none;
 }
 
-/* 6. Global Task Row (Tab 3: ปรับระยะให้เท่ากันเป๊ะ) */
-.task-row {
-    display: flex; flex-direction: row; align-items: center; 
-    gap: 10px; margin-bottom: 12px; min-height: 36px;
+.input-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-compact label { font-size: 14px; color: #06C755; font-weight: 600; margin-bottom: 4px; display: block; }
+
+/* Tab 3 Symmetry */
+.power-row-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.power-label-fixed { flex: 0 0 110px; font-size: 13px; font-weight: 600; color: #333; }
+
+/* Tab 4 & 6 Grid */
+.repair-row-wrapper { 
+    display: flex; flex-direction: row; gap: 10px; padding: 12px 0; 
+    border-bottom: 1px solid #f0f0f0; align-items: flex-start; 
 }
-.task-number {
-    flex: 0 0 20px; font-size: 12px; font-weight: 600; 
-    color: #888; text-align: center;
+.compact-grid { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; }
+.compact-grid span { font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px; display: block; }
+
+/* Buttons */
+.btn-primary { 
+    background-color: #06C755; color: white; border: none; padding: 14px; 
+    border-radius: 12px; font-size: 16px; font-weight: 600; 
+    box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3); cursor: pointer; 
 }
-/* ล็อกความกว้างชื่อสถานีและ Dropdown ให้เท่ากัน */
-.power-station-name, .task-row select[name="power_station[]"] {
-    flex: 0 0 110px !important; 
-    font-size: 13px; 
-    font-weight: 600;
+.btn-add-dynamic { 
+    width: 100%; margin-top: 10px; font-size: 13px; height: 34px; 
+    border: 1px dashed #06C755; color: #06C755; background: #f0fdf4; 
+    border-radius: 8px; cursor: pointer; 
 }
 
-/* 7. Tab 4 Special: จูนช่องรหัสให้กว้าง (30%) และไม่เบียด */
-.repair-row-wrapper {
-    display: flex; flex-direction: row; gap: 8px;
-    padding: 12px 2px; border-bottom: 1px solid #f0f0f0;
-    align-items: flex-start !important;
-}
-.compact-grid { 
-    display: flex; flex-wrap: wrap; gap: 10px; flex: 1; 
-}
-
-/* ปรับสัดส่วน 4 ช่องหลักให้สมดุล (รวมแล้วได้ประมาณ 98% เพื่อเว้น Gap) */
-.compact-grid div:nth-child(1) { flex: 0 0 30%; } /* ช่องรหัสอุปกรณ์ */
-.compact-grid div:nth-child(2) { flex: 0 0 30%; } /* วันที่ */
-.compact-grid div:nth-child(3) { flex: 0 0 16%; } /* อุปกรณ์ */
-.compact-grid div:nth-child(4) { flex: 0 0 16%; } /* สถานะ */
-
-/* ปรับ Input ด้านในให้เต็มพื้นที่ของ Div ที่หุ้ม */
-.compact-grid input, .compact-grid select { width: 100% !important; }
-
-/* รายละเอียด (บรรทัดสอง) */
-.compact-grid input[name*="_detail"] {
-    flex: 0 0 100% !important; 
-    margin-top: 5px !important;
-    height: 34px !important;
-}
-
-/* 9. Navigation Bar (ทำให้ Scroll สมูทขึ้น) */
-.step-nav {
-    display: flex; 
-    padding: 10px; 
-    gap: 8px; 
-    margin-top: 15px; 
-    overflow-x: auto; 
-    white-space: nowrap; 
-    background: #f8f9fa;
-    border-radius: 12px 12px 0 0;
+.check-list { 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
+    padding: 10px; border: 1px solid #eee; border-radius: 10px; 
 }
