@@ -146,3 +146,34 @@ input::-webkit-date-and-time-value {
 }
 
 @media (max-width: 480px) { .input-row-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ปุ่มเพิ่มรายการ (ทำให้เด่นน้อยลง) */
+.btn-add-dynamic {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 13px;
+    height: 34px;
+    border: 1px dashed #06C755; /* เส้นประ */
+    color: #06C755;
+    background: #f0fdf4; /* พื้นหลังสีเขียวอ่อนมาก */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-add-dynamic:hover {
+    background: #dcfce7;
+}
+
+/* ปุ่มบันทึก (เด่นที่สุด) */
+.btn-primary {
+    background-color: #06C755; /* สีเขียวเข้มสดใส */
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3); /* ใส่เงาให้ดูเด่น */
+    cursor: pointer;
+}

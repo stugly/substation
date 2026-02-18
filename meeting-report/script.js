@@ -158,6 +158,7 @@ function addPowerDynamicRow() {
     validateTaskInput('power');
 }
 
+// --- Tab 4: Repair (ปรับรหัสเป็น 25%) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -169,19 +170,18 @@ function addRepairRow() {
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 20%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
+            <div style="flex: 0 0 25%; display: flex; flex-direction: column;"> <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
                 <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
                 <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 21%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
                 <select name="repair_item[]" onchange="validateTaskInput('repair')" style="width: 100%;">${eqOptions}</select>
             </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 21%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
             </div>
