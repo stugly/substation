@@ -107,7 +107,7 @@ function addTaskRow(type) {
     div.className = "task-row";
     div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
     div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
+        <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
         <input type="hidden" name="${type}_type[]" value="${config.label}">
         <input type="text" name="${type}_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('${type}')" required style="flex:1;">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
@@ -127,10 +127,11 @@ function setupPowerTab(data) {
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
-        div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ปรับระยะห่าง
+        div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ปรับระยะห่างบรรทัด
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
-            <div style="flex: 0 0 105px; font-size: 13px; font-weight: 600; color: #333;">สฟฟ.${s.name}</div> <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+            <div style="flex: 0 0 110px; font-size: 13px; font-weight: 600; color: #333; text-align: left;">สฟฟ.${s.name}</div> 
+            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" oninput="validateTaskInput('power')" style="flex: 1;">
             <div style="flex: 0 0 32px;"></div> `;
         container.appendChild(div);
@@ -146,34 +147,14 @@ function addPowerDynamicRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row"; 
-    div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ระยะห่างเท่ากับข้างบน
+    div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; 
     div.innerHTML = `
         <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
-        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 105px; height: 32px;"> <option value="">-- เลือก --</option>${stationOptions}
-        </select>
-        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');" style="flex: 0 0 32px;">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    `;
-    container.appendChild(div);
-    validateTaskInput('power');
-}
-
-function addPowerDynamicRow() {
-    const container = document.getElementById('power-container');
-    const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
-    let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
-    const rowCount = container.children.length + 1;
-    const div = document.createElement('div');
-    div.className = "task-row"; 
-    div.innerHTML = `
-        <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
-        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 105px;">
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 110px; height: 32px;"> 
             <option value="">-- เลือก --</option>${stationOptions}
         </select>
         <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');" style="flex: 0 0 32px; height: 32px;">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
@@ -181,7 +162,7 @@ function addPowerDynamicRow() {
     validateTaskInput('power');
 }
 
-// --- Tab 4: Repair (ขยายช่องรหัสและช่องวันที่) ---
+// --- Tab 4: Repair (จูนระยะห่างและสัดส่วนช่องรหัส) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -191,26 +172,29 @@ function addRepairRow() {
     let statusOptions = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
     div.innerHTML = `
-        <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
-        <div class="compact-grid">
-            <div style="flex: 0 0 28%; display: flex; flex-direction: column;"> <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัสอุปกรณ์</span>
+        <div class="task-number" style="padding-top: 25px; flex: 0 0 20px;">${rowCount}.</div>
+        <div class="compact-grid" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+            <div style="flex: 0 0 30%; display: flex; flex-direction: column;"> 
+                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัสอุปกรณ์</span>
                 <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 32%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
                 <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 16%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #088c3c; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
                 <select name="repair_item[]" onchange="validateTaskInput('repair')" style="width: 100%;">${eqOptions}</select>
             </div>
-            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 16%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #088c3c; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
             </div>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 100%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px; flex: 0 0 32px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
     validateTaskInput('repair');
@@ -222,8 +206,8 @@ function addPermitRow() {
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
     div.innerHTML = `
-        <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
-        <div class="compact-grid">
+        <div class="task-number" style="padding-top: 25px; flex: 0 0 20px;">${rowCount}.</div>
+        <div class="compact-grid" style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
             <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">เลขที่ WP</span>
                 <input type="text" name="wp_no[]" placeholder="เลขที่" oninput="validateTaskInput('permit')">
@@ -232,7 +216,7 @@ function addPermitRow() {
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">บริษัท</span>
                 <input type="text" name="wp_company[]" placeholder="บริษัท" oninput="validateTaskInput('permit')">
             </div>
-            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 25%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="wp_status[]" onchange="validateTaskInput('permit')">
                     <option value="">-- เลือก --</option>
@@ -240,9 +224,9 @@ function addPermitRow() {
                     <option value="ปิดใบงานแล้ว">ปิดใบงานแล้ว</option>
                 </select>
             </div>
-            <input type="text" name="wp_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('permit')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <input type="text" name="wp_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('permit')" style="flex: 0 0 100%; margin-top: 4px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('permit-container'); validateTaskInput('permit');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px; flex: 0 0 32px;" onclick="this.parentElement.remove(); updateTaskNumbers('permit-container'); validateTaskInput('permit');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
     validateTaskInput('permit');
