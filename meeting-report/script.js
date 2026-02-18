@@ -118,6 +118,7 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
+// --- Tab 3: Power Status (รายการที่โหลดมาให้) ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
@@ -126,14 +127,36 @@ function setupPowerTab(data) {
     myStations.forEach((s, index) => {
         const div = document.createElement('div');
         div.className = "task-row"; 
+        div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ปรับระยะห่าง
         div.innerHTML = `
             <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
-            <div class="power-station-name">สฟฟ.${s.name}</div>
-            <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
+            <div style="flex: 0 0 105px; font-size: 13px; font-weight: 600; color: #333;">สฟฟ.${s.name}</div> <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" oninput="validateTaskInput('power')" style="flex: 1;">
-        `;
+            <div style="flex: 0 0 32px;"></div> `;
         container.appendChild(div);
     });
+    validateTaskInput('power');
+}
+
+// --- Tab 3: Power Status (รายการที่กดเพิ่มเอง) ---
+function addPowerDynamicRow() {
+    const container = document.getElementById('power-container');
+    const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
+    let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row"; 
+    div.style.cssText = "display: flex; gap: 10px; margin-bottom: 12px; align-items: center;"; // ระยะห่างเท่ากับข้างบน
+    div.innerHTML = `
+        <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 105px; height: 32px;"> <option value="">-- เลือก --</option>${stationOptions}
+        </select>
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');" style="flex: 0 0 32px;">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
     validateTaskInput('power');
 }
 
@@ -158,7 +181,7 @@ function addPowerDynamicRow() {
     validateTaskInput('power');
 }
 
-// --- Tab 4: Repair (ปรับรหัสเป็น 25%) ---
+// --- Tab 4: Repair (ขยายช่องรหัสและช่องวันที่) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -170,22 +193,22 @@ function addRepairRow() {
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 25%; display: flex; flex-direction: column;"> <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
+            <div style="flex: 0 0 28%; display: flex; flex-direction: column;"> <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัสอุปกรณ์</span>
                 <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 28%; display: flex; flex-direction: column;">
+            <div style="flex: 0 0 32%; display: flex; flex-direction: column;">
                 <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
                 <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
             </div>
-            <div style="flex: 0 0 21%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
+            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+                <span style="font-size: 11px; color: #088c3c; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
                 <select name="repair_item[]" onchange="validateTaskInput('repair')" style="width: 100%;">${eqOptions}</select>
             </div>
-            <div style="flex: 0 0 21%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
+            <div style="flex: 0 0 18%; display: flex; flex-direction: column;">
+                <span style="font-size: 11px; color: #088c3c; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
                 <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
             </div>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
         </div>
         <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
     `;
