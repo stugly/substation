@@ -19,7 +19,34 @@ const taskMap = {
     other: { container: 'other-container', btn: 'btn-add-other', label: 'เรื่องอื่นๆ' }
 };
 
-window.onload = function() { initLiff(); };
+// บรรทัดนี้คือจุดเริ่มงาน
+window.onload = function() { 
+    // initLiff(); // <-- ปิดตัวนี้ไว้ก่อน (ใส่ // ข้างหน้า)
+    mockDataForTesting(); // <-- เรียกฟังก์ชันที่เราจะจำลองข้อมูลแทน
+};
+
+// สร้างฟังก์ชันหลอกข้อมูลขึ้นมา (เอาไว้เทส UI)
+function mockDataForTesting() {
+    console.log("Running in Mock Mode (No LINE)");
+    
+    // จำลองข้อมูลที่ปกติจะได้จาก LINE/GAS
+    currentUserUnit = "สฟฟ.สมมติ"; 
+    rawAppData = {
+        stations: [{name: "สถานี A", unit: "สฟฟ.สมมติ"}, {name: "สถานี B", unit: "สฟฟ.สมมติ"}],
+        settings_eq: ["อุปกรณ์ 1", "อุปกรณ์ 2"],
+        settings_status_eq: ["ปกติ", "ชำรุด"],
+        staff: [{name: "นายทดสอบ ระบบ", uid: "U123", unit: "สฟฟ.สมมติ"}]
+    };
+    staffData = rawAppData.staff;
+
+    // สั่งเปิดหน้าแอปและซ่อน Spinner ทันที
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    document.getElementById('welcome').innerText = "สวัสดี, (โหมดทดสอบ)";
+    
+    // เรียกฟังก์ชันตั้งค่าเริ่มต้นที่ปกติอยู่ใน loadAppData
+    setupMetadata(rawAppData);
+}
 
 async function initLiff() {
     try {
@@ -142,14 +169,16 @@ function addPowerDynamicRow() {
     const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
     let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
     const rowCount = container.children.length + 1;
+    
     const div = document.createElement('div');
     div.className = "task-row"; 
     div.innerHTML = `
         <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
-        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 105px;">
-            <option value="">-- เลือก --</option>${stationOptions}
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 140px; min-width: 140px;">
+            <option value="">-- เลือก --</option>
+            ${stationOptions}
         </select>
-        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1;">
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1; min-width: 0;">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
@@ -297,3 +326,32 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         btn.disabled = false;
     }
 };
+
+function mockDataForTesting() {
+    // 1. ใส่ชื่อหน่วยงานของพี่จริงๆ แทนคำว่า "สฟฟ.สมมติ"
+    currentUserUnit = "ผจฟ.1"; // <-- แก้เป็นชื่อ Unit จริงของพี่ (เช่น ผจฟ.1 หรือชื่อสฟฟ.)
+    
+    rawAppData = {
+        // 2. จำลองชื่อสถานีให้ตรงกับหน่วยงานข้างบน
+        stations: [
+            {name: "นครศรีธรรมราช 1", unit: "ผจฟ.1"}, 
+            {name: "ปากพนัง", unit: "ผจฟ.1"},
+            {name: "นครศรีธรรมราช 3 ชั่วคราว", unit: "ผจฟ.1"}
+        ],
+        settings_eq: ["TR", "CB", "DS"],
+        settings_status_eq: ["ปกติ", "ชำรุด", "รอซ่อม"],
+        // 3. จำลองรายชื่อพนักงาน
+        staff: [
+            {name: "นายทดสอบ 1", uid: "U001", unit: "ผจฟ.1", line: "123"},
+            {name: "นายทดสอบ 2", uid: "U002", unit: "ผจฟ.1", line: "456"}
+        ]
+    };
+    staffData = rawAppData.staff;
+
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    document.getElementById('welcome').innerText = "สวัสดี, โหมดทดสอบ (" + currentUserUnit + ")";
+    
+    // ส่งข้อมูลไปให้ฟังก์ชันเดิมทำงานต่อ
+    setupMetadata(rawAppData);
+}
