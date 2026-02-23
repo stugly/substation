@@ -259,13 +259,30 @@ function validateTaskInput(type) {
     if(!config) return;
     const container = document.getElementById(config.container);
     const btn = document.getElementById(config.btn);
+    
+    // ถ้าหาปุ่มหรือ container ไม่เจอให้ข้ามไปเลย (กันพัง)
     if (!btn || !container) return;
+    
     const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { setBtnState(btn, true); return; }
+    
+    // กฎของพี่: ถ้ายังไม่มีแถวเลย ให้กดปุ่มเพิ่มแถวแรกได้
+    if (rows.length === 0) { 
+        setBtnState(btn, true); 
+        return; 
+    }
+    
+    // เช็คแถวล่าสุด: ถ้ากรอกแล้วถึงจะให้กดเพิ่มแถวต่อไปได้
     const lastRow = rows[rows.length - 1];
     const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
+    
     let isComplete = true;
-    inputs.forEach(el => { if (el.required && el.value.trim().length === 0) isComplete = false; });
+    inputs.forEach(el => {
+        // ถ้าช่องไหนว่าง (trim แล้วความยาวเป็น 0) จะถือว่ายังไม่เสร็จ
+        if (el.value.trim().length === 0) {
+            isComplete = false;
+        }
+    });
+    
     setBtnState(btn, isComplete);
 }
 

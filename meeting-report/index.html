@@ -46,133 +46,76 @@
         </div>
 
         <form id="reportForm">
-            <div id="tab-1" class="tab-content active">
-                <div class="card">
-                    <div style="text-align: center; padding-bottom: 15px; border-bottom: 2px solid #06C755; margin-bottom: 15px;">
-                        <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">รายงานการประชุมประจำเดือน</h3>
-                        <input type="hidden" id="unit" name="unit">
-                        <input type="hidden" id="month" name="month">
+            <div class="card">
+                <div style="text-align: center; padding-bottom: 15px; border-bottom: 2px solid #06C755; margin-bottom: 15px;">
+                    <h3 id="report-title" style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">รายงานการประชุมประจำเดือน</h3>
+                    <input type="hidden" id="unit" name="unit">
+                    <input type="hidden" id="month" name="month">
+                </div>
+                <div class="input-row-grid">
+                    <div class="form-compact"><label>วันที่ประชุม</label><input type="date" name="meeting_date" id="meeting_date" required></div>
+                    <div class="form-compact"><label>เวลา</label><input type="time" name="start_time" id="start_time" required></div>
+                    <div class="form-compact"><label>สถานที่ประชุม</label><select id="location" name="location" required></select></div>
+                    <div class="form-compact"><label>วิธีการประชุม</label>
+                        <select name="method">
+                            <option value="On-site">On-site</option>
+                            <option value="Online">Online</option>
+                        </select>
                     </div>
-                    <div class="input-row-grid">
-                        <div class="form-compact"><label>วันที่ประชุม</label><input type="date" name="meeting_date" id="meeting_date" required></div>
-                        <div class="form-compact"><label>เวลา</label><input type="time" name="start_time" id="start_time" required></div>
-                        <div class="form-compact"><label>สถานที่ประชุม</label><select id="location" name="location" required></select></div>
-                        <div class="form-compact"><label>วิธีการประชุม</label>
-                            <select name="method">
-                                <option value="On-site">On-site</option>
-                                <option value="Online">Online</option>
-                            </select>
-                        </div>
-                    </div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                    <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-users"></i> ผู้เข้าประชุม</label>
-                    <div id="attendance-list" class="check-list" style="margin-top:10px;"></div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                    <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
-                    <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top:10px;">
-                    <div id="image-preview" class="preview-img-container"></div>
                 </div>
+                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-users"></i> ผู้เข้าประชุม</label>
+                <div id="attendance-list" class="check-list" style="margin-top:10px;"></div>
+                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
+                <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top:10px;">
+                <div id="image-preview" class="preview-img-container"></div>
             </div>
 
-            <div id="tab-2" class="tab-content">
-                <div class="card" style="margin-bottom:15px;">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-thumbtack"></i> 1. งานที่ได้รับมอบหมาย</label>
-                    <div id="assignment-container"></div>
-                    <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-add-dynamic">+ เพิ่มงานมอบหมาย</button>
-                </div>
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-check"></i> 2. แผนงานประจำเดือน</label>
-                    <div id="plan-container"></div>
-                    <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-add-dynamic">+ เพิ่มแผนงาน</button>
-                </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-thumbtack"></i> 1. งานที่ได้รับมอบหมาย</label>
+                <div id="assignment-container"></div>
+                <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-add-dynamic">+ เพิ่มงานมอบหมาย</button>
+            </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-check"></i> 2. แผนงานประจำเดือน</label>
+                <div id="plan-container"></div>
+                <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-add-dynamic">+ เพิ่มแผนงาน</button>
             </div>
 
-            <div id="tab-3" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-bolt"></i> 3. สภาพการจ่ายไฟฟ้า</label>
-                    <div id="power-container"></div>
-                    <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-add-dynamic">+ เพิ่มสถานี</button>
-                </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-bolt"></i> 3. สภาพการจ่ายไฟฟ้า</label>
+                <div id="power-container"></div>
+                <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-add-dynamic">+ เพิ่มสถานี</button>
             </div>
 
-            <div id="tab-4" class="tab-content">
-                <div class="card" style="margin-bottom:15px;">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-tools"></i> 4. รายงานอุปกรณ์ชำรุด</label>
-                    <div id="repair-container"></div>
-                    <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic">+ เพิ่มรายการชำรุด</button>
-                </div>
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> 5. งานจัดซื้อจัดจ้าง</label>
-                    <div id="procure-container"></div>
-                    <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic">+ เพิ่มรายการจัดซื้อ</button>
-                </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-tools"></i> 4. รายงานอุปกรณ์ชำรุด</label>
+                <div id="repair-container"></div>
+                <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic">+ เพิ่มรายการชำรุด</button>
+            </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> 5. งานจัดซื้อจัดจ้าง</label>
+                <div id="procure-container"></div>
+                <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic">+ เพิ่มรายการจัดซื้อ</button>
             </div>
 
-            <div id="tab-5" class="tab-content">
-                <div class="card" style="margin-bottom:15px;">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-broom"></i> 6. รายงานการทำความสะอาด</label>
-                    <div id="clean-container"></div>
-                    <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
-                </div>
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-leaf"></i> 7. รายงานการกำจัดวัชพืช</label>
-                    <div id="weed-container"></div>
-                    <button type="button" id="btn-add-weed" onclick="addTaskRow('weed')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
-                </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-broom"></i> 6. รายงานการทำความสะอาด</label>
+                <div id="clean-container"></div>
+                <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
             </div>
-
-            <div id="tab-6" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-hard-hat"></i> 9. การเข้าปฏิบัติงานของบุคคลภายนอก (WP)</label>
-                    <div id="permit-container"></div>
-                    <button type="button" id="btn-add-permit" onclick="addPermitRow()" class="btn-add-dynamic" style="border-color:#3498db; color:#3498db;">+ เพิ่มใบงาน WP</button>
-                </div>
-            </div>
-
-            <div id="tab-7" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-boxes-stacked"></i> 10. งานทรัพย์สิน</label>
-                    <div id="asset-container"></div>
-                    <button type="button" id="btn-add-asset" onclick="addTaskRow('asset')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
-                </div>
-            </div>
-
-            <div id="tab-8" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-lightbulb"></i> 11. KM / ความคิดสร้างสรรค์</label>
-                    <div id="km-container"></div>
-                    <button type="button" id="btn-add-km" onclick="addTaskRow('km')" class="btn-add-dynamic">+ เพิ่มไอเดีย</button>
-                </div>
-            </div>
-
-            <div id="tab-9" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-minus"></i> 12. สรุปการลาประจำเดือน</label>
-                    <div id="leave-summary-list"></div>
-                </div>
-            </div>
-
-            <div id="tab-10" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-shield-halved"></i> 13. การตรวจสอบการปฏิบัติงาน รปภ.</label>
-                    <div id="security-container"></div>
-                    <button type="button" id="btn-add-security" onclick="addTaskRow('security')" class="btn-add-dynamic">+ เพิ่มบันทึก</button>
-                </div>
-            </div>
-
-            <div id="tab-11" class="tab-content">
-                <div class="card">
-                    <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-ellipsis"></i> 14. เรื่องอื่นๆ</label>
-                    <div id="other-container"></div>
-                    <button type="button" id="btn-add-other" onclick="addTaskRow('other')" class="btn-add-dynamic">+ เพิ่มบันทึก</button>
-                </div>
+            <div class="card" style="margin-bottom:15px;">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-leaf"></i> 7. รายงานการกำจัดวัชพืช</label>
+                <div id="weed-container"></div>
+                <button type="button" id="btn-add-weed" onclick="addTaskRow('weed')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
             </div>
 
             <input type="hidden" name="recorder_uid" id="recorder_uid">
             <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0 50px 0;">
                 ✅ บันทึกรายงานทั้งหมด
             </button>
-        </form>
+</form>
     </div>
 
     <script>
