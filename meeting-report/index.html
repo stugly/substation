@@ -31,20 +31,6 @@
             </div>
         </div>
 
-        <div class="step-nav" style="display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;">
-            <div class="step-tab active" onclick="showTab(event, 'tab-1')">1.ข้อมูลหลัก</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-2')">2.การดำเนินงาน (มอบหมาย+แผน)</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-3')">3.สภาพจ่ายไฟ</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-4')">4.พัสดุ (ชำรุด+จัดซื้อ)</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-5')">5.ทำความสะอาด+วัชพืช</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-6')">6.บุคคลภายนอก (WP)</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-7')">7.ทรัพย์สิน</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-8')">8.KM/สร้างสรรค์</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-9')">9.สรุปการลา</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-10')">10.รปภ.</div>
-            <div class="step-tab" onclick="showTab(event, 'tab-11')">11.อื่นๆ</div>
-        </div>
-
         <form id="reportForm">
             <div class="card">
                 <div style="text-align: center; padding-bottom: 15px; border-bottom: 2px solid #06C755; margin-bottom: 15px;">
@@ -65,70 +51,153 @@
                 </div>
                 <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
                 <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-users"></i> ผู้เข้าประชุม</label>
-                <div id="attendance-list" class="check-list" style="margin-top:10px;"></div>
+                <div id="attendance-list" class="check-list"></div>
                 <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
                 <label style="font-weight:600; color:#06C755;"><i class="fa-solid fa-camera"></i> รูปภาพประกอบ</label>
                 <input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelect(this)" style="margin-top:10px;">
                 <div id="image-preview" class="preview-img-container"></div>
             </div>
 
-            <div class="card" style="margin-bottom:15px;">
+            <div class="card">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-thumbtack"></i> 1. งานที่ได้รับมอบหมาย</label>
                 <div id="assignment-container"></div>
                 <button type="button" id="btn-add-assignment" onclick="addTaskRow('assignment')" class="btn-add-dynamic">+ เพิ่มงานมอบหมาย</button>
             </div>
-            <div class="card" style="margin-bottom:15px;">
+
+            <div class="card">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-calendar-check"></i> 2. แผนงานประจำเดือน</label>
                 <div id="plan-container"></div>
                 <button type="button" id="btn-add-plan" onclick="addTaskRow('plan')" class="btn-add-dynamic">+ เพิ่มแผนงาน</button>
             </div>
 
-            <div class="card" style="margin-bottom:15px;">
+            <div class="card" id="power-station-container">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-bolt"></i> 3. สภาพการจ่ายไฟฟ้า</label>
                 <div id="power-container"></div>
                 <button type="button" id="btn-add-power" onclick="addPowerDynamicRow()" class="btn-add-dynamic">+ เพิ่มสถานี</button>
             </div>
 
-            <div class="card" style="margin-bottom:15px;">
+            <div class="card" id="repair-tasks-container">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-tools"></i> 4. รายงานอุปกรณ์ชำรุด</label>
                 <div id="repair-container"></div>
                 <button type="button" id="btn-add-repair" onclick="addRepairRow()" class="btn-add-dynamic">+ เพิ่มรายการชำรุด</button>
             </div>
-            <div class="card" style="margin-bottom:15px;">
+
+            <div class="card" id="procure-container-main">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-cart-shopping"></i> 5. งานจัดซื้อจัดจ้าง</label>
                 <div id="procure-container"></div>
-                <button type="button" id="btn-add-procure" onclick="addTaskRow('procure')" class="btn-add-dynamic">+ เพิ่มรายการจัดซื้อ</button>
+                <button type="button" id="btn-add-procure" onclick="addProcureRow()" class="btn-add-dynamic">+ เพิ่มรายการจัดซื้อ</button>
             </div>
 
-            <div class="card" style="margin-bottom:15px;">
-                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-broom"></i> 6. รายงานการทำความสะอาด</label>
-                <div id="clean-container"></div>
-                <button type="button" id="btn-add-clean" onclick="addTaskRow('clean')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
+            <div class="card" id="clean-weed-section">
+                <div class="input-row-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-start;">
+                    <div id="clean-column">
+                        <label style="color:#06C755; font-weight:600; display: block; margin-bottom: 10px;">
+                            <i class="fa-solid fa-broom"></i> 6. รายงานทำความสะอาด
+                        </label>
+                        <table class="fixed-report-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">ครั้งที่</th>
+                                    <th style="width: 35%;">วันที่</th>
+                                    <th style="width: 40%;">สรุปผล</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clean-table-body">
+                                <tr><td>1/<span class="current-year"></span></td><td><input type="date" name="clean_date[]"></td><td><input type="text" name="clean_detail[]" placeholder="..."></td></tr>
+                                <tr><td>2/<span class="current-year"></span></td><td><input type="date" name="clean_date[]"></td><td><input type="text" name="clean_detail[]" placeholder="..."></td></tr>
+                                <tr><td>3/<span class="current-year"></span></td><td><input type="date" name="clean_date[]"></td><td><input type="text" name="clean_detail[]" placeholder="..."></td></tr>
+                                <tr><td>4/<span class="current-year"></span></td><td><input type="date" name="clean_date[]"></td><td><input type="text" name="clean_detail[]" placeholder="..."></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="weed-column">
+                        <label style="color:#06C755; font-weight:600; display: block; margin-bottom: 10px;">
+                            <i class="fa-solid fa-leaf"></i> 7. รายงานกำจัดวัชพืช
+                        </label>
+                        <table class="fixed-report-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">ครั้งที่</th>
+                                    <th style="width: 35%;">วันที่</th>
+                                    <th style="width: 40%;">สรุปผล</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weed-table-body">
+                                <tr><td>1/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                                <tr><td>2/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                                <tr><td>3/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                                <tr><td>4/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                                <tr><td>5/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                                <tr><td>6/<span class="current-year"></span></td><td><input type="date" name="weed_date[]"></td><td><input type="text" name="weed_detail[]" placeholder="..."></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="card" style="margin-bottom:15px;">
-                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-leaf"></i> 7. รายงานการกำจัดวัชพืช</label>
-                <div id="weed-container"></div>
-                <button type="button" id="btn-add-weed" onclick="addTaskRow('weed')" class="btn-add-dynamic">+ เพิ่มรายการ</button>
+
+            <div class="card" id="external-work-section">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-user-gear"></i> 8. การปฏิบัติงานของบุคคลภายนอก</label>
+                <div id="external-container"></div>
+                <button type="button" id="btn-add-external" onclick="addExternalRow()" class="btn-add-dynamic">+ เพิ่มรายการปฏิบัติงาน</button>
+            </div>
+
+            <div class="card" id="asset-section">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-boxes-stacked"></i> 9. ทรัพย์สิน</label>
+                <div id="asset-container"></div>
+                <button type="button" id="btn-add-asset" onclick="addAssetRow()" class="btn-add-dynamic">+ เพิ่มรายการทรัพย์สิน</button>
+            </div>
+
+            <div class="card">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-lightbulb"></i> 10. การจัดการองค์ความรู้ (KM)</label>
+                <div id="km-container"></div>
+                <button type="button" onclick="addTaskRow('km')" class="btn-add-dynamic">+ เพิ่มรายการ KM</button>
+            </div>
+
+            <div class="card">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-wand-magic-sparkles"></i> 11. ความคิดสร้างสรรค์</label>
+                <div id="idea-container"></div>
+                <button type="button" onclick="addTaskRow('idea')" class="btn-add-dynamic">+ เพิ่มรายการความคิดสร้างสรรค์</button>
+            </div>
+
+            <div class="card">
+                <label style="color:#06C755; font-weight:600; display: block; margin-bottom: 10px;"><i class="fa-solid fa-user-slash"></i> 12. สรุปการลาประจำเดือน</label>
+                <div style="overflow-x: auto;">
+                    <table class="fixed-report-table" style="min-width: 600px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">ชื่อ-สกุล</th>
+                                <th style="width: 10%;">ป่วย</th>
+                                <th style="width: 10%;">กิจ</th>
+                                <th style="width: 10%;">พักผ่อน</th>
+                                <th style="width: 25%;">ปฏิบัติงานแทน</th>
+                                <th style="width: 20%;">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leave-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-shield-halved"></i> 13. รายงานการตรวจสอบ รปภ.</label>
+                <div id="security-container" style="margin-top: 12px;"></div>
+            </div>
+
+            <div class="card">
+                <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-ellipsis"></i> 14. เรื่องอื่นๆ</label>
+                <div id="other-container"></div>
+                <button type="button" onclick="addTaskRow('other')" class="btn-add-dynamic">+ เพิ่มเรื่องอื่นๆ</button>
             </div>
 
             <input type="hidden" name="recorder_uid" id="recorder_uid">
             <button type="submit" id="btn-submit" class="btn-primary" style="width: 100%; margin: 20px 0 50px 0;">
                 ✅ บันทึกรายงานทั้งหมด
             </button>
-</form>
+        </form>
     </div>
 
-    <script>
-        function showTab(evt, tabId) {
-            const contents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < contents.length; i++) contents[i].style.display = "none";
-            document.getElementById(tabId).style.display = "block";
-            const tabs = document.getElementsByClassName("step-tab");
-            for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
-            evt.currentTarget.classList.add("active");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
     <script src="script.js?v=12.0"></script>
 </body>
 </html>

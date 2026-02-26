@@ -22,180 +22,242 @@
 #user-avatar-placeholder img { width: 100%; height: 100%; object-fit: cover; }
 
 /* 3. Hide Navigation System */
-.step-nav { 
-    display: none !important; 
-}
+.step-nav { display: none !important; }
+.tab-content { display: block !important; margin-bottom: 25px; }
 
-/* Force Tab Content to show as Sections */
-.tab-content { 
-    display: block !important; 
-    margin-bottom: 20px;
-}
-
-/* 4. Global Input/Select Alignment */
+/* 4. Global Input/Select Alignment - 14px & 38px */
 .form-compact input, 
 .form-compact select,
 .task-row input,
-.task-row select { 
-    height: 34px !important; 
+.task-row select,
+.compact-grid input, 
+.compact-grid select { 
+    height: 38px !important; 
     border: 1px solid #ddd !important; 
     border-radius: 8px !important; 
-    font-size: 14px !important; 
+    font-size: 14px !important;
     box-sizing: border-box;
     vertical-align: middle;
     margin: 0 !important;
     background-color: #fff !important;
     padding: 0 10px !important;
-    -webkit-appearance: none !important; 
-    -moz-appearance: none !important;
-    appearance: none !important;
-    outline: none;
-    box-shadow: none !important;
+    outline: none !important; 
 }
 
-input[type="date"], 
-input[type="time"] {
-    min-height: 34px !important;
-    border-radius: 8px !important;
-    display: flex;
-    align-items: center;
+/* 5. Section Layout & Labels - ระยะห่างใต้หัวข้อหลัก 12px */
+.input-row-grid, 
+#attendance-container,
+#power-station-container,
+#repair-tasks-container,
+#procure-container,
+#clean-weed-section,
+.check-list { 
+    margin-top: 12px !important; 
 }
 
-input::-webkit-date-and-time-value {
-    margin: 0;
-    line-height: 34px;
-    height: 34px;
-    text-align: left;
-}
-
-/* 5. Section Layout & Labels */
 .input-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
 .form-compact { display: flex; flex-direction: column; gap: 4px; }
-.form-compact label, 
-#attendance-container b { 
-    font-size: 14px; 
-    color: #06C755 !important; 
-    font-weight: 600; 
-}
+.form-compact label { font-size: 14px; color: #06C755 !important; font-weight: 600; }
 
-/* 6. Global Task Row - ขยายความกว้างชื่อสถานี */
+/* 6. Global Task Row - จัดการระยะห่างแถว (จูนตามสายตา) */
 .task-row {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
-    margin-bottom: 6px !important;
+    margin-bottom: 7px !important; 
     padding: 0 !important;
-    min-height: 38px !important;
+    min-height: 40px !important;
 }
 
-/* ขยายความกว้างจาก 205px เป็น 260px เพื่อรองรับชื่อยาว */
+#power-station-container .task-row {
+    margin-bottom: 4px !important; 
+}
+
+.task-number {
+    flex: 0 0 30px !important;
+    min-width: 30px !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    color: #888;
+}
+
+/* ข้อ 3: สภาพจ่ายไฟ - สถานี 260px */
 .power-station-name, 
 .task-row select[name="power_station[]"] {
     flex: 0 0 260px !important; 
     min-width: 260px !important;
     max-width: 260px !important;
-    padding: 0 5px !important;
+    font-size: 14px !important;
+    padding: 0 8px !important;
     margin: 0 !important;
-    white-space: nowrap !important; /* ห้ามตัดคำขึ้นบรรทัดใหม่ */
-    overflow: hidden;               /* กันข้อความล้น (ถ้ายังยาวไม่พอ) */
-    text-overflow: ellipsis;        /* ใส่ ... ถ้าชื่อยาวเกินจริงๆ */
-    display: flex;
-    align-items: center;
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
     box-sizing: border-box !important;
 }
 
-/* ช่องรายละเอียดจะยืดตามพื้นที่ที่เหลือ */
-.task-row input[type="text"],
 .task-row input[name="power_detail[]"] {
     flex: 1 1 auto !important; 
-    min-width: 100px !important; 
-    height: 34px !important;
-    padding-left: 10px !important;
-    margin: 0 !important; 
-    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    margin: 0 !important;
 }
 
-/* 7. Special Rows (พัสดุ / WP) */
-.repair-row-wrapper {
+.task-row:not(:has(.btn-remove-task))::after {
+    content: "";
+    flex: 0 0 25px;
+}
+
+/* 7. Special Box Layout (ข้อ 4 และ ข้อ 5) - กรอบสีเทาอ่อนแบ่ง 2 บรรทัด */
+.repair-row-wrapper, 
+.procure-row-wrapper {
+    display: flex !important; 
+    flex-direction: row !important; 
+    align-items: center !important; 
+    gap: 12px;
+    padding: 8px 12px !important;
+    margin-bottom: 8px !important; 
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 12px !important;
+    background-color: #fafafa !important;
+}
+
+.compact-grid { 
     display: flex; 
-    flex-direction: row; 
-    gap: 4px;
-    padding: 0 0 6px 0 !important; 
-    margin-bottom: 6px !important; /* ล้อตาม margin-bottom ของ task-row */
-    border-bottom: 1px solid #f0f0f0;
-    align-items: flex-start !important;
+    flex-wrap: wrap; 
+    gap: 4px !important;
+    flex: 1; 
 }
 
-.compact-grid { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.compact-grid > div { flex: 1 1 21% !important; min-width: 80px; }
 
-.compact-grid input[name*="_id"] { flex: 0 0 30% !important; }
-.compact-grid input[type="date"] { flex: 0 0 28% !important; font-size: 11px !important; }
-.compact-grid select:nth-of-type(1) { flex: 0 0 18% !important; font-size: 11px !important; }
-.compact-grid select:nth-of-type(2) { flex: 0 0 18% !important; font-size: 11px !important; }
+.compact-grid span {
+    font-size: 13px !important;
+    color: #06C755 !important;
+    font-weight: 600;
+    margin-bottom: 1px !important;
+    display: block;
+}
 
 .compact-grid input[name*="_detail"] {
-    flex: 0 0 98% !important; margin-top: 6px !important;
-    height: 32px !important; font-size: 13px !important;
+    flex: 0 0 100% !important; 
+    max-width: 100% !important;
+    margin-top: 4px !important;
+    background-color: #fff !important;
 }
 
-/* คุมความสูงปุ่มถังขยะไม่ให้ดันแถวดีด */
-.btn-remove-task {
-    flex: 0 0 25px; 
-    color: #ff4d4d; 
-    background: none; 
-    border: none;
-    font-size: 16px; 
-    cursor: pointer; 
+/* 8. Fixed Table Style (ข้อ 6 และ ข้อ 7) */
+/* --- ปรับสไตล์ตารางให้เข้ากับส่วน Card อื่นๆ --- */
+.fixed-report-table {
+    width: 100%;
+    border-collapse: separate; /* เปลี่ยนจาก collapse เพื่อให้ทำมุมโค้งได้ */
+    border-spacing: 0 6px;    /* เพิ่มระยะห่างระหว่างแถวให้เท่ากับข้ออื่นๆ */
+    font-size: 14px;
+    margin-top: -6px;
+}
+
+.fixed-report-table th {
+    background-color: transparent; /* เอาพื้นหลังสีเทาออก */
+    color: #06C755;
+    font-weight: 600;
+    text-align: left;
+    padding: 0 8px 4px 8px;
+    border: none; 
+    font-size: 12px;
+}
+
+.fixed-report-table td {
+    background-color: #fff;   /* พื้นหลังขาวเหมือน Input อื่นๆ */
+    border: 1px solid #ddd;
+    border-style: solid none; /* เอาเส้นขอบข้างออกก่อน */
+    padding: 4px 8px;
+    height: 38px;
+}
+
+/* ใส่ขอบโค้งและเส้นขอบให้แต่ละแถวดูเป็นระเบียบ */
+.fixed-report-table td:first-child {
+    border-left: 1px solid #ddd;
+    border-radius: 8px 0 0 8px;
+    font-weight: 600;
+    color: #888;
     text-align: center;
-    height: 34px !important; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 !important;
+    background-color: #f9f9f9;
 }
 
-/* 8. Attendance & Images */
-.check-list { 
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; 
-    padding: 10px; border: 1px solid #eee; border-radius: 10px; 
-    max-height: 220px; overflow-y: auto; 
+.fixed-report-table td:last-child {
+    border-right: 1px solid #ddd;
+    border-radius: 0 8px 8px 0;
 }
+
+.fixed-report-table input {
+    width: 100%;
+    border: none !important; /* ซ่อนขอบ Input เพราะเราใช้ขอบของ td แทน */
+    background: transparent !important;
+    padding: 0 5px;
+    font-size: 14px !important;
+    height: 30px !important;
+}
+
+/* ปรับสีปฏิทินให้กลมกลืน */
+.fixed-report-table input[type="date"] {
+    color: #555;
+    cursor: pointer;
+}
+
+/* จัดแนวหัวตารางให้ตรงกับข้อมูล */
+.fixed-report-table th:first-child { text-align: center; }
+
+/* 9. Buttons & Utilities */
+.btn-remove-task {
+    flex: 0 0 25px !important; 
+    color: #ff4d4d !important; 
+    background: transparent !important;
+    border: none !important;
+    font-size: 18px !important; 
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    order: 99;
+}
+
+.btn-add-dynamic { margin-top: 8px !important; }
+.btn-add-dynamic:not(:disabled) { background-color: #fcfdfc !important; color: #06C755 !important; border: 1px dashed #06C755 !important; }
+.btn-primary:not(:disabled) { background-color: #06C755 !important; color: white !important; box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3); }
+
+/* 10. Attendance & Images */
+.check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 220px; overflow-y: auto; }
 .preview-img-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-.preview-img-container img { 
-    width: 65px; height: 65px; object-fit: cover; 
-    border-radius: 8px; border: 1px solid #ddd; 
+.preview-img-container img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+
+/* 11. Responsive Grid */
+@media (max-width: 768px) {
+    #clean-weed-section .input-row-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
 }
 
-@media (max-width: 480px) { .input-row-grid { grid-template-columns: 1fr 1fr; } }
-
-/* --- Status Colors & Transitions --- */
-.btn-add-dynamic {
-    margin-top: 8px !important;
+/* คุมระยะห่างใต้หัวข้อหลักข้อ 8 */
+#external-container {
+    margin-top: 12px !important;
+    overflow-x: auto; /* เพิ่มเพื่อให้เลื่อนซ้ายขวาได้ถ้าจอแคบเกินไป */
+    padding-bottom: 5px;
 }
 
-.btn-add-dynamic:disabled {
-    background-color: #f5f5f5 !important;
-    color: #bbb !important;
-    border: 1px dashed #ccc !important;
-    cursor: not-allowed;
-    opacity: 0.6;
+/* ปรับแต่ง Checkbox ของข้อ 8 ให้ดูสะอาด */
+#external-container input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #06C755;
 }
-
-.btn-add-dynamic:not(:disabled) {
-    background-color: #fcfdfc !important;
-    color: #06C755 !important;
-    border: 1px dashed #06C755 !important;
-    opacity: 1;
-}
-
-.btn-primary:disabled {
-    background-color: #ccc !important;
-    color: #777 !important;
-    cursor: not-allowed;
-}
-
-.btn-primary:not(:disabled) {
-    background-color: #06C755 !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+#asset-container, 
+#km-container, 
+#idea-container, 
+#security-container, 
+#other-container {
+    margin-top: 12px !important;
 }

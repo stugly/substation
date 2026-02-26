@@ -11,41 +11,49 @@ const taskMap = {
     plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
     power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
     repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
-    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
-    clean: { container: 'clean-container', btn: 'btn-add-clean', label: 'ทำความสะอาด' },
-    permit: { container: 'permit-container', btn: 'btn-add-permit', label: 'Work Permit' },
-    asset: { container: 'asset-container', btn: 'btn-add-asset', label: 'ทรัพย์สิน' },
-    km: { container: 'km-container', btn: 'btn-add-km', label: 'KM/ความคิดสร้างสรรค์' },
-    other: { container: 'other-container', btn: 'btn-add-other', label: 'เรื่องอื่นๆ' }
+    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' }
 };
 
 // บรรทัดนี้คือจุดเริ่มงาน
 window.onload = function() { 
-    // initLiff(); // <-- ปิดตัวนี้ไว้ก่อน (ใส่ // ข้างหน้า)
-    mockDataForTesting(); // <-- เรียกฟังก์ชันที่เราจะจำลองข้อมูลแทน
+    // initLiff(); // <-- ปิดตัวนี้ไว้ก่อนตอนทดสอบ
+    mockDataForTesting(); 
 };
 
-// สร้างฟังก์ชันหลอกข้อมูลขึ้นมา (เอาไว้เทส UI)
+// --- ฟังก์ชันจัดการปี พ.ศ. อัตโนมัติในตาราง ---
+function setCurrentYear() {
+    const currentYearTH = new Date().getFullYear() + 543;
+    const yearElements = document.querySelectorAll('.current-year');
+    yearElements.forEach(el => {
+        el.innerText = currentYearTH;
+    });
+}
+
+// สร้างฟังก์ชันหลอกข้อมูลขึ้นมา (โหมดทดสอบ)
 function mockDataForTesting() {
     console.log("Running in Mock Mode (No LINE)");
-    
-    // จำลองข้อมูลที่ปกติจะได้จาก LINE/GAS
-    currentUserUnit = "สฟฟ.สมมติ"; 
+    currentUserUnit = "ผจฟ.1"; 
     rawAppData = {
-        stations: [{name: "สถานี A", unit: "สฟฟ.สมมติ"}, {name: "สถานี B", unit: "สฟฟ.สมมติ"}],
-        settings_eq: ["อุปกรณ์ 1", "อุปกรณ์ 2"],
-        settings_status_eq: ["ปกติ", "ชำรุด"],
-        staff: [{name: "นายทดสอบ ระบบ", uid: "U123", unit: "สฟฟ.สมมติ"}]
+        stations: [
+            {name: "นครศรีธรรมราช 1", unit: "ผจฟ.1"}, 
+            {name: "ปากพนัง", unit: "ผจฟ.1"},
+            {name: "นครศรีธรรมราช 3 ชั่วคราว", unit: "ผจฟ.1"}
+        ],
+        settings_eq: ["TR", "CB", "DS"],
+        settings_status_eq: ["ปกติ", "ชำรุด", "รอซ่อม"],
+        staff: [
+            {name: "นายทดสอบ 1", uid: "U001", unit: "ผจฟ.1", line: "123"},
+            {name: "นายทดสอบ 2", uid: "U002", unit: "ผจฟ.1", line: "456"}
+        ]
     };
     staffData = rawAppData.staff;
 
-    // สั่งเปิดหน้าแอปและซ่อน Spinner ทันที
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
-    document.getElementById('welcome').innerText = "สวัสดี, (โหมดทดสอบ)";
+    document.getElementById('welcome').innerText = "สวัสดี, โหมดทดสอบ (" + currentUserUnit + ")";
     
-    // เรียกฟังก์ชันตั้งค่าเริ่มต้นที่ปกติอยู่ใน loadAppData
     setupMetadata(rawAppData);
+    setCurrentYear(); // รันปี พ.ศ. ทันที
 }
 
 async function initLiff() {
@@ -75,6 +83,7 @@ async function loadAppData(profile) {
                 document.getElementById('user-avatar-placeholder').innerHTML = `<img src="${profile.pictureUrl}">`;
             }
             document.getElementById('recorder_uid').value = user.uid;
+            setCurrentYear();
         } else {
             document.getElementById('spinner-text').innerHTML = `<div style="padding:20px; color:#d9534f;"><b>ไม่พบสิทธิ์การใช้งาน</b></div>`;
         }
@@ -105,34 +114,16 @@ function setupMetadata(data) {
             `<label style="display:block; margin-bottom:8px;"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} </label>`
         ).join('');
     }
-
-    const leaveList = document.getElementById('leave-summary-list');
-    if (leaveList) {
-        let myStaff = staffData.filter(s => s.unit === currentUserUnit);
-        leaveList.innerHTML = myStaff.map(s => `
-            <div class="task-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                <div style="flex: 1; font-size: 14px;">${s.name}</div>
-                <select name="leave_type_${s.uid}" style="flex: 0 0 100px;">
-                    <option value="ปกติ">ปกติ</option>
-                    <option value="ลากิจ">ลากิจ</option>
-                    <option value="ลาป่วย">ลาป่วย</option>
-                    <option value="ลาพักร้อน">ลาพักร้อน</option>
-                </select>
-                <input type="number" name="leave_days_${s.uid}" value="0" style="flex: 0 0 50px;" min="0">
-            </div>
-        `).join('');
-    }
-
     setupPowerTab(data);
 }
 
+// --- การจัดการแถวงาน (แบบเพิ่มเอง) ---
 function addTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     div.className = "task-row";
-    div.style.cssText = "display: flex; gap: 8px; margin-bottom: 8px; align-items: center;";
     div.innerHTML = `
         <div class="task-number">${rowCount}.</div>
         <input type="hidden" name="${type}_type[]" value="${config.label}">
@@ -145,6 +136,7 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
+// --- ข้อ 3: สภาพจ่ายไฟ ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container || !rawAppData) return;
@@ -154,7 +146,7 @@ function setupPowerTab(data) {
         const div = document.createElement('div');
         div.className = "task-row"; 
         div.innerHTML = `
-            <div class="task-number" style="flex: 0 0 20px;">${index + 1}.</div>
+            <div class="task-number">${index + 1}.</div>
             <div class="power-station-name">สฟฟ.${s.name}</div>
             <input type="hidden" name="power_station[]" value="สฟฟ.${s.name}">
             <input type="text" name="power_detail[]" value="สภาพการจ่ายไฟปกติ" oninput="validateTaskInput('power')" style="flex: 1;">
@@ -169,24 +161,23 @@ function addPowerDynamicRow() {
     const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
     let stationOptions = myStations.map(s => `<option value="สฟฟ.${s.name}">สฟฟ.${s.name}</option>`).join('');
     const rowCount = container.children.length + 1;
-    
     const div = document.createElement('div');
     div.className = "task-row"; 
     div.innerHTML = `
-        <div class="task-number" style="flex: 0 0 20px;">${rowCount}.</div>
-        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 140px; min-width: 140px;">
+        <div class="task-number">${rowCount}.</div>
+        <select name="power_station[]" onchange="validateTaskInput('power')" style="flex: 0 0 260px;">
             <option value="">-- เลือก --</option>
             ${stationOptions}
         </select>
-        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1; min-width: 0;">
+        <input type="text" name="power_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('power')" required style="flex: 1;">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('power');
 }
 
+// --- ข้อ 4: อุปกรณ์ชำรุด ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const rowCount = container.children.length + 1;
@@ -198,107 +189,61 @@ function addRepairRow() {
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 20%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">รหัส</span>
-                <input type="text" name="repair_id[]" placeholder="รหัส" oninput="validateTaskInput('repair')" style="width: 100%;">
-            </div>
-            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">วันที่ชำรุด</span>
-                <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')" style="width: 100%;">
-            </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">อุปกรณ์</span>
-                <select name="repair_item[]" onchange="validateTaskInput('repair')" style="width: 100%;">${eqOptions}</select>
-            </div>
-            <div style="flex: 0 0 23%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
-                <select name="repair_status[]" onchange="validateTaskInput('repair')" style="width: 100%;">${statusOptions}</select>
-            </div>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <div><span>รหัส EQ</span><input type="text" name="repair_id[]" placeholder="รหัส"></div>
+            <div><span>วันที่ชำรุด</span><input type="date" name="repair_date[]"></div>
+            <div><span>อุปกรณ์</span><select name="repair_item[]">${eqOptions}</select></div>
+            <div><span>สถานะ</span><select name="repair_status[]">${statusOptions}</select></div>
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 0 0 100%;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
-    validateTaskInput('repair');
 }
 
-function addPermitRow() {
-    const container = document.getElementById('permit-container');
+// --- ข้อ 5: จัดซื้อจัดจ้าง ---
+function addProcureRow() {
+    const container = document.getElementById('procure-container');
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
-    div.className = "task-row repair-row-wrapper";
+    div.className = "task-row procure-row-wrapper"; 
+    let typeOptions = ["งานจ้าง", "จัดซื้อวัสดุ", "ครุภัณฑ์"].map(v => `<option value="${v}">${v}</option>`).join('');
+    let statusOptions = ["รอดำเนินการ", "กำลังดำเนินการ", "ตรวจรับแล้ว"].map(v => `<option value="${v}">${v}</option>`).join('');
+    
     div.innerHTML = `
         <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">เลขที่ WP</span>
-                <input type="text" name="wp_no[]" placeholder="เลขที่" oninput="validateTaskInput('permit')">
-            </div>
-            <div style="flex: 0 0 35%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">บริษัท</span>
-                <input type="text" name="wp_company[]" placeholder="บริษัท" oninput="validateTaskInput('permit')">
-            </div>
-            <div style="flex: 0 0 30%; display: flex; flex-direction: column;">
-                <span style="font-size: 11px; color: #06C755; font-weight: bold; margin-bottom: 2px;">สถานะ</span>
-                <select name="wp_status[]" onchange="validateTaskInput('permit')">
-                    <option value="">-- เลือก --</option>
-                    <option value="กำลังดำเนินการ">กำลังดำเนินการ</option>
-                    <option value="ปิดใบงานแล้ว">ปิดใบงานแล้ว</option>
-                </select>
-            </div>
-            <input type="text" name="wp_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('permit')" style="flex: 0 0 98%; margin-top: 4px !important;">
+            <div><span>รหัส PO</span><input type="text" name="po_id[]" placeholder="เลขที่"></div>
+            <div><span>วันที่จัดซื้อ/จ้าง</span><input type="date" name="po_date[]"></div>
+            <div><span>ประเภท</span><select name="po_type[]"><option value="">-- เลือก --</option>${typeOptions}</select></div>
+            <div><span>สถานะ</span><select name="po_status[]"><option value="">-- เลือก --</option>${statusOptions}</select></div>
+            <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 0 0 100%;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('permit-container'); validateTaskInput('permit');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
-    validateTaskInput('permit');
 }
 
+// --- ฟังก์ชันเสริมอื่นๆ ---
 function validateTaskInput(type) {
     const config = taskMap[type];
-    if(!config) return;
-    const container = document.getElementById(config.container);
+    if(!config || !config.btn) return;
     const btn = document.getElementById(config.btn);
-    
-    // ถ้าหาปุ่มหรือ container ไม่เจอให้ข้ามไปเลย (กันพัง)
+    const container = document.getElementById(config.container);
     if (!btn || !container) return;
-    
     const rows = container.getElementsByClassName('task-row');
-    
-    // กฎของพี่: ถ้ายังไม่มีแถวเลย ให้กดปุ่มเพิ่มแถวแรกได้
-    if (rows.length === 0) { 
-        setBtnState(btn, true); 
-        return; 
-    }
-    
-    // เช็คแถวล่าสุด: ถ้ากรอกแล้วถึงจะให้กดเพิ่มแถวต่อไปได้
+    if (rows.length === 0) { btn.disabled = false; btn.style.opacity = "1"; return; }
     const lastRow = rows[rows.length - 1];
     const inputs = lastRow.querySelectorAll('input:not([type="hidden"]), select');
-    
     let isComplete = true;
-    inputs.forEach(el => {
-        // ถ้าช่องไหนว่าง (trim แล้วความยาวเป็น 0) จะถือว่ายังไม่เสร็จ
-        if (el.value.trim().length === 0) {
-            isComplete = false;
-        }
-    });
-    
-    setBtnState(btn, isComplete);
-}
-
-function setBtnState(btn, isEnabled) {
-    if(!btn) return;
-    btn.disabled = !isEnabled;
-    btn.style.opacity = isEnabled ? "1" : "0.5";
+    inputs.forEach(el => { if (el.value.trim().length === 0) isComplete = false; });
+    btn.disabled = !isComplete;
+    btn.style.opacity = isComplete ? "1" : "0.5";
 }
 
 function updateTaskNumbers(containerId) {
     const container = document.getElementById(containerId);
-    const rows = container.getElementsByClassName('task-row');
-    Array.from(rows).forEach((row, i) => { 
-        const num = row.querySelector('.task-number');
-        if(num) num.innerText = (i + 1) + "."; 
-    });
+    const rows = container.getElementsByClassName('task-number');
+    Array.from(rows).forEach((num, i) => { num.innerText = (i + 1) + "."; });
 }
 
 function handleImageSelect(input) {
@@ -317,6 +262,110 @@ function handleImageSelect(input) {
     });
 }
 
+// เพิ่มข้อมูลใน taskMap
+const extraTaskMap = {
+    km: { container: 'km-container', label: 'KM' },
+    idea: { container: 'idea-container', label: 'ความคิดสร้างสรรค์' },
+    other: { container: 'other-container', label: 'อื่นๆ' }
+};
+
+// ฟังก์ชันข้อ 8: บุคคลภายนอก
+function addExternalRow() {
+    const container = document.getElementById('external-container');
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row"; // ใช้ task-row ปกติเพื่อให้เหมือนข้อ 3
+    div.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 8px;";
+    
+    div.innerHTML = `
+        <div class="task-number" style="flex: 0 0 25px;">${rowCount}.</div>
+        
+        <input type="date" name="ext_date[]" style="flex: 0 0 130px;">
+        
+        <div style="flex: 0 0 55px; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <span style="font-size: 10px; color: #06C755; font-weight: 600;">WP</span>
+            <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this)" style="width: 18px; height: 18px !important;">
+        </div>
+        
+        <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled style="flex: 0 0 100px;">
+        
+        <input type="text" name="ext_company[]" placeholder="หน่วยงาน/บริษัท" style="flex: 0 0 150px;">
+        
+        <input type="text" name="ext_detail[]" placeholder="รายละเอียดดำเนินงาน..." style="flex: 1; min-width: 150px;">
+        
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// ฟังก์ชันเปิด/ปิดช่องเลขที่ WP (เหมือนเดิม)
+function toggleWP(chk) {
+    const row = chk.parentElement.parentElement;
+    const wpInput = row.querySelector('input[name="ext_wp_no[]"]');
+    wpInput.disabled = !chk.checked;
+    if(!chk.checked) wpInput.value = "";
+    wpInput.required = chk.checked;
+}
+
+// ระบบล็อกช่อง WP (ถ้าติ๊กถูก ถึงจะพิมพ์ได้)
+function toggleWP(chk) {
+    const row = chk.closest('.compact-grid');
+    const wpInput = row.querySelector('input[name="ext_wp_no[]"]');
+    wpInput.disabled = !chk.checked;
+    if(!chk.checked) wpInput.value = "";
+    wpInput.required = chk.checked;
+}
+
+// ฟังก์ชันข้อ 9: ทรัพย์สิน
+function addAssetRow() {
+    const container = document.getElementById('asset-container');
+    const rowCount = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = "task-row repair-row-wrapper";
+    div.innerHTML = `
+        <div class="task-number" style="padding-top: 25px;">${rowCount}.</div>
+        <div class="compact-grid">
+            <div style="flex: 0 0 25%;"><span>วันที่ดำเนินการ</span><input type="date" name="asset_date[]"></div>
+            <div style="flex: 0 0 40%;"><span>รายละเอียดจำหน่ายทรัพย์สิน</span><input type="text" name="asset_item[]" placeholder="รายการ..."></div>
+            <div style="flex: 0 0 30%;"><span>ขั้นตอน</span><input type="text" name="asset_step[]" placeholder="อยู่ระหว่าง..."></div>
+        </div>
+        <button type="button" class="btn-remove-task" style="margin-top: 25px;" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container');"><i class="fa-solid fa-trash-can"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+// ฟังก์ชันดึงพนักงาน (ข้อ 12) และ สถานี (ข้อ 13)
+function setupFixedSections() {
+    // 12. สรุปการลา
+    const leaveBody = document.getElementById('leave-table-body');
+    const myStaff = staffData.filter(s => s.unit === currentUserUnit);
+    leaveBody.innerHTML = myStaff.map(s => `
+        <tr>
+            <td style="text-align: left;">${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
+            <td><input type="number" name="leave_sick[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_personal[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_vacation[]" value="0" min="0"></td>
+            <td><input type="text" name="leave_replace[]" placeholder="..."></td>
+            <td><input type="text" name="leave_note[]" placeholder="..."></td>
+        </tr>
+    `).join('');
+
+    // 13. ตรวจสอบ รปภ.
+    const secContainer = document.getElementById('security-container');
+    const myStations = rawAppData.stations.filter(s => s.unit === currentUserUnit);
+    secContainer.innerHTML = myStations.map((s, i) => `
+        <div class="task-row">
+            <div class="task-number">${i + 1}.</div>
+            <div class="power-station-name">สฟฟ.${s.name}</div>
+            <input type="hidden" name="sec_station[]" value="สฟฟ.${s.name}">
+            <input type="text" name="sec_detail[]" placeholder="ผลการตรวจสอบ..." style="flex: 1;">
+        </div>
+    `).join('');
+}
+
+// --- บันทึกข้อมูล ---
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
@@ -325,50 +374,23 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
-    Object.keys(taskMap).forEach(key => {
-        payload[key+'_detail'] = Array.from(formData.getAll(key+'_detail[]'));
+    
+    // ดึงข้อมูล Array ทั้งหมด
+    const arrayFields = ['assignment', 'plan', 'power_station', 'power_detail', 'repair_id', 'repair_date', 'repair_item', 'repair_status', 'repair_detail', 'po_id', 'po_date', 'po_type', 'po_status', 'procure_detail', 'clean_date', 'clean_detail', 'weed_date', 'weed_detail'];
+    arrayFields.forEach(field => {
+        payload[field] = Array.from(formData.getAll(field + '[]'));
     });
+
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.images = selectedImages;
 
     try {
-        const response = await fetch(GAS_WEBAPP_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload) 
-        });
+        const response = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
         alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
         location.reload();
     } catch (err) {
         alert("บันทึกไม่สำเร็จ: " + err.message);
         btn.disabled = false;
+        btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
-
-function mockDataForTesting() {
-    // 1. ใส่ชื่อหน่วยงานของพี่จริงๆ แทนคำว่า "สฟฟ.สมมติ"
-    currentUserUnit = "ผจฟ.1"; // <-- แก้เป็นชื่อ Unit จริงของพี่ (เช่น ผจฟ.1 หรือชื่อสฟฟ.)
-    
-    rawAppData = {
-        // 2. จำลองชื่อสถานีให้ตรงกับหน่วยงานข้างบน
-        stations: [
-            {name: "นครศรีธรรมราช 1", unit: "ผจฟ.1"}, 
-            {name: "ปากพนัง", unit: "ผจฟ.1"},
-            {name: "นครศรีธรรมราช 3 ชั่วคราว", unit: "ผจฟ.1"}
-        ],
-        settings_eq: ["TR", "CB", "DS"],
-        settings_status_eq: ["ปกติ", "ชำรุด", "รอซ่อม"],
-        // 3. จำลองรายชื่อพนักงาน
-        staff: [
-            {name: "นายทดสอบ 1", uid: "U001", unit: "ผจฟ.1", line: "123"},
-            {name: "นายทดสอบ 2", uid: "U002", unit: "ผจฟ.1", line: "456"}
-        ]
-    };
-    staffData = rawAppData.staff;
-
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    document.getElementById('welcome').innerText = "สวัสดี, โหมดทดสอบ (" + currentUserUnit + ")";
-    
-    // ส่งข้อมูลไปให้ฟังก์ชันเดิมทำงานต่อ
-    setupMetadata(rawAppData);
-}
