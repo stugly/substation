@@ -228,6 +228,22 @@
 .btn-add-dynamic { margin-top: 8px !important; }
 .btn-add-dynamic:not(:disabled) { background-color: #fcfdfc !important; color: #06C755 !important; border: 1px dashed #06C755 !important; }
 .btn-primary:not(:disabled) { background-color: #06C755 !important; color: white !important; box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3); }
+/* --- ปรับสไตล์ปุ่ม Add เมื่อโดนล็อค (Disabled) --- */
+.btn-add-dynamic:disabled {
+    background-color: #f8f9fa !important; /* สีเทาอ่อนเหมือนหัวตารางข้อ 6-7 */
+    color: #bbb !important;               /* ตัวหนังสือสีเทาจาง */
+    border: 1px dashed #ddd !important;   /* เส้นประสีเทา */
+    cursor: not-allowed;                  /* เปลี่ยนเมาส์เป็นรูปห้ามกด */
+    opacity: 1 !important;                /* ไม่ต้องใช้โปร่งแสง ให้โชว์สีเทาชัดๆ */
+}
+
+/* สไตล์ปุ่มตอนปกติ (กรอกครบแล้ว) */
+.btn-add-dynamic:not(:disabled) {
+    background-color: #fcfdfc !important;
+    color: #06C755 !important;
+    border: 1px dashed #06C755 !important;
+    cursor: pointer;
+}
 
 /* 10. Attendance & Images */
 .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; border: 1px solid #eee; border-radius: 10px; max-height: 220px; overflow-y: auto; }
