@@ -232,26 +232,27 @@ function addAssetRow() {
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
     
-    // ดึงค่าขั้นตอนจากข้อมูลที่ GAS ส่งมา (ต้องมั่นใจว่าใน code.gs เพิ่ม settings_asset_step แล้ว)
+    // ดึงค่าขั้นตอนจากข้อมูลที่ GAS ส่งมา
     const steps = (rawAppData && rawAppData.settings_asset_step) ? rawAppData.settings_asset_step : [];
     let stepOpt = `<option value="">-- ขั้นตอน --</option>` + 
                   steps.map(v => `<option value="${v}">${v}</option>`).join('');
 
+    // ใช้ inline style !important เพื่อสู้กับ CSS เดิม
     div.innerHTML = `
         <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div class="compact-grid" style="display: flex; gap: 8px; align-items: flex-end; width: 100%;">
-            <div style="flex: 0 0 120px;">
-                <span style="font-size:12px; display:block; color: #666;">วันที่ดำเนินการ</span>
+        <div class="asset-grid-wrapper" style="display: flex !important; gap: 8px; align-items: flex-end; width: 100%; flex-wrap: nowrap;">
+            <div style="flex: 0 0 120px !important;">
+                <span style="font-size:11px; display:block; color: #666;">วันที่ดำเนินการ</span>
                 <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')" style="width:100%;">
             </div>
             
-            <div style="flex: 1;">
-                <span style="font-size:12px; display:block; color: #666;">รายละเอียดจำหน่ายทรัพย์สิน</span>
-                <input type="text" name="asset_item[]" placeholder="ระบุรายการทรัพย์สิน..." oninput="validateTaskInput('asset')" style="width:100%;">
+            <div style="flex: 1 1 auto !important;">
+                <span style="font-size:11px; display:block; color: #666;">รายละเอียดจำหน่ายทรัพย์สิน</span>
+                <input type="text" name="asset_item[]" placeholder="ระบุรายการ..." oninput="validateTaskInput('asset')" style="width:100%;">
             </div>
             
-            <div style="flex: 0 0 150px;">
-                <span style="font-size:12px; display:block; color: #666;">ขั้นตอน</span>
+            <div style="flex: 0 0 140px !important;">
+                <span style="font-size:11px; display:block; color: #666;">ขั้นตอน</span>
                 <select name="asset_step[]" onchange="validateTaskInput('asset')" style="width:100%;">
                     ${stepOpt}
                 </select>
@@ -263,7 +264,7 @@ function addAssetRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('asset');
+    validateTaskInput('asset'); // สั่งเช็คทันทีเพื่อ Disable ปุ่มเพิ่มตั้งแต่ตอนสร้างแถวใหม่
 }
 
 function addExternalRow() {
@@ -289,24 +290,49 @@ function validateTaskInput(type) {
     const btn = document.getElementById(config.btn);
     const container = document.getElementById(config.container);
     if (!btn || !container) return;
+    
     const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { btn.disabled = false; btn.style.opacity = "1"; return; }
+    
+    // ถ้ายังไม่มีการเพิ่มแถวเลย ให้เปิดปุ่ม "+" ไว้ก่อนเพื่อให้กดแถวแรกได้
+    if (rows.length === 0) { 
+        btn.disabled = false; 
+        btn.style.opacity = "1"; 
+        btn.style.cursor = "pointer";
+        return; 
+    }
+    
+    // ดึง "แถวสุดท้าย" ที่เพิ่งเพิ่มเข้าไปมาตรวจสอบ
     const lastRow = rows[rows.length - 1];
     let isComplete = true;
+
+    // 1. กรณีพิเศษ: ส่วนบุคคลภายนอก (External)
     if (type === 'external') {
         const date = lastRow.querySelector('input[name="ext_date[]"]').value;
-        const wpCheck = lastRow.querySelector('input[name="ext_wp_check[]"]').checked;
-        const wpNo = lastRow.querySelector('input[name="ext_wp_no[]"]').value.trim();
         const company = lastRow.querySelector('input[name="ext_company[]"]').value.trim();
         const detail = lastRow.querySelector('input[name="ext_detail[]"]').value.trim();
+        const wpCheck = lastRow.querySelector('input[name="ext_wp_check[]"]').checked;
+        const wpNo = lastRow.querySelector('input[name="ext_wp_no[]"]').value.trim();
+        
         if (!date || !company || !detail) isComplete = false;
         if (wpCheck && wpNo === "") isComplete = false;
+        
     } else {
-        const inputs = lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select');
-        inputs.forEach(el => { if (el.value.trim().length === 0 && !el.disabled) isComplete = false; });
+        // 2. กรณีทั่วไป: Section 4, 10, 11, 14 และอื่นๆ
+        // ค้นหาทุก Input (ยกเว้น hidden/checkbox) และ Select ในแถวนั้น
+        const allInputs = lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select');
+        
+        allInputs.forEach(el => {
+            // ถ้ามีช่องไหนว่าง (trim แล้วความยาวเป็น 0) ให้ถือว่ายังไม่ครบ
+            if (el.value.trim().length === 0 && !el.disabled) {
+                isComplete = false;
+            }
+        });
     }
+
+    // สั่งเปิด-ปิดปุ่ม และปรับความจางของปุ่มตามสถานะ
     btn.disabled = !isComplete;
     btn.style.opacity = isComplete ? "1" : "0.5";
+    btn.style.cursor = isComplete ? "pointer" : "not-allowed";
 }
 
 function setupPowerTab(data) {
