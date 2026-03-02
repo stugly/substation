@@ -6,13 +6,14 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
-// --- ส่วนที่ 1: การโหลด App และ Login (ปรับปรุงใหม่) ---
+// --- ส่วนที่ 1: การโหลด App และ Login (แก้ไขใหม่ให้เหลือจุดเดียว) ---
 window.onload = function() {
-    // ตรวจสอบว่าเป็นสภาพแวดล้อม Local หรือไม่ (ถ้าไม่ใช่ให้รัน LIFF)
+    // เช็คว่ารันบนคอมส่วนตัว (Local) หรือไม่ ถ้าใช่ให้ใช้ Mock Data
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
         console.log("Running on Local: Using Mock Data");
         mockDataForTesting(); 
     } else {
+        // ถ้ารันบนระบบจริง (LIFF/Hosting) ให้เริ่มระบบ Login
         initializeLiff();
     }
 };
@@ -24,38 +25,42 @@ async function initializeLiff() {
             liff.login();
         } else {
             const profile = await liff.getProfile();
-            // เรียกข้อมูลจริงจาก GAS โดยส่ง LINE ID ไปเช็คสิทธิ์
+            console.log("Logged in as:", profile.userId);
+            // เมื่อ Login สำเร็จ ส่ง LINE ID ไปดึงข้อมูลจริงจาก GAS
             checkUserAndLoadData(profile.userId);
         }
     } catch (err) {
         console.error("LIFF Error:", err);
-        mockDataForTesting(); 
+        // กรณี LIFF มีปัญหา ให้ Alert บอก และอนุญาตให้ใช้ Mock Data เพื่อตรวจสอบ UI
+        alert("LIFF Error: " + err.message);
+        mockDataForTesting();
     }
 }
 
 function checkUserAndLoadData(lineId) {
     document.getElementById('spinner').style.display = 'flex';
 
+    // เรียกฟังก์ชันใน code.gs ผ่าน google.script.run (สำหรับ Web App)
+    // หรือถ้าพี่ใช้ fetch ให้เปลี่ยนเป็น fetch(GAS_WEBAPP_URL + "?action=getUser&lineId=" + lineId)
+    // แต่ในที่นี้อิงตามโครงสร้าง google.script.run ที่พี่เขียนมา
     google.script.run
         .withSuccessHandler(data => {
             if (data && data.user) {
-                // ✅ ได้ข้อมูลจริงที่กรองมาจาก Server แล้ว
                 rawAppData = data; 
-                staffData = data.staff; // มีคนใน Unit + ผจฟ.1
+                staffData = data.staff; 
                 currentUserUnit = data.user.unit;
 
-                // อัปเดต UI
                 document.getElementById('spinner').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
 
-                // รัน Setup กระจายข้อมูลลง Form
+                // เริ่มต้นตั้งค่า Form ด้วยข้อมูลจริง
                 setupMetadata(rawAppData);
                 setupLeaveTable(); 
                 setupSecuritySection();
                 setCurrentYear();
             } else {
-                alert("ขออภัย ไม่พบชื่อคุณในระบบผู้ใช้งาน (Unit ของคุณอาจไม่ถูกต้อง)");
+                alert("ขออภัย ไม่พบชื่อคุณในระบบผู้ใช้งาน (กรุณาเช็ค LINE ID ใน Sheet)");
                 liff.closeWindow();
             }
         })
@@ -63,32 +68,10 @@ function checkUserAndLoadData(lineId) {
             alert("Error connecting to server: " + err);
             document.getElementById('spinner').style.display = 'none';
         })
-        .getUserByLineId(lineId); // เรียกฟังก์ชันที่เราแก้ใน code.gs
+        .getUserByLineId(lineId);
 }
 
-// 1. taskMap ระบุ ID ปุ่มให้ครบเพื่อให้ระบบ Validation ทำงาน
-const taskMap = {
-    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
-    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
-    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
-    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
-    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
-    external: { container: 'external-container', btn: 'btn-add-external', label: 'บุคคลภายนอก' },
-    asset: { container: 'asset-container', btn: 'btn-add-asset', label: 'ทรัพย์สิน' },
-    km: { container: 'km-container', btn: 'btn-add-km', label: 'KM' },
-    idea: { container: 'idea-container', btn: 'btn-add-idea', label: 'ความคิดสร้างสรรค์' },
-    other: { container: 'other-container', btn: 'btn-add-other', label: 'อื่นๆ' }
-};
-
-window.onload = function() { 
-    mockDataForTesting(); 
-};
-
-function setCurrentYear() {
-    const currentYearTH = new Date().getFullYear() + 543;
-    document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
-}
-
+// --- ส่วนที่ 2: ข้อมูลทดสอบ (คงไว้เผื่อรันบนคอม) ---
 function mockDataForTesting() {
     currentUserUnit = "ผจฟ.1"; 
     rawAppData = {
@@ -116,6 +99,26 @@ function mockDataForTesting() {
     setCurrentYear();
 }
 
+// --- ส่วนที่ 3: ฟังก์ชันจัดการ Form (ส่วนนี้ของเดิมพี่ทั้งหมด) ---
+
+const taskMap = {
+    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
+    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
+    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
+    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
+    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
+    external: { container: 'external-container', btn: 'btn-add-external', label: 'บุคคลภายนอก' },
+    asset: { container: 'asset-container', btn: 'btn-add-asset', label: 'ทรัพย์สิน' },
+    km: { container: 'km-container', btn: 'btn-add-km', label: 'KM' },
+    idea: { container: 'idea-container', btn: 'btn-add-idea', label: 'ความคิดสร้างสรรค์' },
+    other: { container: 'other-container', btn: 'btn-add-other', label: 'อื่นๆ' }
+};
+
+function setCurrentYear() {
+    const currentYearTH = new Date().getFullYear() + 543;
+    document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
+}
+
 function setupMetadata(data) {
     const now = new Date();
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -141,7 +144,6 @@ function setupMetadata(data) {
     setupPowerTab(data);
 }
 
-// ข้อ 12: ดึงรายชื่อ
 function setupLeaveTable() {
     const leaveBody = document.getElementById('leave-table-body');
     if (!leaveBody || !staffData) return;
@@ -157,7 +159,6 @@ function setupLeaveTable() {
     `).join('');
 }
 
-// ข้อ 13: ดึงสถานี
 function setupSecuritySection() {
     const secContainer = document.getElementById('security-container');
     if (!secContainer || !rawAppData.stations) return;
@@ -171,7 +172,7 @@ function setupSecuritySection() {
     `).join('');
 }
 
-// --- ฟังก์ชันเพิ่มแถวงาน (ใส่ validateTaskInput กลับเข้าไปทุกที่) ---
+// --- ส่วนที่ 4: งานเพิ่มแถว (คงเดิม) ---
 function addTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
@@ -274,7 +275,6 @@ function toggleWP(chk) {
     wpInput.required = chk.checked;
 }
 
-// 2. ปรับฟังก์ชันให้เช็คว่าง "ทุกข้อ" และบวกเงื่อนไขพิเศษของข้อ 8 เข้าไป
 function validateTaskInput(type) {
     const config = taskMap[type];
     if (!config || !config.btn) return;
@@ -293,38 +293,25 @@ function validateTaskInput(type) {
     let isComplete = true;
 
     if (type === 'external') {
-        // --- ดึงค่าจากช่องต่างๆ ของข้อ 8 ---
         const date = lastRow.querySelector('input[name="ext_date[]"]').value;
         const wpCheck = lastRow.querySelector('input[name="ext_wp_check[]"]').checked;
         const wpNo = lastRow.querySelector('input[name="ext_wp_no[]"]').value.trim();
         const company = lastRow.querySelector('input[name="ext_company[]"]').value.trim();
         const detail = lastRow.querySelector('input[name="ext_detail[]"]').value.trim();
 
-        // 1. วันที่, หน่วยงาน, รายละเอียด ห้ามว่าง
-        if (!date || !company || !detail) {
-            isComplete = false;
-        }
-        
-        // 2. ถ้าติ๊ก WP (wpCheck เป็น true) ช่องเลขที่ WP ห้ามว่าง
-        if (wpCheck && wpNo === "") {
-            isComplete = false;
-        }
+        if (!date || !company || !detail) isComplete = false;
+        if (wpCheck && wpNo === "") isComplete = false;
     } else {
-        // เงื่อนไขข้ออื่นๆ: ทุกช่องห้ามว่าง
         const inputs = lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select');
         inputs.forEach(el => {
-            if (el.value.trim().length === 0 && !el.disabled) {
-                isComplete = false;
-            }
+            if (el.value.trim().length === 0 && !el.disabled) isComplete = false;
         });
     }
 
-    // สั่งเปิด-ปิดปุ่ม
     btn.disabled = !isComplete;
     btn.style.opacity = isComplete ? "1" : "0.5";
 }
 
-// --- ฟังก์ชันเสริม ---
 function setupPowerTab(data) {
     const container = document.getElementById('power-container');
     if (!container) return;
@@ -366,6 +353,7 @@ function handleImageSelect(input) {
     });
 }
 
+// --- ส่วนสุดท้าย: การบันทึกข้อมูล (คงเดิม) ---
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
