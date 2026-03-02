@@ -31,38 +31,36 @@ async function initializeLiff() {
     }
 }
 
-function checkUserAndLoadData(lineId) {
+async function checkUserAndLoadData(lineId) {
     document.getElementById('spinner').style.display = 'flex';
 
-    // เรียกฟังก์ชันใน code.gs ผ่าน google.script.run (สำหรับ Web App)
-    // หรือถ้าพี่ใช้ fetch ให้เปลี่ยนเป็น fetch(GAS_WEBAPP_URL + "?action=getUser&lineId=" + lineId)
-    // แต่ในที่นี้อิงตามโครงสร้าง google.script.run ที่พี่เขียนมา
-    google.script.run
-        .withSuccessHandler(data => {
-            if (data && data.user) {
-                rawAppData = data; 
-                staffData = data.staff; 
-                currentUserUnit = data.user.unit;
+    try {
+        // เปลี่ยนจากการใช้ google.script.run มาเป็น fetch
+        const response = await fetch(`${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}`);
+        const data = await response.json();
 
-                document.getElementById('spinner').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
+        if (data && data.user) {
+            rawAppData = data; 
+            staffData = data.staff; 
+            currentUserUnit = data.user.unit;
 
-                // เริ่มต้นตั้งค่า Form ด้วยข้อมูลจริง
-                setupMetadata(rawAppData);
-                setupLeaveTable(); 
-                setupSecuritySection();
-                setCurrentYear();
-            } else {
-                alert("ขออภัย ไม่พบชื่อคุณในระบบผู้ใช้งาน (กรุณาเช็ค LINE ID ใน Sheet)");
-                liff.closeWindow();
-            }
-        })
-        .withFailureHandler(err => {
-            alert("Error connecting to server: " + err);
             document.getElementById('spinner').style.display = 'none';
-        })
-        .getUserByLineId(lineId);
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
+
+            setupMetadata(rawAppData);
+            setupLeaveTable(); 
+            setupSecuritySection();
+            setCurrentYear();
+        } else {
+            alert("ขออภัย ไม่พบชื่อคุณในระบบผู้ใช้งาน");
+            liff.closeWindow();
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("เชื่อมต่อ Server ไม่สำเร็จ: " + err.message);
+        document.getElementById('spinner').style.display = 'none';
+    }
 }
 
 // --- ส่วนที่ 2: ข้อมูลทดสอบ (คงไว้เผื่อรันบนคอม) ---
