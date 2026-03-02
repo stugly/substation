@@ -6,6 +6,58 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
+// --- ส่วนที่ 1: การโหลด App และ Login ---
+window.onload = function() {
+    initializeLiff(); // เปลี่ยนจากเรียก mock ตรงๆ เป็นเริ่มระบบ LIFF
+};
+
+async function initializeLiff() {
+    try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+            liff.login();
+        } else {
+            const profile = await liff.getProfile();
+            // เมื่อได้ LINE ID แล้ว ส่งไปเช็คสิทธิ์และดึงข้อมูลจาก GAS
+            checkUserAndLoadData(profile.userId);
+        }
+    } catch (err) {
+        console.error("LIFF Error:", err);
+        // ถ้า LIFF พัง หรือรันบน Local ให้ใช้ Mock Data เพื่อทำงานต่อได้
+        mockDataForTesting(); 
+    }
+}
+
+function checkUserAndLoadData(lineId) {
+    document.getElementById('spinner').style.display = 'flex';
+
+    google.script.run
+        .withSuccessHandler(data => {
+            if (data) {
+                // 1. กระจายข้อมูลลงตัวแปร Global
+                rawAppData = data; 
+                staffData = data.staff; // มีทั้งคนในหน่วย + ผจฟ.1 แล้ว
+                currentUserUnit = data.user.unit;
+
+                // 2. อัปเดต UI เบื้องต้น
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
+
+                // 3. เรียกฟังก์ชัน Setup เดิมของพี่ (มันจะใช้ data ที่กรองแล้วทำงานต่อทันที)
+                setupMetadata(rawAppData);
+                setupLeaveTable(); 
+                setupSecuritySection();
+                setCurrentYear();
+            } else {
+                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
+                liff.closeWindow();
+            }
+        })
+        .withFailureHandler(err => alert("Error: " + err))
+        .getUserByLineId(lineId);
+}
+
 // 1. taskMap ระบุ ID ปุ่มให้ครบเพื่อให้ระบบ Validation ทำงาน
 const taskMap = {
     assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
