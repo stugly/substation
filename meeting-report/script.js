@@ -192,23 +192,33 @@ function addProcureRow() {
     const container = document.getElementById('procure-container');
     const div = document.createElement('div');
     div.className = "task-row procure-row-wrapper";
-    
-    // ดึงค่าประเภทและสถานะจัดซื้อจากคอลัมน์ C และ D
-    let typeOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
-    let statusOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
-    
+
+    // 1. ดึงข้อมูลจากคอลัมน์ C (settings_procure_type) มาทำ Dropdown ประเภท
+    let typeOpt = `<option value="">-- เลือกประเภท --</option>` + 
+        rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
+
+    // 2. ดึงข้อมูลจากคอลัมน์ D (settings_procure_status) มาทำ Dropdown สถานะ
+    let statusOpt = `<option value="">-- เลือกสถานะ --</option>` + 
+        rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
+
     div.innerHTML = `
         <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
         <div class="compact-grid">
             <div><span>รหัส PO</span><input type="text" name="procure_id[]" oninput="validateTaskInput('procure')"></div>
             <div><span>วันที่จัดซื้อ</span><input type="date" name="procure_date[]" onchange="validateTaskInput('procure')"></div>
+            
             <div><span>ประเภท</span><select name="procure_item[]" onchange="validateTaskInput('procure')">${typeOpt}</select></div>
             <div><span>สถานะ</span><select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOpt}</select></div>
+            
             <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('procure')" style="flex:0 0 100%;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top:25px;" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
+    validateTaskInput('procure');
 }
 
 function addAssetRow() {
