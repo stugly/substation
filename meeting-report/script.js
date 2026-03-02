@@ -6,16 +6,10 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
-// --- ส่วนที่ 1: การโหลด App และ Login (แก้ไขใหม่ให้เหลือจุดเดียว) ---
+// --- แก้ไขส่วนที่ 1: บังคับรัน LIFF ทุกกรณี ---
 window.onload = function() {
-    // เช็คว่ารันบนคอมส่วนตัว (Local) หรือไม่ ถ้าใช่ให้ใช้ Mock Data
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        console.log("Running on Local: Using Mock Data");
-        mockDataForTesting(); 
-    } else {
-        // ถ้ารันบนระบบจริง (LIFF/Hosting) ให้เริ่มระบบ Login
-        initializeLiff();
-    }
+    console.log("เริ่มระบบ LIFF...");
+    initializeLiff(); // เรียกใช้ LIFF ทันที ไม่ต้องเช็ค hostname
 };
 
 async function initializeLiff() {
@@ -25,14 +19,14 @@ async function initializeLiff() {
             liff.login();
         } else {
             const profile = await liff.getProfile();
-            console.log("Logged in as:", profile.userId);
-            // เมื่อ Login สำเร็จ ส่ง LINE ID ไปดึงข้อมูลจริงจาก GAS
+            console.log("LINE ID ของคุณคือ:", profile.userId);
+            // ส่ง LINE ID ไปดึงข้อมูลจริงจาก GAS
             checkUserAndLoadData(profile.userId);
         }
     } catch (err) {
         console.error("LIFF Error:", err);
-        // กรณี LIFF มีปัญหา ให้ Alert บอก และอนุญาตให้ใช้ Mock Data เพื่อตรวจสอบ UI
-        alert("LIFF Error: " + err.message);
+        // ถ้า LIFF พังจริงๆ (เช่น เปิดใน Browser ปกติที่ไม่ใช่ LINE) ค่อยให้ไปใช้ Mock Data
+        alert("ระบบกำลังรันในโหมดทดสอบเนื่องจาก: " + err.message);
         mockDataForTesting();
     }
 }
