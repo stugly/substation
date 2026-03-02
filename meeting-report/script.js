@@ -63,7 +63,7 @@ async function checkUserAndLoadData(lineId) {
     }
 }
 
-// --- ส่วนที่ 2: ข้อมูลทดสอบ ---
+// --- ส่วนที่ 2: ข้อมูลทดสอบ (แก้ไขเพิ่มค่าสถานะจัดซื้อ) ---
 function mockDataForTesting() {
     currentUserUnit = "ผจฟ.1"; 
     rawAppData = {
@@ -73,11 +73,16 @@ function mockDataForTesting() {
         ],
         settings_eq: ["TR", "CB", "DS"],
         settings_status_eq: ["ปกติ", "ชำรุด"],
+        // --- เพิ่ม 2 บรรทัดนี้ลงไปเพื่อให้โหมดทดสอบมีข้อมูล ---
+        settings_procure_type: ["งานจ้าง", "จัดซื้อวัสดุ"], 
+        settings_procure_status: ["รอดำเนินการ", "ตรวจรับแล้ว"],
+        // ------------------------------------------
         staff: [
             {name: "นายทดสอบ 1", uid: "U001", unit: "ผจฟ.1"}
         ]
     };
     staffData = rawAppData.staff;
+    // ... ส่วนที่เหลือเหมือนเดิม ...
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     document.getElementById('welcome').innerText = "สวัสดี, โหมดทดสอบ (" + currentUserUnit + ")";
