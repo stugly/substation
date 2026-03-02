@@ -76,6 +76,7 @@ function mockDataForTesting() {
         // --- เพิ่ม 2 บรรทัดนี้ลงไปเพื่อให้โหมดทดสอบมีข้อมูล ---
         settings_procure_type: ["งานจ้าง", "จัดซื้อวัสดุ"], 
         settings_procure_status: ["รอดำเนินการ", "ตรวจรับแล้ว"],
+        settings_asset_step: ["ขั้นตอน 1", "ขั้นตอน 2", "รอจำหน่าย"],
         // ------------------------------------------
         staff: [
             {name: "นายทดสอบ 1", uid: "U001", unit: "ผจฟ.1"}
@@ -230,7 +231,32 @@ function addAssetRow() {
     const container = document.getElementById('asset-container');
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
-    div.innerHTML = `<div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div><div class="compact-grid"><div style="flex:0 0 25%;"><span>วันที่ดำเนินการ</span><input type="date" name="asset_date[]" onchange="validateTaskInput('asset')"></div><div style="flex:0 0 40%;"><span>รายละเอียดจำหน่ายทรัพย์สิน</span><input type="text" name="asset_item[]" oninput="validateTaskInput('asset')"></div><div style="flex:0 0 30%;"><span>ขั้นตอน</span><input type="text" name="asset_step[]" oninput="validateTaskInput('asset')"></div></div><button type="button" class="btn-remove-task" style="margin-top:25px;" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container'); validateTaskInput('asset');"><i class="fa-solid fa-trash-can"></i></button>`;
+
+    // ดึงข้อมูลขั้นตอนจาก Col E ที่ส่งมาจาก GAS
+    let stepOpt = `<option value="">-- เลือกขั้นตอน --</option>` + 
+        (rawAppData.settings_asset_step ? rawAppData.settings_asset_step.map(v => `<option value="${v}">${v}</option>`).join('') : '');
+
+    div.innerHTML = `
+        <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
+        <div class="compact-grid">
+            <div style="flex: 0 0 25%;">
+                <span>วันที่ดำเนินการ</span>
+                <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')">
+            </div>
+            <div style="flex: 0 0 45%;"> <span>รายละเอียดจำหน่ายทรัพย์สิน</span>
+                <input type="text" name="asset_item[]" placeholder="ระบุทรัพย์สิน..." oninput="validateTaskInput('asset')" style="width: 100%;">
+            </div>
+            <div style="flex: 1;"> <span>ขั้นตอน</span>
+                <select name="asset_step[]" onchange="validateTaskInput('asset')">
+                    ${stepOpt}
+                </select>
+            </div>
+        </div>
+        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('asset-container'); validateTaskInput('asset');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
     container.appendChild(div);
     validateTaskInput('asset');
 }
