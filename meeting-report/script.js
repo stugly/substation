@@ -6,9 +6,15 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
-// --- ส่วนที่ 1: การโหลด App และ Login ---
+// --- ส่วนที่ 1: การโหลด App และ Login (ปรับปรุงใหม่) ---
 window.onload = function() {
-    initializeLiff(); // เปลี่ยนจากเรียก mock ตรงๆ เป็นเริ่มระบบ LIFF
+    // ตรวจสอบว่าเป็นสภาพแวดล้อม Local หรือไม่ (ถ้าไม่ใช่ให้รัน LIFF)
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        console.log("Running on Local: Using Mock Data");
+        mockDataForTesting(); 
+    } else {
+        initializeLiff();
+    }
 };
 
 async function initializeLiff() {
@@ -18,12 +24,11 @@ async function initializeLiff() {
             liff.login();
         } else {
             const profile = await liff.getProfile();
-            // เมื่อได้ LINE ID แล้ว ส่งไปเช็คสิทธิ์และดึงข้อมูลจาก GAS
+            // เรียกข้อมูลจริงจาก GAS โดยส่ง LINE ID ไปเช็คสิทธิ์
             checkUserAndLoadData(profile.userId);
         }
     } catch (err) {
         console.error("LIFF Error:", err);
-        // ถ้า LIFF พัง หรือรันบน Local ให้ใช้ Mock Data เพื่อทำงานต่อได้
         mockDataForTesting(); 
     }
 }
@@ -33,29 +38,32 @@ function checkUserAndLoadData(lineId) {
 
     google.script.run
         .withSuccessHandler(data => {
-            if (data) {
-                // 1. กระจายข้อมูลลงตัวแปร Global
+            if (data && data.user) {
+                // ✅ ได้ข้อมูลจริงที่กรองมาจาก Server แล้ว
                 rawAppData = data; 
-                staffData = data.staff; // มีทั้งคนในหน่วย + ผจฟ.1 แล้ว
+                staffData = data.staff; // มีคนใน Unit + ผจฟ.1
                 currentUserUnit = data.user.unit;
 
-                // 2. อัปเดต UI เบื้องต้น
+                // อัปเดต UI
                 document.getElementById('spinner').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
 
-                // 3. เรียกฟังก์ชัน Setup เดิมของพี่ (มันจะใช้ data ที่กรองแล้วทำงานต่อทันที)
+                // รัน Setup กระจายข้อมูลลง Form
                 setupMetadata(rawAppData);
                 setupLeaveTable(); 
                 setupSecuritySection();
                 setCurrentYear();
             } else {
-                alert("ไม่พบข้อมูลผู้ใช้งานในระบบ");
+                alert("ขออภัย ไม่พบชื่อคุณในระบบผู้ใช้งาน (Unit ของคุณอาจไม่ถูกต้อง)");
                 liff.closeWindow();
             }
         })
-        .withFailureHandler(err => alert("Error: " + err))
-        .getUserByLineId(lineId);
+        .withFailureHandler(err => {
+            alert("Error connecting to server: " + err);
+            document.getElementById('spinner').style.display = 'none';
+        })
+        .getUserByLineId(lineId); // เรียกฟังก์ชันที่เราแก้ใน code.gs
 }
 
 // 1. taskMap ระบุ ID ปุ่มให้ครบเพื่อให้ระบบ Validation ทำงาน
