@@ -170,13 +170,11 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
-// แก้ไขส่วนสร้าง Dropdown ในหน้าบ้านให้ดึงค่าจาก Data ที่ GAS ส่งมา
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
     
-    // ดึงค่าจาก rawAppData ที่เราได้จาก GAS
     let eqOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     let stOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
@@ -192,6 +190,7 @@ function addRepairRow() {
         <button type="button" class="btn-remove-task" style="margin-top:25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
     `;
     container.appendChild(div);
+    validateTaskInput('repair'); // สั่งล็อคปุ่มทันทีที่กดเพิ่มแถว
 }
 
 function addProcureRow() {
@@ -232,15 +231,12 @@ function addAssetRow() {
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
     
-    // ดึงค่าขั้นตอนจากข้อมูลที่ GAS ส่งมา
     const steps = (rawAppData && rawAppData.settings_asset_step) ? rawAppData.settings_asset_step : [];
-    let stepOpt = `<option value="">-- ขั้นตอน --</option>` + 
-                  steps.map(v => `<option value="${v}">${v}</option>`).join('');
+    let stepOpt = `<option value="">-- ขั้นตอน --</option>` + steps.map(v => `<option value="${v}">${v}</option>`).join('');
 
-    // ใช้ inline style !important เพื่อสู้กับ CSS เดิม
     div.innerHTML = `
         <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div class="asset-grid-wrapper" style="display: flex !important; gap: 8px; align-items: flex-end; width: 100%; flex-wrap: nowrap;">
+        <div style="display: flex !important; gap: 8px; align-items: flex-end; width: 100%; flex-wrap: nowrap;">
             <div style="flex: 0 0 120px !important;">
                 <span style="font-size:11px; display:block; color: #666;">วันที่ดำเนินการ</span>
                 <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')" style="width:100%;">
@@ -264,7 +260,7 @@ function addAssetRow() {
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('asset'); // สั่งเช็คทันทีเพื่อ Disable ปุ่มเพิ่มตั้งแต่ตอนสร้างแถวใหม่
+    validateTaskInput('asset');
 }
 
 function addExternalRow() {
@@ -373,6 +369,25 @@ function handleImageSelect(input) {
         };
         reader.readAsDataURL(file);
     });
+}
+
+// ฟังก์ชันกลางสำหรับเพิ่มแถว KM, Idea, Other (Section 10, 11, 14)
+function addSimpleTaskRow(type) {
+    const config = taskMap[type];
+    const container = document.getElementById(config.container);
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="hidden" name="${type}_type[]" value="${config.label}">
+        <input type="text" name="${type}_detail[]" placeholder="ระบุรายละเอียด..." 
+               oninput="validateTaskInput('${type}')" style="flex:1;">
+        <button type="button" class="btn-remove-task" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>`;
+    container.appendChild(div);
+    validateTaskInput(type); // ล็อคปุ่มทันที
 }
 
 // --- ส่วนที่ 4: การบันทึกข้อมูล ---
