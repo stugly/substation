@@ -231,23 +231,25 @@ function addAssetRow() {
     const container = document.getElementById('asset-container');
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
-
-    // ดึงข้อมูลขั้นตอนจาก Col E ที่ส่งมาจาก GAS
+    
+    // ดึงค่าขั้นตอนจากข้อมูลที่ GAS ส่งมา
+    const steps = (rawAppData && rawAppData.settings_asset_step) ? rawAppData.settings_asset_step : [];
     let stepOpt = `<option value="">-- เลือกขั้นตอน --</option>` + 
-        (rawAppData.settings_asset_step ? rawAppData.settings_asset_step.map(v => `<option value="${v}">${v}</option>`).join('') : '');
+                  steps.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
         <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div class="compact-grid">
-            <div style="flex: 0 0 25%;">
-                <span>วันที่ดำเนินการ</span>
-                <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')">
+        <div class="compact-grid" style="display: flex; gap: 5px; align-items: flex-end;">
+            <div style="flex: 0 0 120px;">
+                <span style="font-size:12px; display:block;">วันที่ดำเนินการ</span>
+                <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')" style="width:100%;">
             </div>
-            <div style="flex: 0 0 45%;"> <span>รายละเอียดจำหน่ายทรัพย์สิน</span>
-                <input type="text" name="asset_item[]" placeholder="ระบุทรัพย์สิน..." oninput="validateTaskInput('asset')" style="width: 100%;">
+            <div style="flex: 1;"> <span style="font-size:12px; display:block;">รายละเอียดจำหน่ายทรัพย์สิน</span>
+                <input type="text" name="asset_item[]" placeholder="ระบุทรัพย์สิน..." oninput="validateTaskInput('asset')" style="width:100%;">
             </div>
-            <div style="flex: 1;"> <span>ขั้นตอน</span>
-                <select name="asset_step[]" onchange="validateTaskInput('asset')">
+            <div style="flex: 0 0 150px;">
+                <span style="font-size:12px; display:block;">ขั้นตอน</span>
+                <select name="asset_step[]" onchange="validateTaskInput('asset')" style="width:100%;">
                     ${stepOpt}
                 </select>
             </div>
