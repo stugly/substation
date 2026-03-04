@@ -108,11 +108,20 @@ const taskMap = {
 };
 
 function setCurrentYear() {
-    const currentYearTH = new Date().getFullYear() + 543;
+    const now = new Date();
+    const currentYearTH = now.getFullYear() + 543;
+
+    // 1. อันนี้เก็บไว้: แสดงปี พ.ศ. ที่หัวข้อ
     document.querySelectorAll('.current-year').forEach(el => { 
         el.innerText = currentYearTH; 
     });
-    // ลบ logic การใส่ค่า todayISO ออกไปแล้ว ช่องวันที่ 6, 7 จะกลับเป็น mm/dd/yyyy (ว่าง)
+
+    // 2. อันนี้คือตัวการ! (ลบออก หรือ Comment ทิ้งไปเลยครับ):
+    /* const todayISO = now.toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"][name^="clean_"], input[type="date"][name^="weed_"]').forEach(el => {
+        el.value = todayISO; 
+    });
+    */
 }
 
 function setupMetadata(data) {
