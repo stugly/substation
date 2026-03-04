@@ -108,8 +108,20 @@ const taskMap = {
 };
 
 function setCurrentYear() {
-    const currentYearTH = new Date().getFullYear() + 543;
+    const now = new Date();
+    const currentYearTH = now.getFullYear() + 543;
+    const todayISO = now.toISOString().split('T')[0]; // yyyy-mm-dd
+
     document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
+
+    // ตั้งวันที่ปัจจุบันให้ช่องทำความสะอาดและวัชพืช (ถ้ายังไม่มีค่า)
+    document.querySelectorAll('input[type="date"][name^="clean_"], input[type="date"][name^="weed_"]').forEach(el => {
+        if(!el.value) {
+            el.value = todayISO;
+            // ถ้าอยากให้มันเป็นสีดำเลยตั้งแต่ต้น ให้เปิดบรรทัดล่างนี้ครับ
+            // el.setAttribute('value', todayISO); 
+        }
+    });
 }
 
 function setupMetadata(data) {
@@ -459,11 +471,12 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     const payload = Object.fromEntries(formData.entries());
 
     // --- แก้ไขเฉพาะช่วงนี้ใน onsubmit ---
+    // แก้ไขช่วง arrayFields ใน onsubmit ให้ตรงกับชื่อใน HTML
     const arrayFields = [
-        'assignment', 'plan', 'power_station', 'power_detail', 
+        'assignment_detail', 'plan_detail', 'power_station', 'power_detail', // แก้จาก assignment เป็น assignment_detail ตาม name ใน input
         'repair_id', 'repair_date', 'repair_item', 'repair_status', 'repair_detail', 
         'procure_id', 'procure_date', 'procure_item', 'procure_status', 'procure_detail',
-        'clean_date', 'clean_detail', 'weed_date', 'weed_detail', 
+        'clean_date', 'clean_detail', 'weed_date', 'weed_detail', // ข้อ 6 และ 7
         'ext_date', 'ext_wp_no', 'ext_company', 'ext_detail', 
         'asset_date', 'asset_item', 'asset_step', 
         'km_detail', 'idea_detail', 'other_detail', 
@@ -489,13 +502,3 @@ arrayFields.forEach(f => {
     }
 };
 
-/* ปกติให้เป็นสีเทาจาง */
-#clean-table-body input[type="date"] {
-    color: #a9a9a9; 
-}
-
-/* เมื่อมีการเลือกวันที่ (มีค่าเข้ามา) ให้เปลี่ยนเป็นสีดำเข้ม */
-#clean-table-body input[type="date"]:valid,
-#clean-table-body input[type="date"]:not([value=""]) {
-    color: #000 !important;
-}

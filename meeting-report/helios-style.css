@@ -313,20 +313,27 @@
     .check-item { font-size: 13px; }
 }
 
-/* สถานะปกติ (ยังไม่เลือกวันที่): ให้เป็นสีเทาจางเหมือน Placeholder */
-#clean-table-body input[type="date"],
-#weed-table-body input[type="date"] {
+/* --- จัดการสีช่องวันที่ในตาราง (ข้อ 6 และ 7) --- */
+
+/* 1. สถานะปกติ (ยังไม่เลือกวันที่): ให้เป็นสีเทาจาง */
+.fixed-report-table input[type="date"] {
     color: #a9a9a9 !important;
+    font-family: 'Kanit', sans-serif !important;
 }
 
-/* สถานะเมื่อเลือกวันที่แล้ว: ให้เปลี่ยนเป็นสีดำเข้ม */
-#clean-table-body input[type="date"]:not([value=""]),
-#weed-table-body input[type="date"]:not([value=""]) {
+/* 2. สถานะเมื่อเลือกวันที่แล้ว: ให้เปลี่ยนเป็นสีดำเข้ม */
+/* ใช้ [value] ร่วมกับ :not([value=""]) เพื่อความชัวร์ในทุก Browser */
+.fixed-report-table input[type="date"][value]:not([value=""]),
+.fixed-report-table input[type="date"]:not([value=""]) {
     color: #000 !important;
 }
 
-/* บังคับสีฟอนต์ของตัวระบบปฏิทินให้เปลี่ยนตาม */
-#clean-table-body input[type="date"]::-webkit-datetime-edit,
-#weed-table-body input[type="date"]::-webkit-datetime-edit {
-    color: inherit;
+/* 3. บังคับสีฟอนต์ของระบบปฏิทิน (Shadow DOM) ให้เปลี่ยนตามสีหลักที่เราตั้ง */
+.fixed-report-table input[type="date"]::-webkit-datetime-edit,
+.fixed-report-table input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.fixed-report-table input[type="date"]::-webkit-datetime-edit-text,
+.fixed-report-table input[type="date"]::-webkit-datetime-edit-month-field,
+.fixed-report-table input[type="date"]::-webkit-datetime-edit-day-field,
+.fixed-report-table input[type="date"]::-webkit-datetime-edit-year-field {
+    color: inherit; /* ให้ใช้สีตามตัวแม่ (Inherit จากข้อ 1 และ 2) */
 }
