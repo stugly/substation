@@ -377,6 +377,7 @@ function addSimpleTaskRow(type) {
     const container = document.getElementById(config.container);
     const div = document.createElement('div');
     div.className = "task-row";
+    
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <input type="hidden" name="${type}_type[]" value="${config.label}">
@@ -386,8 +387,11 @@ function addSimpleTaskRow(type) {
                 onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');">
             <i class="fa-solid fa-trash-can"></i>
         </button>`;
+        
     container.appendChild(div);
-    validateTaskInput(type); // ล็อคปุ่มทันที
+    
+    // บรรทัดนี้สำคัญมาก: สั่งล็อคปุ่มทันทีที่สร้างแถวใหม่
+    validateTaskInput(type); 
 }
 
 // --- ส่วนที่ 4: การบันทึกข้อมูล ---
@@ -398,7 +402,18 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
-    const arrayFields = ['assignment', 'plan', 'power_station', 'power_detail', 'repair_id', 'repair_date', 'repair_item', 'repair_status', 'repair_detail', 'po_id', 'po_date', 'po_type', 'po_status', 'procure_detail', 'clean_date', 'clean_detail', 'weed_date', 'weed_detail', 'ext_date', 'ext_wp_no', 'ext_company', 'ext_detail', 'asset_date', 'asset_item', 'asset_step', 'km_detail', 'idea_detail', 'other_detail', 'leave_staff_name', 'leave_sick', 'leave_personal', 'leave_vacation', 'leave_replace', 'leave_note', 'sec_station', 'sec_detail'];
+    // แก้ไขเฉพาะช่วงนี้ใน onsubmit
+    const arrayFields = [
+        'assignment', 'plan', 'power_station', 'power_detail', 
+        'repair_id', 'repair_date', 'repair_item', 'repair_status', 'repair_detail', 
+        'procure_id', 'procure_date', 'procure_item', 'procure_status', 'procure_detail', // แก้ชื่อให้ตรงกับ input name
+        'clean_date', 'clean_detail', 'weed_date', 'weed_detail', 
+        'ext_date', 'ext_wp_no', 'ext_company', 'ext_detail', 
+        'asset_date', 'asset_item', 'asset_step', 
+        'km_detail', 'idea_detail', 'other_detail', 
+        'leave_staff_name', 'leave_sick', 'leave_personal', 'leave_vacation', 'leave_replace', 'leave_note', 
+        'sec_station', 'sec_detail'
+    ];
     arrayFields.forEach(f => {
         payload[f] = Array.from(formData.getAll(f + (f.includes('leave') || f.includes('sec') ? '' : '[]')));
     });

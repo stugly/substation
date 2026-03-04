@@ -151,13 +151,13 @@
             <div class="card">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-lightbulb"></i> 10. การจัดการองค์ความรู้ (KM)</label>
                 <div id="km-container"></div>
-                <button type="button" onclick="addTaskRow('km')" class="btn-add-dynamic">+ เพิ่มรายการ KM</button>
+                <button type="button" id="btn-add-km" onclick="addSimpleTaskRow('km')">+ เพิ่มรายการ KM</button>
             </div>
 
             <div class="card">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-wand-magic-sparkles"></i> 11. ความคิดสร้างสรรค์</label>
                 <div id="idea-container"></div>
-                <button type="button" onclick="addTaskRow('idea')" class="btn-add-dynamic">+ เพิ่มรายการความคิดสร้างสรรค์</button>
+                <button type="button" id="btn-add-idea" onclick="addSimpleTaskRow('idea')">+ เพิ่มรายการความคิดสร้างสรรค์</button>
             </div>
 
             <div class="card">
@@ -188,7 +188,7 @@
             <div class="card">
                 <label style="color:#06C755; font-weight:600;"><i class="fa-solid fa-ellipsis"></i> 14. เรื่องอื่นๆ</label>
                 <div id="other-container"></div>
-                <button type="button" onclick="addTaskRow('other')" class="btn-add-dynamic">+ เพิ่มเรื่องอื่นๆ</button>
+                <button type="button" id="btn-add-other" onclick="addSimpleTaskRow('other')">+ เพิ่มเรื่องอื่นๆ</button>
             </div>
 
             <input type="hidden" name="recorder_uid" id="recorder_uid">
