@@ -302,27 +302,36 @@ function addExternalRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     
-    // ใช้ Class repair-row-wrapper เพื่อให้ได้กรอบสีเทาอ่อนตามที่พี่ต้องการ
-    div.className = 'task-row repair-row-wrapper';
+    // ใส่กรอบสีเทาอ่อนเหมือนข้อ 4, 5, 9
+    div.className = 'task-row repair-row-wrapper'; 
     div.style.marginBottom = '8px';
 
     div.innerHTML = `
-        <div class="task-number" style="padding-top:10px;">${rowCount}.</div>
+        <div class="task-number" style="padding-top:25px;">${rowCount}.</div>
         <div class="compact-grid">
-            <div style="flex: 1 1 48% !important;">
-                <span>บริษัท/หน่วยงาน</span>
-                <input type="text" name="ext_company[]" placeholder="ระบุบริษัท..." oninput="validateTaskInput('external')" required>
+            <div style="flex: 0 0 130px !important;">
+                <span>วันที่ปฏิบัติงาน</span>
+                <input type="date" name="ext_date[]" onchange="validateTaskInput('external')" required>
             </div>
-            <div style="flex: 1 1 48% !important;">
-                <span>งานที่ปฏิบัติ</span>
-                <input type="text" name="ext_job[]" placeholder="ระบุชื่องาน..." oninput="validateTaskInput('external')" required>
+            
+            <div style="flex: 1 1 auto !important; display: flex; align-items: flex-end; gap: 8px;">
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 11px; color: #666; display: block;">มี WP</label>
+                    <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external')" style="width: 20px; height: 20px;">
+                </div>
+                <div style="flex: 1;">
+                    <span>เลขที่ WP</span>
+                    <input type="text" name="ext_wp_no[]" placeholder="ระบุเลขที่..." disabled oninput="validateTaskInput('external')">
+                </div>
             </div>
+
             <div style="flex: 1 1 100% !important; margin-top: 4px;">
-                <span>รายละเอียด/ผลการดำเนินงาน</span>
-                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." oninput="validateTaskInput('external')" required>
+                <span>รายละเอียดการปฏิบัติงาน</span>
+                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('external')" required>
             </div>
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top:10px;" 
+        
+        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
                 onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
