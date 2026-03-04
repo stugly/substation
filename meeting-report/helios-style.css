@@ -201,7 +201,6 @@
 
 /* ปรับสีปฏิทินให้กลมกลืน */
 .fixed-report-table input[type="date"] {
-    color: #555;
     cursor: pointer;
 }
 
@@ -314,24 +313,20 @@
     .check-item { font-size: 13px; }
 }
 
-/* ปรับสี Placeholder ของช่องรายละเอียดให้เทาจาง */
-#clean-table-body input[type="text"]::placeholder {
-    color: #a9a9a9 !important; /* สีเทามาตรฐาน placeholder */
-    opacity: 1;
-}
-
-/* สำหรับ Internet Explorer */
-#clean-table-body input[type="text"]:-ms-input-placeholder {
+/* สถานะปกติ (ยังไม่เลือกวันที่): ให้เป็นสีเทาจางเหมือน Placeholder */
+#clean-table-body input[type="date"],
+#weed-table-body input[type="date"] {
     color: #a9a9a9 !important;
 }
 
-/* สำหรับ Edge */
-#clean-table-body input[type="text"]::-ms-input-placeholder {
-    color: #a9a9a9 !important;
+/* สถานะเมื่อเลือกวันที่แล้ว: ให้เปลี่ยนเป็นสีดำเข้ม */
+#clean-table-body input[type="date"]:not([value=""]),
+#weed-table-body input[type="date"]:not([value=""]) {
+    color: #000 !important;
 }
 
-/* แถม: ปรับสีตัวเลขข้อ 1/ 2/ 3/ 4/ ด้านหน้าให้จางลงด้วยถ้าพี่ต้องการ */
-#clean-table-body td:first-child {
-    color: #888;
-    font-size: 0.9em;
+/* บังคับสีฟอนต์ของตัวระบบปฏิทินให้เปลี่ยนตาม */
+#clean-table-body input[type="date"]::-webkit-datetime-edit,
+#weed-table-body input[type="date"]::-webkit-datetime-edit {
+    color: inherit;
 }

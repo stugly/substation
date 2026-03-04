@@ -488,3 +488,14 @@ arrayFields.forEach(f => {
         btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
     }
 };
+
+/* ปกติให้เป็นสีเทาจาง */
+#clean-table-body input[type="date"] {
+    color: #a9a9a9; 
+}
+
+/* เมื่อมีการเลือกวันที่ (มีค่าเข้ามา) ให้เปลี่ยนเป็นสีดำเข้ม */
+#clean-table-body input[type="date"]:valid,
+#clean-table-body input[type="date"]:not([value=""]) {
+    color: #000 !important;
+}
