@@ -129,28 +129,34 @@ function setupMetadata(data) {
     }
 
     const attList = document.getElementById('attendance-list');
-    if (attList && staffData) {
+    if (attList && staffData && data.user) {
+        // ดึง UID ของคนที่ Login ปัจจุบันออกมา
+        const currentLoginUid = data.user.uid; 
+
         // 1. แยกรายชื่อตามกลุ่ม
         const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
-        const pj1Staff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit); // กันกรณีคนใช้เป็น ผจฟ.1 อยู่แล้วไม่ให้ชื่อซ้ำ
+        const pj1Staff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
+
+        // ฟังก์ชันช่วยเช็คว่าถ้า UID ตรงกับคน Login ให้ใส่ attribute 'checked'
+        const isMe = (uid) => (uid === currentLoginUid) ? 'checked' : '';
 
         // 2. สร้างโครงสร้าง HTML แบบ 2 คอลัมน์
         let html = `
             <div style="display: flex; gap: 20px; align-items: flex-start;">
                 <div style="flex: 1;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">สังกัด ${currentUserUnit}</div>
+                    <div style="font-size: 11px; color: #06C755; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">สังกัด ${currentUserUnit}</div>
                     ${unitStaff.map(s => `
-                        <label style="display:block; margin-bottom:8px; font-size: 14px;">
-                            <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}
+                        <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
+                            <input type="checkbox" name="attendance" value="${s.uid}" ${isMe(s.uid)}> ${s.name}
                         </label>
                     `).join('')}
                 </div>
                 
                 <div style="flex: 1;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
+                    <div style="font-size: 11px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
                     ${pj1Staff.map(s => `
-                        <label style="display:block; margin-bottom:8px; font-size: 14px;">
-                            <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}
+                        <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
+                            <input type="checkbox" name="attendance" value="${s.uid}" ${isMe(s.uid)}> ${s.name}
                         </label>
                     `).join('')}
                 </div>
