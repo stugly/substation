@@ -110,18 +110,9 @@ const taskMap = {
 function setCurrentYear() {
     const now = new Date();
     const currentYearTH = now.getFullYear() + 543;
-    const todayISO = now.toISOString().split('T')[0]; // yyyy-mm-dd
 
+    // เหลือไว้แค่นี้พอครับ ส่วนที่สั่งใส่ค่าวันที่ให้ช่อง clean/weed ให้ลบทิ้งเลย
     document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
-
-    // ตั้งวันที่ปัจจุบันให้ช่องทำความสะอาดและวัชพืช (ถ้ายังไม่มีค่า)
-    document.querySelectorAll('input[type="date"][name^="clean_"], input[type="date"][name^="weed_"]').forEach(el => {
-        if(!el.value) {
-            el.value = todayISO;
-            // ถ้าอยากให้มันเป็นสีดำเลยตั้งแต่ต้น ให้เปิดบรรทัดล่างนี้ครับ
-            // el.setAttribute('value', todayISO); 
-        }
-    });
 }
 
 function setupMetadata(data) {
