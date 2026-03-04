@@ -402,11 +402,12 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
-    // แก้ไขเฉพาะช่วงนี้ใน onsubmit
+
+    // --- แก้ไขเฉพาะช่วงนี้ใน onsubmit ---
     const arrayFields = [
         'assignment', 'plan', 'power_station', 'power_detail', 
         'repair_id', 'repair_date', 'repair_item', 'repair_status', 'repair_detail', 
-        'procure_id', 'procure_date', 'procure_item', 'procure_status', 'procure_detail', // แก้ชื่อให้ตรงกับ input name
+        'procure_id', 'procure_date', 'procure_item', 'procure_status', 'procure_detail',
         'clean_date', 'clean_detail', 'weed_date', 'weed_detail', 
         'ext_date', 'ext_wp_no', 'ext_company', 'ext_detail', 
         'asset_date', 'asset_item', 'asset_step', 
@@ -414,9 +415,13 @@ document.getElementById('reportForm').onsubmit = async (e) => {
         'leave_staff_name', 'leave_sick', 'leave_personal', 'leave_vacation', 'leave_replace', 'leave_note', 
         'sec_station', 'sec_detail'
     ];
-    arrayFields.forEach(f => {
-        payload[f] = Array.from(formData.getAll(f + (f.includes('leave') || f.includes('sec') ? '' : '[]')));
-    });
+
+arrayFields.forEach(f => {
+    // แก้ไข Logic การดึงค่า Array ให้ครอบคลุมชื่อฟิลด์ทุกแบบ
+    const fieldName = (f.includes('leave_') || f.includes('sec_')) ? f : f + '[]';
+    payload[f] = formData.getAll(fieldName);
+});
+// ----------------------------------
     payload.attendance = Array.from(formData.getAll('attendance'));
     payload.images = selectedImages;
     try {
