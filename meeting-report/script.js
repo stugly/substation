@@ -108,11 +108,11 @@ const taskMap = {
 };
 
 function setCurrentYear() {
-    const now = new Date();
-    const currentYearTH = now.getFullYear() + 543;
-
-    // เหลือไว้แค่นี้พอครับ ส่วนที่สั่งใส่ค่าวันที่ให้ช่อง clean/weed ให้ลบทิ้งเลย
-    document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
+    const currentYearTH = new Date().getFullYear() + 543;
+    document.querySelectorAll('.current-year').forEach(el => { 
+        el.innerText = currentYearTH; 
+    });
+    // ลบ logic การใส่ค่า todayISO ออกไปแล้ว ช่องวันที่ 6, 7 จะกลับเป็น mm/dd/yyyy (ว่าง)
 }
 
 function setupMetadata(data) {
