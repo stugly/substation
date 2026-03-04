@@ -311,23 +311,24 @@ function addExternalRow() {
         <div class="compact-grid">
             <div style="flex: 1 1 48% !important;">
                 <span>บริษัท/หน่วยงาน</span>
-                <input type="text" name="ext_company[]" placeholder="ชื่อบริษัท..." required>
+                <input type="text" name="ext_company[]" placeholder="ชื่อบริษัท..." oninput="validateTaskInput('external')" required>
             </div>
             <div style="flex: 1 1 48% !important;">
                 <span>งานที่ปฏิบัติ</span>
-                <input type="text" name="ext_job[]" placeholder="ปฏิบัติงานเรื่อง..." required>
+                <input type="text" name="ext_job[]" placeholder="ปฏิบัติงานเรื่อง..." oninput="validateTaskInput('external')" required>
             </div>
             
             <div style="flex: 1 1 100% !important; margin-top: 4px;">
                 <span>รายละเอียด/ผลการดำเนินงาน</span>
-                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." required>
+                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." oninput="validateTaskInput('external')" required>
             </div>
         </div>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove();">
-            <i class="fa-solid fa-circle-minus"></i>
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
+            <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
+    validateTaskInput('external'); // ล็อคปุ่มเพิ่มทันทีจนกว่าจะกรอกครบ
 }
 
 function toggleWP(chk) {
