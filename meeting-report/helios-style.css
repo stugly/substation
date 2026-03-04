@@ -313,3 +313,19 @@
     .check-list-grid { gap: 5px; }
     .check-item { font-size: 13px; }
 }
+
+#clean-table-body input[type="date"] {
+    color: #000 !important; /* บังคับสีดำ */
+    font-family: inherit;
+    opacity: 1 !important; /* กันบางเบราว์เซอร์ทำโปร่งใส */
+}
+
+/* แก้สี Placeholder (mm/dd/yyyy) ใน Chrome/Edge */
+#clean-table-body input[type="date"]::-webkit-datetime-edit {
+    color: #000 !important;
+}
+
+/* ถ้าพี่อยากให้สีมันเหมือน placeholder ของช่อง text (ให้ดูจางนิดๆ แต่ไม่เทาตาย) */
+#clean-table-body input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: #000 !important;
+}
