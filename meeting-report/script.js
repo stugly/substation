@@ -300,8 +300,14 @@ function addAssetRow() {
 function addExternalRow() {
     const container = document.getElementById('external-container');
     const div = document.createElement('div');
-    div.className = "task-row";
+    
+    // 1. ใส่ Class repair-row-wrapper เพิ่มเข้าไปจากเดิม
+    div.className = "task-row repair-row-wrapper";
+    div.style.marginBottom = "8px";
+
+    // 2. โครงสร้างเดิมของพี่เป๊ะๆ 100% ไม่มีการขยับตำแหน่งใดๆ
     div.innerHTML = `<div class="task-number" style="flex:0 0 25px;">${container.children.length + 1}.</div><input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="flex:0 0 130px;"><div style="flex:0 0 55px; display:flex; flex-direction:column; align-items:center;"><span style="font-size:10px; color:#06C755; font-weight:600;">WP</span><input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external');" style="width:18px; height:18px !important;"></div><input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="flex:0 0 100px;"><input type="text" name="ext_company[]" placeholder="หน่วยงาน" oninput="validateTaskInput('external')" style="flex:0 0 150px;"><input type="text" name="ext_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('external')" style="flex:1;"><button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');"><i class="fa-solid fa-trash-can"></i></button>`;
+    
     container.appendChild(div);
     validateTaskInput('external');
 }
