@@ -302,8 +302,8 @@ function addExternalRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     
-    // ใส่กรอบสีเทาอ่อนเหมือนข้อ 4, 5, 9
-    div.className = 'task-row repair-row-wrapper'; 
+    // เพิ่มเฉพาะกรอบ repair-row-wrapper ตามที่สั่ง
+    div.className = 'task-row repair-row-wrapper';
     div.style.marginBottom = '8px';
 
     div.innerHTML = `
