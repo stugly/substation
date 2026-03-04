@@ -117,6 +117,12 @@ function setupMetadata(data) {
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
     
+    // 1. เพิ่มเดือน/ปี ต่อท้ายหัวข้อบนหน้าจอ (ไม่ต้องแก้ HTML)
+    const titleEl = document.getElementById('report-title');
+    if (titleEl && !titleEl.innerText.includes(fullDateText)) {
+        titleEl.innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
+    }
+
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
@@ -129,8 +135,9 @@ function setupMetadata(data) {
     }
 
     const attList = document.getElementById('attendance-list');
-    // ดึง UID จาก rawAppData.user (ตัวแปร Global ที่พี่มีอยู่แล้ว)
-    const currentLoginUid = (rawAppData && rawAppData.user) ? rawAppData.user.uid : null;
+    
+    // --- จุดที่ทำให้ Checked (ใช้ data.user.uid โดยตรง) ---
+    const currentLoginUid = (data && data.user) ? data.user.uid : null;
 
     if (attList && staffData) {
         const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
@@ -141,8 +148,8 @@ function setupMetadata(data) {
                 <div style="flex: 1;">
                     <div style="font-size: 11px; color: #06C755; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">สังกัด ${currentUserUnit}</div>
                     ${unitStaff.map(s => {
-                        // เช็คเงื่อนไขตรงๆ ใน map เลย
-                        const isChecked = (s.uid === currentLoginUid) ? 'checked' : '';
+                        // ตรวจสอบ UID เพื่อทำการ Checked
+                        const isChecked = (String(s.uid) === String(currentLoginUid)) ? 'checked' : '';
                         return `
                         <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
                             <input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}
@@ -151,9 +158,9 @@ function setupMetadata(data) {
                 </div>
                 
                 <div style="flex: 1;">
-                    <div style="font-size: 11px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
+                    <div style="font-size: 11px; color: #06C755; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
                     ${pj1Staff.map(s => {
-                        const isChecked = (s.uid === currentLoginUid) ? 'checked' : '';
+                        const isChecked = (String(s.uid) === String(currentLoginUid)) ? 'checked' : '';
                         return `
                         <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
                             <input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}
