@@ -302,33 +302,33 @@ function addExternalRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     
-    // ใช้ Class repair-row-wrapper เพื่อให้ได้กรอบสีเทาอ่อนและพื้นหลังเหมือนข้อ 4, 5, 9
-    div.className = 'repair-row-wrapper';
+    // ใช้ Class repair-row-wrapper เพื่อให้ได้กรอบสีเทาอ่อนตามที่พี่ต้องการ
+    div.className = 'task-row repair-row-wrapper';
     div.style.marginBottom = '8px';
 
     div.innerHTML = `
-        <div class="task-number">${rowCount}</div>
+        <div class="task-number" style="padding-top:10px;">${rowCount}.</div>
         <div class="compact-grid">
             <div style="flex: 1 1 48% !important;">
                 <span>บริษัท/หน่วยงาน</span>
-                <input type="text" name="ext_company[]" placeholder="ชื่อบริษัท..." oninput="validateTaskInput('external')" required>
+                <input type="text" name="ext_company[]" placeholder="ระบุบริษัท..." oninput="validateTaskInput('external')" required>
             </div>
             <div style="flex: 1 1 48% !important;">
                 <span>งานที่ปฏิบัติ</span>
-                <input type="text" name="ext_job[]" placeholder="ปฏิบัติงานเรื่อง..." oninput="validateTaskInput('external')" required>
+                <input type="text" name="ext_job[]" placeholder="ระบุชื่องาน..." oninput="validateTaskInput('external')" required>
             </div>
-            
             <div style="flex: 1 1 100% !important; margin-top: 4px;">
                 <span>รายละเอียด/ผลการดำเนินงาน</span>
                 <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." oninput="validateTaskInput('external')" required>
             </div>
         </div>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
+        <button type="button" class="btn-remove-task" style="margin-top:10px;" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
-    validateTaskInput('external'); // ล็อคปุ่มเพิ่มทันทีจนกว่าจะกรอกครบ
+    validateTaskInput('external'); 
 }
 
 function toggleWP(chk) {
