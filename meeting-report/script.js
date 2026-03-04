@@ -116,20 +116,47 @@ function setupMetadata(data) {
     const now = new Date();
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
+
     const attList = document.getElementById('attendance-list');
-    if (attList) {
-        attList.innerHTML = staffData.filter(s => s.unit === currentUserUnit || s.unit === "ผจฟ.1").map(s => 
-            `<label style="display:block; margin-bottom:8px;"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name} </label>`
-        ).join('');
+    if (attList && staffData) {
+        // 1. แยกรายชื่อตามกลุ่ม
+        const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
+        const pj1Staff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit); // กันกรณีคนใช้เป็น ผจฟ.1 อยู่แล้วไม่ให้ชื่อซ้ำ
+
+        // 2. สร้างโครงสร้าง HTML แบบ 2 คอลัมน์
+        let html = `
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">สังกัด ${currentUserUnit}</div>
+                    ${unitStaff.map(s => `
+                        <label style="display:block; margin-bottom:8px; font-size: 14px;">
+                            <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}
+                        </label>
+                    `).join('')}
+                </div>
+                
+                <div style="flex: 1;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
+                    ${pj1Staff.map(s => `
+                        <label style="display:block; margin-bottom:8px; font-size: 14px;">
+                            <input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        attList.innerHTML = html;
     }
     setupPowerTab(data);
 }
