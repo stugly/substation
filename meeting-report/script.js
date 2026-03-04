@@ -302,10 +302,12 @@ function addExternalRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     
-    // 1. เพิ่มกรอบ repair-row-wrapper เข้าไปใน Class เดิมของพี่
-    div.className = 'task-row repair-row-wrapper';
+    // 1. เพิ่ม Class กรอบเข้าไป (ของเดิมพี่ไม่มี Class นี้)
+    div.className = 'repair-row-wrapper';
+    div.style.marginBottom = '8px';
 
-    // 2. โครงสร้าง HTML ด้านล่างนี้คือของเดิมของพี่เป๊ะๆ เปลี่ยนแค่ไอคอนปุ่มลบเป็น trash-can
+    // 2. โครงสร้างเดิมของพี่เป๊ะๆ: บริษัท -> งาน -> รายละเอียด
+    // เปลี่ยนแค่ไอคอนปุ่มลบจาก fa-circle-minus เป็น fa-trash-can
     div.innerHTML = `
         <div class="task-number">${rowCount}</div>
         <div class="compact-grid">
