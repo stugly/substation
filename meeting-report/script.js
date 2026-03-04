@@ -117,27 +117,30 @@ function setupMetadata(data) {
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
     
-    // แสดงเดือน และ พ.ศ. ต่อท้ายหัวข้อรายงานการประชุม
+    // 1. แสดงเดือน และ พ.ศ. ที่หัวข้อ h3
     const titleEl = document.getElementById('report-title');
     if (titleEl) {
         titleEl.innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
     }
 
-    // ส่วนจัดการค่าในฟอร์ม
+    // ตั้งค่าค่าพื้นฐานในฟอร์ม
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
-    // ส่วนสถานที่ประชุม
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
-    // ส่วนรายชื่อผู้เข้าประชุม (ใช้ Logic เดิมที่พี่ทำได้แล้ว)
+    // 2. ส่วนรายชื่อผู้เข้าประชุม + ติ๊กชื่อคน Login (Checked)
     const attList = document.getElementById('attendance-list');
+    
+    // ดึง UID ของคน Login (ต้องใช้ data.user.uid)
+    const currentLoginUid = (data && data.user) ? String(data.user.uid) : null;
+
     if (attList && staffData) {
         const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
         const pj1Staff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
@@ -145,11 +148,18 @@ function setupMetadata(data) {
         let html = `
             <div class="attendance-column">
                 <div class="column-header-mini">สังกัด ${currentUserUnit}</div>
-                ${unitStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`).join('')}
+                ${unitStaff.map(s => {
+                    // ถ้า UID ตรงกับคน Login ให้ใส่คำว่า checked
+                    const isChecked = (String(s.uid) === currentLoginUid) ? 'checked' : '';
+                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}</label>`;
+                }).join('')}
             </div>
             <div class="attendance-column">
                 <div class="column-header-mini">เจ้าหน้าที่ ผจฟ.1</div>
-                ${pj1Staff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`).join('')}
+                ${pj1Staff.map(s => {
+                    const isChecked = (String(s.uid) === currentLoginUid) ? 'checked' : '';
+                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}</label>`;
+                }).join('')}
             </div>
         `;
         attList.innerHTML = html;
