@@ -337,17 +337,20 @@
 .fixed-report-table input[type="date"]::-webkit-datetime-edit-year-field {
     color: inherit; /* ให้ใช้สีตามตัวแม่ (Inherit จากข้อ 1 และ 2) */
 }
-/* 1. ทุกช่องวันที่ ให้เริ่มต้นเป็นสีเทา (Placeholder) */
+/* บังคับทุกช่องวันที่ให้เป็นสีเทาเมื่อยังไม่มีค่า */
 input[type="date"] {
-    color: #a9a9a9 !important; /* สีเทาอ่อน */
+    color: #a9a9a9 !important;
 }
 
-/* 2. เมื่อมีการเลือกวันที่แล้ว (Attribute value มีค่า) ให้เปลี่ยนเป็นสีดำ */
+/* เมื่อมีการเลือกวันที่ (มี attribute value) ให้เป็นสีดำ */
 input[type="date"][value]:not([value=""]) {
-    color: #333333 !important; /* สีดำเข้ม */
+    color: #333333 !important;
 }
 
-/* 3. บังคับให้ตัวเลขในปฏิทินใช้สีตามที่เราสั่งข้างบน */
-input[type="date"]::-webkit-datetime-edit {
+/* ปรับสีตัวอักษรข้างใน shadow dom ของ browser */
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
     color: inherit;
 }
