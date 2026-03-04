@@ -277,3 +277,39 @@
 #other-container {
     margin-top: 12px !important;
 }
+
+.check-list-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* แบ่งครึ่งซ้ายขวา */
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.attendance-column {
+    background: #fcfcfc;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.column-header-mini {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #ddd;
+    padding-bottom: 4px;
+    font-weight: 600;
+}
+
+.check-item {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* กรณีหน้าจอมือถือแคบมากๆ ให้ปรับขนาดตัวอักษรลงนิดนึง */
+@media (max-width: 350px) {
+    .check-list-grid { gap: 5px; }
+    .check-item { font-size: 13px; }
+}
