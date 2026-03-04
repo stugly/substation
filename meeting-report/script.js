@@ -302,34 +302,32 @@ function addExternalRow() {
     const rowCount = container.children.length + 1;
     const div = document.createElement('div');
     
-    // ใส่กรอบหุ้มแถวเดิมไว้
-    div.className = "task-row repair-row-wrapper";
-    div.style.marginBottom = "8px";
-    div.style.display = "flex";
-    div.style.alignItems = "center";
-    div.style.gap = "10px";
+    // 1. เพิ่มกรอบ repair-row-wrapper เข้าไปใน Class เดิมของพี่
+    div.className = 'task-row repair-row-wrapper';
 
+    // 2. โครงสร้าง HTML ด้านล่างนี้คือของเดิมของพี่เป๊ะๆ เปลี่ยนแค่ไอคอนปุ่มลบเป็น trash-can
     div.innerHTML = `
-        <div class="task-number">${rowCount}.</div>
-        
-        <input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="flex: 0 0 140px;" required>
-        
-        <div style="display: flex; align-items: center; gap: 5px; flex: 0 0 180px;">
-            <label style="font-size: 12px; white-space: nowrap;">มี WP</label>
-            <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external')" style="width: 18px; height: 18px;">
-            <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="width: 100px;">
+        <div class="task-number">${rowCount}</div>
+        <div class="compact-grid">
+            <div style="flex: 1 1 48% !important;">
+                <span>บริษัท/หน่วยงาน</span>
+                <input type="text" name="ext_company[]" placeholder="ชื่อบริษัท..." required>
+            </div>
+            <div style="flex: 1 1 48% !important;">
+                <span>งานที่ปฏิบัติ</span>
+                <input type="text" name="ext_job[]" placeholder="ปฏิบัติงานเรื่อง..." required>
+            </div>
+            
+            <div style="flex: 1 1 100% !important; margin-top: 4px;">
+                <span>รายละเอียด/ผลการดำเนินงาน</span>
+                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." required>
+            </div>
         </div>
-
-        <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('external')" style="flex: 1;" required>
-        
-        <button type="button" class="btn-remove-task" 
-                onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove();">
             <i class="fa-solid fa-trash-can"></i>
         </button>
     `;
-    
     container.appendChild(div);
-    validateTaskInput('external');
 }
 
 function toggleWP(chk) {
