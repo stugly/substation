@@ -299,37 +299,11 @@ function addAssetRow() {
 
 function addExternalRow() {
     const container = document.getElementById('external-container');
-    const rowCount = container.children.length + 1;
     const div = document.createElement('div');
-    
-    // 1. เพิ่ม Class กรอบเข้าไป (ของเดิมพี่ไม่มี Class นี้)
-    div.className = 'repair-row-wrapper';
-    div.style.marginBottom = '8px';
-
-    // 2. โครงสร้างเดิมของพี่เป๊ะๆ: บริษัท -> งาน -> รายละเอียด
-    // เปลี่ยนแค่ไอคอนปุ่มลบจาก fa-circle-minus เป็น fa-trash-can
-    div.innerHTML = `
-        <div class="task-number">${rowCount}</div>
-        <div class="compact-grid">
-            <div style="flex: 1 1 48% !important;">
-                <span>บริษัท/หน่วยงาน</span>
-                <input type="text" name="ext_company[]" placeholder="ชื่อบริษัท..." required>
-            </div>
-            <div style="flex: 1 1 48% !important;">
-                <span>งานที่ปฏิบัติ</span>
-                <input type="text" name="ext_job[]" placeholder="ปฏิบัติงานเรื่อง..." required>
-            </div>
-            
-            <div style="flex: 1 1 100% !important; margin-top: 4px;">
-                <span>รายละเอียด/ผลการดำเนินงาน</span>
-                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการปฏิบัติงาน..." required>
-            </div>
-        </div>
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove();">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    `;
+    div.className = "task-row";
+    div.innerHTML = `<div class="task-number" style="flex:0 0 25px;">${container.children.length + 1}.</div><input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="flex:0 0 130px;"><div style="flex:0 0 55px; display:flex; flex-direction:column; align-items:center;"><span style="font-size:10px; color:#06C755; font-weight:600;">WP</span><input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external');" style="width:18px; height:18px !important;"></div><input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="flex:0 0 100px;"><input type="text" name="ext_company[]" placeholder="หน่วยงาน" oninput="validateTaskInput('external')" style="flex:0 0 150px;"><input type="text" name="ext_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('external')" style="flex:1;"><button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
+    validateTaskInput('external');
 }
 
 function toggleWP(chk) {
