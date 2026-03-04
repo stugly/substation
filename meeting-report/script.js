@@ -493,3 +493,15 @@ arrayFields.forEach(f => {
     }
 };
 
+// ฟังก์ชันสำหรับ "สะกิด" ให้ CSS รู้ว่ามีการเลือกวันที่แล้ว
+document.addEventListener('input', function (e) {
+    if (e.target.type === 'date') {
+        if (e.target.value) {
+            // เมื่อเลือกวันที่ ให้ใส่ attribute value="yyyy-mm-dd" ลงไปใน HTML
+            e.target.setAttribute('value', e.target.value);
+        } else {
+            // เมื่อลบวันที่ออก ให้เอา attribute ออกเพื่อให้กลับไปเป็นสีเทา
+            e.target.removeAttribute('value');
+        }
+    }
+});
