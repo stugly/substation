@@ -164,10 +164,10 @@ function setupLeaveTable() {
     leaveBody.innerHTML = staffData.filter(s => s.unit === currentUserUnit).map(s => `
         <tr>
             <td style="text-align: left; padding-left: 10px;">${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
-            <td><input type="number" name="leave_sick[]" value="0"></td>
-            <td><input type="number" name="leave_personal[]" value="0"></td>
-            <td><input type="number" name="leave_vacation[]" value="0"></td>
-            <td><input type="text" name="leave_replace[]" placeholder="..."></td>
+            <td><input type="number" name="leave_sick[]" value="0" min="0" step="0.5"></td>
+            <td><input type="number" name="leave_personal[]" value="0" min="0" step="0.5"></td>
+            <td><input type="number" name="leave_vacation[]" value="0" min="0" step="0.5"></td>
+            <td><input type="number" name="leave_replace[]" value="0" min="0" step="0.5"></td>
             <td><input type="text" name="leave_note[]" placeholder="..."></td>
         </tr>`).join('');
 }
