@@ -117,61 +117,45 @@ function setupMetadata(data) {
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
     
-    // 1. เพิ่มเดือน/ปี ต่อท้ายหัวข้อบนหน้าจอ (ไม่ต้องแก้ HTML)
+    // แสดงเดือน และ พ.ศ. ต่อท้ายหัวข้อรายงานการประชุม
     const titleEl = document.getElementById('report-title');
-    if (titleEl && !titleEl.innerText.includes(fullDateText)) {
+    if (titleEl) {
         titleEl.innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
     }
 
+    // ส่วนจัดการค่าในฟอร์ม
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('meeting_date').value = now.toISOString().split('T')[0];
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
+    // ส่วนสถานที่ประชุม
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
+    // ส่วนรายชื่อผู้เข้าประชุม (ใช้ Logic เดิมที่พี่ทำได้แล้ว)
     const attList = document.getElementById('attendance-list');
-    
-    // --- จุดที่ทำให้ Checked (ใช้ data.user.uid โดยตรง) ---
-    const currentLoginUid = (data && data.user) ? data.user.uid : null;
-
     if (attList && staffData) {
         const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
         const pj1Staff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
 
         let html = `
-            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                <div style="flex: 1;">
-                    <div style="font-size: 11px; color: #06C755; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">สังกัด ${currentUserUnit}</div>
-                    ${unitStaff.map(s => {
-                        // ตรวจสอบ UID เพื่อทำการ Checked
-                        const isChecked = (String(s.uid) === String(currentLoginUid)) ? 'checked' : '';
-                        return `
-                        <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
-                            <input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}
-                        </label>`;
-                    }).join('')}
-                </div>
-                
-                <div style="flex: 1;">
-                    <div style="font-size: 11px; color: #06C755; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; font-weight: 600;">ผจฟ.1</div>
-                    ${pj1Staff.map(s => {
-                        const isChecked = (String(s.uid) === String(currentLoginUid)) ? 'checked' : '';
-                        return `
-                        <label style="display:block; margin-bottom:8px; font-size: 14px; cursor: pointer;">
-                            <input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}
-                        </label>`;
-                    }).join('')}
-                </div>
+            <div class="attendance-column">
+                <div class="column-header-mini">สังกัด ${currentUserUnit}</div>
+                ${unitStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`).join('')}
+            </div>
+            <div class="attendance-column">
+                <div class="column-header-mini">เจ้าหน้าที่ ผจฟ.1</div>
+                ${pj1Staff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> ${s.name}</label>`).join('')}
             </div>
         `;
         attList.innerHTML = html;
     }
-    setupPowerTab(data);
+    
+    if (typeof setupPowerTab === "function") setupPowerTab(data);
 }
 
 function setupLeaveTable() {
