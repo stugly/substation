@@ -126,6 +126,15 @@ function setupMetadata(data) {
     const now = new Date();
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+
+    const meetingDateEl = document.getElementById('meeting_date');
+    const todayStr = now.toISOString().split('T')[0];
+
+    meetingDateEl.value = todayStr;
+    meetingDateEl.setAttribute('value', todayStr); 
+
+    // เพิ่มบรรทัดนี้ครับพี่! บังคับดำทันทีแบบไม่ต้องรอ CSS
+meetingDateEl.style.color = "#333333";
     
     // 1. แสดงเดือน และ พ.ศ. ที่หัวข้อ h3
     const titleEl = document.getElementById('report-title');
