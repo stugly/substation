@@ -314,24 +314,7 @@
 }
 
 
-/* 3. บังคับสีฟอนต์ของระบบปฏิทิน (Shadow DOM) ให้เปลี่ยนตามสีหลักที่เราตั้ง */
-.fixed-report-table input[type="date"]::-webkit-datetime-edit,
-.fixed-report-table input[type="date"]::-webkit-datetime-edit-fields-wrapper,
-.fixed-report-table input[type="date"]::-webkit-datetime-edit-text,
-.fixed-report-table input[type="date"]::-webkit-datetime-edit-month-field,
-.fixed-report-table input[type="date"]::-webkit-datetime-edit-day-field,
-.fixed-report-table input[type="date"]::-webkit-datetime-edit-year-field {
-    color: inherit; /* ให้ใช้สีตามตัวแม่ (Inherit จากข้อ 1 และ 2) */
-}
-/* บังคับทุกช่องวันที่ให้เป็นสีเทาเมื่อยังไม่มีค่า */
-input[type="date"] {
-    color: #a9a9a9 !important;
-}
 
-/* เมื่อมีการเลือกวันที่ (มี attribute value) ให้เป็นสีดำ */
-input[type="date"][value]:not([value=""]) {
-    color: #333333 !important;
-}
 
 /* ปรับสีตัวอักษรข้างใน shadow dom ของ browser */
 input[type="date"]::-webkit-datetime-edit-text,
