@@ -230,22 +230,25 @@ function addRepairRow() {
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
     
-    let eqOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
-    let stOpt = `<option value="">-- เลือก --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    let eqOpt = `<option value="">-- อุปกรณ์ --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    let stOpt = `<option value="">-- สถานะ --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     
     div.innerHTML = `
-        <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div class="compact-grid">
-            <div><span>รหัส EQ</span><input type="text" name="repair_id[]" oninput="validateTaskInput('repair')"></div>
-            <div><span>วันที่ชำรุด</span><input type="date" name="repair_date[]" onchange="validateTaskInput('repair')"></div>
-            <div><span>อุปกรณ์</span><select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOpt}</select></div>
-            <div><span>สถานะ</span><select name="repair_status[]" onchange="validateTaskInput('repair')">${stOpt}</select></div>
-            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('repair')" style="flex:0 0 100%;">
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
+        <div class="compact-grid" style="gap: 8px !important;">
+            <div style="flex: 0 0 100px !important;"><input type="text" name="repair_id[]" placeholder="รหัส EQ" oninput="validateTaskInput('repair')"></div>
+            <div style="flex: 0 0 130px !important;"><input type="date" name="repair_date[]" onchange="validateTaskInput('repair')"></div>
+            <div style="flex: 1 1 auto !important;"><select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOpt}</select></div>
+            <div style="flex: 1 1 auto !important;"><select name="repair_status[]" onchange="validateTaskInput('repair')">${stOpt}</select></div>
+            
+            <input type="text" name="repair_detail[]" placeholder="ระบุรายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="flex:0 0 100%; margin-top:5px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top:25px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
-    validateTaskInput('repair'); // สั่งล็อคปุ่มทันทีที่กดเพิ่มแถว
+    validateTaskInput('repair');
 }
 
 function addProcureRow() {
@@ -253,26 +256,32 @@ function addProcureRow() {
     const div = document.createElement('div');
     div.className = "task-row procure-row-wrapper";
 
-    // 1. ดึงข้อมูลจากคอลัมน์ C (settings_procure_type) มาทำ Dropdown ประเภท
+    // 1. ดึงข้อมูล Dropdown
     let typeOpt = `<option value="">-- เลือกประเภท --</option>` + 
         rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
 
-    // 2. ดึงข้อมูลจากคอลัมน์ D (settings_procure_status) มาทำ Dropdown สถานะ
     let statusOpt = `<option value="">-- เลือกสถานะ --</option>` + 
         rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
-        <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div class="compact-grid">
-            <div><span>รหัส PO</span><input type="text" name="procure_id[]" oninput="validateTaskInput('procure')"></div>
-            <div><span>วันที่จัดซื้อ</span><input type="date" name="procure_date[]" onchange="validateTaskInput('procure')"></div>
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
+        <div class="compact-grid" style="gap: 8px !important;">
+            <div style="flex: 0 0 100px !important;">
+                <input type="text" name="procure_id[]" placeholder="รหัส PO" oninput="validateTaskInput('procure')">
+            </div>
+            <div style="flex: 0 0 130px !important;">
+                <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
+            </div>
+            <div style="flex: 1 1 auto !important;">
+                <select name="procure_item[]" onchange="validateTaskInput('procure')">${typeOpt}</select>
+            </div>
+            <div style="flex: 1 1 auto !important;">
+                <select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOpt}</select>
+            </div>
             
-            <div><span>ประเภท</span><select name="procure_item[]" onchange="validateTaskInput('procure')">${typeOpt}</select></div>
-            <div><span>สถานะ</span><select name="procure_status[]" onchange="validateTaskInput('procure')">${statusOpt}</select></div>
-            
-            <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('procure')" style="flex:0 0 100%;">
+            <input type="text" name="procure_detail[]" placeholder="ระบุรายละเอียดการจัดซื้อจัดจ้าง..." oninput="validateTaskInput('procure')" style="flex:0 0 100%; margin-top:5px !important;">
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" 
                 onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');">
             <i class="fa-solid fa-trash-can"></i>
         </button>

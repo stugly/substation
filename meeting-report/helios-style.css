@@ -110,7 +110,21 @@
 }
 
 /* 7. Special Box Layout (ข้อ 4 และ ข้อ 5) - กรอบสีเทาอ่อนแบ่ง 2 บรรทัด */
+/* ปรับสไตล์ข้อ 4 และ 5 ให้ไม่มีช่องว่างเผื่อหัวข้อ */
 .repair-row-wrapper, 
+.procure-row-wrapper {
+    align-items: center !important; 
+    padding: 10px 12px !important; /* เพิ่ม Padding นิดหน่อยให้ดูเต็ม */
+}
+
+.compact-grid span {
+    display: none !important; /* สั่งซ่อนหัวข้อ รหัส EQ, วันที่ชำรุด ฯลฯ ทิ้งไปเลย */
+}
+
+.compact-grid input, 
+.compact-grid select {
+    margin-bottom: 0 !important; /* เอา Margin ล่างออกเพราะไม่มีหัวข้อแล้ว */
+}
 .procure-row-wrapper {
     display: flex !important; 
     flex-direction: row !important; 
@@ -335,35 +349,24 @@ input[type="date"][value]:not([value=""]) {
     color: #333333 !important; /* สีดำปกติ */
 }
 
-/* --- บังคับการแสดงผลตัวหนังสือหัวข้อให้ดำเข้มเหมือนข้อ 3 และ 13 --- */
+/* --- ปรับสีข้อ 6, 7 และ 12 ให้โทนเท่ากับข้อ 3, 13 และรายชื่อผู้เข้าร่วมประชุม --- */
 
-/* 1. แก้ไขข้อ 6 และ 7: ตัวหนังสือ "ครั้งที่ 1/2569..." ในคอลัมน์แรก */
-.fixed-report-table td:first-child {
-    color: #333333 !important; /* เปลี่ยนจาก #888 เป็นสีดำเข้มแบบเดียวกับข้อ 3 */
-    font-weight: 600 !important;
-    background-color: #f9f9f9; /* พื้นหลังเทาอ่อนคงไว้เพื่อให้ดูเป็นหัวข้อ */
-}
-
-/* 2. แก้ไขข้อ 12: ชื่อพนักงานในตารางลา ให้ดำเข้มเหมือนกัน */
+/* 1. แก้ไขคอลัมน์แรกของตาราง (ข้อ 6, 7 และ 12) */
+.fixed-report-table td:first-child,
 #leave-table-body td:first-child {
-    color: #333333 !important;
-    font-weight: 600 !important;
-    text-align: left !important;
-    padding-left: 10px !important;
+    color: #333333 !important;      /* ใช้สีเดียวกับ .task-number และ .power-station-name */
+    font-weight: normal !important;  /* เอาตัวหนาออก เพื่อให้เท่ากับรายชื่อผู้เข้าร่วม */
+    font-size: 14px !important;      /* ขนาดเท่ากับมาตรฐานส่วนอื่น */
 }
 
-/* 3. บังคับให้เลข พ.ศ. (current-year) เป็นสีดำเข้ม */
+/* 2. แก้ไขเลข พ.ศ. ให้สีกลืนกัน ไม่ดำโดด */
 .current-year {
     color: #333333 !important;
-    font-weight: 600 !important;
+    font-weight: inherit !important;
 }
 
-/* --- คืนค่า Placeholder วันที่ให้เป็นสีเทาตามมาตรฐาน (ลบของเก่าที่ผมให้ผิดไป) --- */
-input[type="date"] {
-    color: #333333; /* สีตัวหนังสือตอนเลือกแล้ว */
-}
-
-input[type="date"]:not([value]), 
-input[type="date"][value=""] {
-    color: #a9a9a9 !important; /* กลับมาเป็นสีเทาจางๆ เมื่อยังไม่เลือก */
+/* 3. คืนค่าสีพื้นหลังคอลัมน์แรกให้ดูเบาลง (เผื่อมันทำให้ดูเข้มไป) */
+.fixed-report-table td:first-child {
+    background-color: transparent !important; /* เอาสีพื้นหลังเทาออก จะได้ดูไม่หนา */
+    border-left: 1px solid #ddd !important;
 }
