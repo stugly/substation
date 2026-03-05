@@ -111,17 +111,15 @@ function setCurrentYear() {
     const now = new Date();
     const currentYearTH = now.getFullYear() + 543;
 
-    // 1. อันนี้เก็บไว้: แสดงปี พ.ศ. ที่หัวข้อ
-    document.querySelectorAll('.current-year').forEach(el => { 
-        el.innerText = currentYearTH; 
-    });
+    // 1. ตั้งปี พ.ศ. (อันนี้ทำต่อไป)
+    document.querySelectorAll('.current-year').forEach(el => { el.innerText = currentYearTH; });
 
-    // 2. อันนี้คือตัวการ! (ลบออก หรือ Comment ทิ้งไปเลยครับ):
-    /* const todayISO = now.toISOString().split('T')[0];
-    document.querySelectorAll('input[type="date"][name^="clean_"], input[type="date"][name^="weed_"]').forEach(el => {
-        el.value = todayISO; 
+    // 2. ลบบรรทัดที่สั่ง el.value = todayISO ออกให้หมด
+    // แล้วใส่บรรทัดนี้เพื่อล้างค่า (ถ้ามันยังดื้อดำอยู่)
+    document.querySelectorAll('input[name^="clean_date"], input[name^="weed_date"]').forEach(el => {
+        el.value = ""; 
+        el.removeAttribute('value'); 
     });
-    */
 }
 
 function setupMetadata(data) {
