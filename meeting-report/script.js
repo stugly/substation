@@ -327,16 +327,21 @@ function addExternalRow() {
 
     // 2. ยกโครงสร้างเดิมของพี่มาใส่ไว้ข้างในกรอบ (เป๊ะทุกตัวอักษร)
     div.innerHTML = `
-        <div class="task-row" style="border:none; padding:0; background:transparent;">
+        <div class="task-row" style="border:none; padding:0; background:transparent; flex-wrap: nowrap !important;">
             <div class="task-number" style="flex:0 0 25px;">${container.children.length + 1}.</div>
-            <input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="flex:0 0 130px;">
-            <div style="flex:0 0 55px; display:flex; flex-direction:column; align-items:center;">
+            
+            <input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="flex: 0 1 120px; min-width: 100px;">
+            
+            <div style="flex:0 0 45px; display:flex; flex-direction:column; align-items:center;">
                 <span style="font-size:10px; color:#06C755; font-weight:600;">WP</span>
                 <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external');" style="width:18px; height:18px !important;">
             </div>
-            <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="flex:0 0 100px;">
-            <input type="text" name="ext_company[]" placeholder="หน่วยงาน" oninput="validateTaskInput('external')" style="flex:0 0 150px;">
-            <input type="text" name="ext_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('external')" style="flex:1;">
+            
+            <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="flex: 0 1 80px; min-width: 60px;">
+            <input type="text" name="ext_company[]" placeholder="หน่วยงาน" oninput="validateTaskInput('external')" style="flex: 1 1 100px; min-width: 80px;">
+            
+            <input type="text" name="ext_detail[]" placeholder="รายละเอียด..." oninput="validateTaskInput('external')" style="flex: 2 1 150px; min-width: 120px;">
+            
             <button type="button" class="btn-remove-task" onclick="this.parentElement.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
