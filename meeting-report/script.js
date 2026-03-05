@@ -192,12 +192,14 @@ function setupLeaveTable() {
     if (!leaveBody || !staffData) return;
     leaveBody.innerHTML = staffData.filter(s => s.unit === currentUserUnit).map(s => `
         <tr>
-            <td style="text-align: left; padding-left: 10px;">${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
-            <td><input type="number" name="leave_sick[]" value="0" min="0" step="0.5"></td>
-            <td><input type="number" name="leave_personal[]" value="0" min="0" step="0.5"></td>
-            <td><input type="number" name="leave_vacation[]" value="0" min="0" step="0.5"></td>
-            <td><input type="number" name="leave_replace[]" value="0" min="0" step="0.5"></td>
-            <td><input type="text" name="leave_note[]" placeholder="..."></td>
+            <td style="text-align: left; padding-left: 10px; color: #000000 !important; font-weight: 500;">
+                ${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}">
+            </td>
+            <td><input type="number" name="leave_sick[]" value="0" min="0" step="0.5" style="color: #000 !important;"></td>
+            <td><input type="number" name="leave_personal[]" value="0" min="0" step="0.5" style="color: #000 !important;"></td>
+            <td><input type="number" name="leave_vacation[]" value="0" min="0" step="0.5" style="color: #000 !important;"></td>
+            <td><input type="number" name="leave_replace[]" value="0" min="0" step="0.5" style="color: #000 !important;"></td>
+            <td><input type="text" name="leave_note[]" placeholder="..." style="color: #000 !important;"></td>
         </tr>`).join('');
 }
 

@@ -334,3 +334,33 @@ input[type="date"][value=""] {
 input[type="date"][value]:not([value=""]) {
     color: #333333 !important; /* สีดำปกติ */
 }
+
+/* --- ปรับแต่งสีข้อความ "ครั้งที่" และปี พ.ศ. ให้เป็นสีดำเข้ม --- */
+
+/* 1. บังคับหัวข้อ ครั้งที่ 1/2569 ... 6/2569 ในข้อ 6 และ 7 */
+#clean-weed-section td:first-child, 
+#clean-weed-section label,
+.current-year {
+    color: #000000 !important; /* ดำสนิท */
+    font-weight: 600 !important; /* เข้มขึ้นนิดนึงให้อ่านง่าย */
+    opacity: 1 !important;
+}
+
+/* 2. บังคับชื่อพนักงานในข้อ 12 (ตารางลา) ให้เป็นสีดำ */
+#leave-table-body td:first-child {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* 3. ส่วนของ Input ต่างๆ ในตารางข้อ 6, 7 และ 12 ให้เป็นสีดำเวลาพิมพ์ */
+.fixed-report-table input,
+.fixed-report-table td {
+    color: #000000 !important;
+}
+
+/* 4. ปรับสีตัวเลขในช่องวันที่และตัวเลขในตารางให้ชัดเจน */
+input[type="number"], 
+input[type="date"] {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important; /* สำหรับ iPhone */
+}
