@@ -335,32 +335,35 @@ input[type="date"][value]:not([value=""]) {
     color: #333333 !important; /* สีดำปกติ */
 }
 
-/* --- ปรับแต่งสีข้อความ "ครั้งที่" และปี พ.ศ. ให้เป็นสีดำเข้ม --- */
+/* --- บังคับการแสดงผลตัวหนังสือหัวข้อให้ดำเข้มเหมือนข้อ 3 และ 13 --- */
 
-/* 1. บังคับหัวข้อ ครั้งที่ 1/2569 ... 6/2569 ในข้อ 6 และ 7 */
-#clean-weed-section td:first-child, 
-#clean-weed-section label,
-.current-year {
-    color: #000000 !important; /* ดำสนิท */
-    font-weight: 600 !important; /* เข้มขึ้นนิดนึงให้อ่านง่าย */
-    opacity: 1 !important;
+/* 1. แก้ไขข้อ 6 และ 7: ตัวหนังสือ "ครั้งที่ 1/2569..." ในคอลัมน์แรก */
+.fixed-report-table td:first-child {
+    color: #333333 !important; /* เปลี่ยนจาก #888 เป็นสีดำเข้มแบบเดียวกับข้อ 3 */
+    font-weight: 600 !important;
+    background-color: #f9f9f9; /* พื้นหลังเทาอ่อนคงไว้เพื่อให้ดูเป็นหัวข้อ */
 }
 
-/* 2. บังคับชื่อพนักงานในข้อ 12 (ตารางลา) ให้เป็นสีดำ */
+/* 2. แก้ไขข้อ 12: ชื่อพนักงานในตารางลา ให้ดำเข้มเหมือนกัน */
 #leave-table-body td:first-child {
-    color: #000000 !important;
+    color: #333333 !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    padding-left: 10px !important;
+}
+
+/* 3. บังคับให้เลข พ.ศ. (current-year) เป็นสีดำเข้ม */
+.current-year {
+    color: #333333 !important;
     font-weight: 600 !important;
 }
 
-/* 3. ส่วนของ Input ต่างๆ ในตารางข้อ 6, 7 และ 12 ให้เป็นสีดำเวลาพิมพ์ */
-.fixed-report-table input,
-.fixed-report-table td {
-    color: #000000 !important;
+/* --- คืนค่า Placeholder วันที่ให้เป็นสีเทาตามมาตรฐาน (ลบของเก่าที่ผมให้ผิดไป) --- */
+input[type="date"] {
+    color: #333333; /* สีตัวหนังสือตอนเลือกแล้ว */
 }
 
-/* 4. ปรับสีตัวเลขในช่องวันที่และตัวเลขในตารางให้ชัดเจน */
-input[type="number"], 
-input[type="date"] {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important; /* สำหรับ iPhone */
+input[type="date"]:not([value]), 
+input[type="date"][value=""] {
+    color: #a9a9a9 !important; /* กลับมาเป็นสีเทาจางๆ เมื่อยังไม่เลือก */
 }
