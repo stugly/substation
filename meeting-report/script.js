@@ -328,42 +328,37 @@ function addExternalRow() {
     const container = document.getElementById('external-container');
     const div = document.createElement('div');
     
-    // ใช้คลาสเดียวกับข้อ 9 เพื่อให้ได้กรอบสีขาวและ Padding ที่เหมือนกัน
     div.className = "task-row repair-row-wrapper";
     div.style.marginBottom = "8px"; 
 
     div.innerHTML = `
-        <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
         
-        <div style="display: flex !important; gap: 8px; align-items: flex-end; width: 100%; flex-wrap: nowrap;">
+        <div style="display: flex !important; gap: 8px; align-items: center; width: 100%; flex-wrap: nowrap;">
             
-            <div style="flex: 0 0 120px !important;">
-                <span style="font-size:11px; display:block; color: #666;">วันที่</span>
+            <div style="flex: 0 0 130px !important;">
                 <input type="date" name="ext_date[]" onchange="validateTaskInput('external')" style="width:100%;">
             </div>
 
-            <div style="flex: 0 0 45px !important; text-align: center;">
-                <span style="font-size:11px; display:block; color: #06C755; font-weight:600;">WP</span>
-                <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external');" style="width:18px; height:18px !important; margin-top:5px;">
+            <div style="flex: 0 0 45px !important; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <span style="font-size:10px; color: #06C755; font-weight:bold; line-height:1;">WP</span>
+                <input type="checkbox" name="ext_wp_check[]" onchange="toggleWP(this); validateTaskInput('external');" style="width:18px; height:18px !important; margin-top:2px;">
             </div>
 
-            <div style="flex: 0 1 100px !important; min-width: 80px;">
-                <span style="font-size:11px; display:block; color: #666;">เลขที่ WP</span>
-                <input type="text" name="ext_wp_no[]" placeholder="..." disabled oninput="validateTaskInput('external')" style="width:100%;">
+            <div style="flex: 0 1 110px !important; min-width: 80px;">
+                <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled oninput="validateTaskInput('external')" style="width:100%;">
             </div>
 
             <div style="flex: 0 1 150px !important; min-width: 100px;">
-                <span style="font-size:11px; display:block; color: #666;">หน่วยงาน</span>
-                <input type="text" name="ext_company[]" placeholder="..." oninput="validateTaskInput('external')" style="width:100%;">
+                <input type="text" name="ext_company[]" placeholder="หน่วยงาน/บริษัท" oninput="validateTaskInput('external')" style="width:100%;">
             </div>
 
             <div style="flex: 1 1 auto !important; min-width: 150px;">
-                <span style="font-size:11px; display:block; color: #666;">รายละเอียด</span>
-                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('external')" style="width:100%;">
+                <input type="text" name="ext_detail[]" placeholder="ระบุรายละเอียดการเข้าทำงาน..." oninput="validateTaskInput('external')" style="width:100%;">
             </div>
         </div>
 
-        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" 
                 onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
