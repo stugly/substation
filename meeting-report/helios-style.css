@@ -59,29 +59,14 @@
 .form-compact { display: flex; flex-direction: column; gap: 4px; }
 .form-compact label { font-size: 14px; color: #06C755 !important; font-weight: 600; }
 
-/* --- แก้ไข: ให้ Running No. ดำ และอยู่ในบรรทัดเดียว --- */
-.task-number {
-    flex: 0 0 30px !important;
-    min-width: 30px !important;
-    font-size: 14px !important;
-    font-weight: 600;
-    color: #333333 !important; 
-    white-space: nowrap; /* กันเลขหลุดบรรทัด */
-}
-
-/* --- แก้ไข: ข้อ 1, 2, 10, 11, 13, 14 ให้ยาวเต็มที่แต่ไม่ดีดปุ่ม --- */
-.task-row input[type="text"] {
-    flex: 1 1 0% !important; /* ให้ยืดออกเท่าที่พื้นที่อำนวย */
-    min-width: 0; /* สำคัญ: ป้องกัน input ดันจนหลุดบรรทัด */
-}
-
-/* --- แก้ไข: เจาะจงข้อ 8 ให้กางสวยงาม --- */
-#external-container .task-row {
-    flex-wrap: nowrap !important; /* บังคับห้ามขึ้นบรรทัดใหม่เด็ดขาด */
-}
-
-#external-container .task-row input[name="ext_detail[]"] {
-    flex: 2 1 auto !important; /* ให้ความสำคัญกับช่องรายละเอียดมากที่สุด */
+/* 6. Global Task Row - จัดการระยะห่างแถว (จูนตามสายตา) */
+.task-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 7px !important; 
+    padding: 0 !important;
+    min-height: 40px !important;
 }
 
 #power-station-container .task-row {
