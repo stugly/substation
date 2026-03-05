@@ -224,71 +224,59 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
-// --- แก้ไขข้อ 4: อุปกรณ์ชำรุด (จัดระเบียบใหม่กันทะลุขอบ) ---
+// --- แก้ไขข้อ 4: อุปกรณ์ชำรุด (ทำให้เหมือนข้อ 9) ---
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const div = document.createElement('div');
     div.className = "task-row repair-row-wrapper";
-    div.style.flexDirection = "column"; // บังคับให้เรียงลงมา
-    div.style.alignItems = "stretch";
-
+    
     let eqOpt = `<option value="">-- อุปกรณ์ --</option>` + rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
     let stOpt = `<option value="">-- สถานะ --</option>` + rawAppData.settings_status_eq.map(v => `<option value="${v}">${v}</option>`).join('');
-
+    
     div.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-            <div class="task-number" style="flex: 0 0 30px;">${container.children.length + 1}.</div>
-            
-            <div style="display: flex; gap: 8px; flex: 1; flex-wrap: nowrap; align-items: center;">
-                <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 0 0 90px;" oninput="validateTaskInput('repair')">
-                <input type="date" name="repair_date[]" style="flex: 0 0 125px;" onchange="validateTaskInput('repair')">
-                <select name="repair_item[]" style="flex: 1 1 auto; min-width: 80px;" onchange="validateTaskInput('repair')">${eqOpt}</select>
-                <select name="repair_status[]" style="flex: 0 0 100px;" onchange="validateTaskInput('repair')">${stOpt}</select>
-            </div>
-
-            <button type="button" class="btn-remove-task" style="flex: 0 0 30px;" onclick="this.parentElement.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');">
-                <i class="fa-solid fa-trash-can"></i>
-            </button>
-        </div>
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
         
-        <div style="width: 100%; margin-top: 8px; padding-left: 40px; box-sizing: border-box;">
-            <input type="text" name="repair_detail[]" placeholder="ระบุรายละเอียดการชำรุด..." oninput="validateTaskInput('repair')" style="width: 100% !important; box-sizing: border-box;">
+        <div style="display: flex !important; gap: 5px; align-items: center; width: 100%; flex-wrap: nowrap;">
+            <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="flex: 0 0 80px;" oninput="validateTaskInput('repair')">
+            <input type="date" name="repair_date[]" style="flex: 0 0 120px;" onchange="validateTaskInput('repair')">
+            <select name="repair_item[]" style="flex: 1 1 auto; min-width: 70px;" onchange="validateTaskInput('repair')">${eqOpt}</select>
+            <select name="repair_status[]" style="flex: 0 0 90px;" onchange="validateTaskInput('repair')">${stOpt}</select>
+            <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 auto; min-width: 100px;" oninput="validateTaskInput('repair')">
         </div>
+
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
     validateTaskInput('repair');
 }
 
-// --- แก้ไขข้อ 5: จัดซื้อจัดจ้าง (จัดระเบียบใหม่กันทะลุขอบ) ---
+// --- แก้ไขข้อ 5: จัดซื้อจัดจ้าง (ทำให้เหมือนข้อ 9) ---
 function addProcureRow() {
     const container = document.getElementById('procure-container');
     const div = document.createElement('div');
     div.className = "task-row procure-row-wrapper";
-    div.style.flexDirection = "column"; 
-    div.style.alignItems = "stretch";
 
     let typeOpt = `<option value="">-- ประเภท --</option>` + rawAppData.settings_procure_type.map(v => `<option value="${v}">${v}</option>`).join('');
     let statusOpt = `<option value="">-- สถานะ --</option>` + rawAppData.settings_procure_status.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-            <div class="task-number" style="flex: 0 0 30px;">${container.children.length + 1}.</div>
-            
-            <div style="display: flex; gap: 8px; flex: 1; flex-wrap: nowrap; align-items: center;">
-                <input type="text" name="procure_id[]" placeholder="รหัส PO" style="flex: 0 0 90px;" oninput="validateTaskInput('procure')">
-                <input type="date" name="procure_date[]" style="flex: 0 0 125px;" onchange="validateTaskInput('procure')">
-                <select name="procure_item[]" style="flex: 1 1 auto; min-width: 80px;" onchange="validateTaskInput('procure')">${typeOpt}</select>
-                <select name="procure_status[]" style="flex: 0 0 100px;" onchange="validateTaskInput('procure')">${statusOpt}</select>
-            </div>
-
-            <button type="button" class="btn-remove-task" style="flex: 0 0 30px;" onclick="this.parentElement.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');">
-                <i class="fa-solid fa-trash-can"></i>
-            </button>
-        </div>
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
         
-        <div style="width: 100%; margin-top: 8px; padding-left: 40px; box-sizing: border-box;">
-            <input type="text" name="procure_detail[]" placeholder="ระบุรายละเอียดการจัดซื้อจัดจ้าง..." oninput="validateTaskInput('procure')" style="width: 100% !important; box-sizing: border-box;">
+        <div style="display: flex !important; gap: 5px; align-items: center; width: 100%; flex-wrap: nowrap;">
+            <input type="text" name="procure_id[]" placeholder="รหัส PO" style="flex: 0 0 80px;" oninput="validateTaskInput('procure')">
+            <input type="date" name="procure_date[]" style="flex: 0 0 120px;" onchange="validateTaskInput('procure')">
+            <select name="procure_item[]" style="flex: 1 1 auto; min-width: 70px;" onchange="validateTaskInput('procure')">${typeOpt}</select>
+            <select name="procure_status[]" style="flex: 0 0 90px;" onchange="validateTaskInput('procure')">${statusOpt}</select>
+            <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 1 1 auto; min-width: 100px;" oninput="validateTaskInput('procure')">
         </div>
+
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" 
+                onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
     `;
     container.appendChild(div);
     validateTaskInput('procure');
