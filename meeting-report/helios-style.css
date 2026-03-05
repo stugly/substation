@@ -323,3 +323,14 @@ input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
     color: inherit;
 }
+
+/* 1. บังคับให้ช่องวันที่ "ที่ยังไม่มีการเลือกค่า" เป็นสีเทา */
+input[type="date"]:not([value]), 
+input[type="date"][value=""] {
+    color: #a9a9a9 !important; /* สีเทาเหมือน Placeholder ช่องอื่น */
+}
+
+/* 2. เมื่อมีการเลือกวันที่ (มีค่า Value) ให้เป็นสีดำ */
+input[type="date"][value]:not([value=""]) {
+    color: #333333 !important; /* สีดำปกติ */
+}
