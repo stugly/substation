@@ -313,20 +313,6 @@
     .check-item { font-size: 13px; }
 }
 
-/* --- จัดการสีช่องวันที่ในตาราง (ข้อ 6 และ 7) --- */
-
-/* 1. สถานะปกติ (ยังไม่เลือกวันที่): ให้เป็นสีเทาจาง */
-.fixed-report-table input[type="date"] {
-    color: #a9a9a9 !important;
-    font-family: 'Kanit', sans-serif !important;
-}
-
-/* 2. สถานะเมื่อเลือกวันที่แล้ว: ให้เปลี่ยนเป็นสีดำเข้ม */
-/* ใช้ [value] ร่วมกับ :not([value=""]) เพื่อความชัวร์ในทุก Browser */
-.fixed-report-table input[type="date"][value]:not([value=""]),
-.fixed-report-table input[type="date"]:not([value=""]) {
-    color: #000 !important;
-}
 
 /* 3. บังคับสีฟอนต์ของระบบปฏิทิน (Shadow DOM) ให้เปลี่ยนตามสีหลักที่เราตั้ง */
 .fixed-report-table input[type="date"]::-webkit-datetime-edit,
