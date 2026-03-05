@@ -370,3 +370,18 @@ input[type="date"][value]:not([value=""]) {
     background-color: transparent !important; /* เอาสีพื้นหลังเทาออก จะได้ดูไม่หนา */
     border-left: 1px solid #ddd !important;
 }
+
+/* --- ส่วนรายชื่อผู้เข้าประชุม: ติ๊กแล้วเป็นสีเขียวเหมือน WP --- */
+
+/* 1. เมื่อติ๊กเลือก (Checked) ให้ชื่อพนักงานเปลี่ยนเป็นสีเขียวเข้มและตัวหนา */
+.check-item input[type="checkbox"]:checked + span, 
+.check-item:has(input[type="checkbox"]:checked) {
+    color: #06C755 !important;
+    font-weight: 600;
+}
+
+/* 2. บังคับสีของตัว Checkbox เองให้เป็นสีเขียว (Accent color) */
+.check-item input[type="checkbox"] {
+    accent-color: #06C755;
+    cursor: pointer;
+}

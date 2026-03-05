@@ -168,16 +168,15 @@ meetingDateEl.style.color = "#333333";
             <div class="attendance-column">
                 <div class="column-header-mini">สังกัด ${currentUserUnit}</div>
                 ${unitStaff.map(s => {
-                    // ถ้า UID ตรงกับคน Login ให้ใส่คำว่า checked
                     const isChecked = (String(s.uid) === currentLoginUid) ? 'checked' : '';
-                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}</label>`;
+                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> <span>${s.name}</span></label>`;
                 }).join('')}
             </div>
             <div class="attendance-column">
                 <div class="column-header-mini">เจ้าหน้าที่ ผจฟ.1</div>
                 ${pj1Staff.map(s => {
                     const isChecked = (String(s.uid) === currentLoginUid) ? 'checked' : '';
-                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> ${s.name}</label>`;
+                    return `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${isChecked}> <span>${s.name}</span></label>`;
                 }).join('')}
             </div>
         `;
@@ -293,15 +292,18 @@ function addProcureRow() {
 function addAssetRow() {
     const container = document.getElementById('asset-container');
     const div = document.createElement('div');
+    // ใช้ Wrapper เดียวกันเพื่อความสวยงาม
     div.className = "task-row repair-row-wrapper";
     
     const steps = (rawAppData && rawAppData.settings_asset_step) ? rawAppData.settings_asset_step : [];
     let stepOpt = `<option value="">-- ขั้นตอน --</option>` + steps.map(v => `<option value="${v}">${v}</option>`).join('');
 
     div.innerHTML = `
-        <div class="task-number" style="padding-top:25px;">${container.children.length + 1}.</div>
-        <div style="display: flex !important; gap: 8px; align-items: flex-end; width: 100%; flex-wrap: nowrap;">
-            <div style="flex: 0 0 120px !important;">
+        <div class="task-number" style="padding-top:0px;">${container.children.length + 1}.</div>
+        
+        <div style="display: flex !important; gap: 8px; align-items: center; width: 100%; flex-wrap: nowrap;">
+            
+            <div style="flex: 0 0 130px !important;">
                 <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')" style="width:100%;">
             </div>
             
@@ -309,13 +311,14 @@ function addAssetRow() {
                 <input type="text" name="asset_item[]" placeholder="รายละเอียดจำหน่ายทรัพย์สิน" oninput="validateTaskInput('asset')" style="width:100%;">
             </div>
             
-            <div style="flex: 0 0 140px !important;">
+            <div style="flex: 0 0 150px !important;">
                 <select name="asset_step[]" onchange="validateTaskInput('asset')" style="width:100%;">
                     ${stepOpt}
                 </select>
             </div>
         </div>
-        <button type="button" class="btn-remove-task" style="margin-top:25px;" 
+
+        <button type="button" class="btn-remove-task" style="margin-top:0px;" 
                 onclick="this.parentElement.remove(); updateTaskNumbers('asset-container'); validateTaskInput('asset');">
             <i class="fa-solid fa-trash-can"></i>
         </button>
