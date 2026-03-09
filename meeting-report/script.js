@@ -211,7 +211,7 @@ function addRepairRow() {
         <div class="task-number">${container.children.length + 1}.</div>
         <div style="display: flex; gap: 5px; width: 100%;">
             <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="width: 80px;" oninput="validateTaskInput('repair')">
-            <input type="date" name="repair_date[]" onchange="applyDateStyle(this); validateTaskInput('repair')">
+            <input type="date" name="repair_date[]" onchange="this.style.color='#000000'; validateTaskInput('repair')">
             <select name="repair_item[]" onchange="validateTaskInput('repair')"><option value="">-- อุปกรณ์ --</option>${eq}</select>
             <select name="repair_status[]" onchange="validateTaskInput('repair')"><option value="">-- สถานะ --</option>${st}</select>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1;" oninput="validateTaskInput('repair')">
@@ -384,5 +384,5 @@ function mockDataForTesting() {
     setupMetadata(rawAppData);
     setupLeaveTable(); 
     setupSecuritySection();
-    setCurrentYear();
+    setCurrentYear(); 
 }
