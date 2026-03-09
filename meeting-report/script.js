@@ -1,4 +1,4 @@
-const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwe_OPptH3rOfFH2usmXvKbN45tXw1HSldiAzM7MIxYPCHPUFvs4x7q6k2gxDOZIeAD/exec";
+const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwASVMzturUlUbwC1gjmNXStXY2U4uz82hmvpHlJhaSnh5VKSTm_t0aheZxx06IFOlC/exec";
 const LIFF_ID = "2008876139-kiwCd2kF";
 
 let staffData = [];
@@ -31,14 +31,12 @@ async function initializeLiff() {
     }
 }
 
-async function checkUserAndLoadData(lineId) {
+function checkUserAndLoadData(lineId) {
     const spinner = document.getElementById('spinner');
     if(spinner) spinner.style.display = 'flex';
 
-    try {
-        const response = await fetch(`${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}`);
-        const data = await response.json();
-
+    // 1. สร้างฟังก์ชันมารอรับข้อมูล (Callback)
+    window.handleUserData = function(data) {
         if (data && data.user) {
             rawAppData = data; 
             staffData = data.staff; 
@@ -52,15 +50,21 @@ async function checkUserAndLoadData(lineId) {
             setupLeaveTable(); 
             setupSecuritySection();
             setCurrentYear();
+            
+            // ลบ script tag ทิ้งหลังใช้งานเสร็จ
+            const oldScript = document.getElementById('api-script');
+            if(oldScript) oldScript.remove();
         } else {
             alert("ไม่พบชื่อคุณในระบบ (ตรวจสอบ LINE ID ใน Sheet)");
-            liff.closeWindow();
+            if(spinner) spinner.style.display = 'none';
         }
-    } catch (err) {
-        console.error("Fetch Error:", err);
-        alert("เชื่อมต่อ Server ไม่สำเร็จ: " + err.message);
-        if(spinner) spinner.style.display = 'none';
-    }
+    };
+
+    // 2. เรียกข้อมูลผ่าน Script Tag (วิธีนี้จะไม่ติด Failed to fetch)
+    const script = document.createElement('script');
+    script.id = 'api-script';
+    script.src = `${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}&callback=handleUserData`;
+    document.body.appendChild(script);
 }
 
 // --- ส่วนที่ 2: ข้อมูลทดสอบ ---
@@ -349,9 +353,10 @@ function collectData() {
             remark: row.querySelector('[name="leave_note[]"]').value || ""
         })),
         asset_transfer: Array.from(document.querySelectorAll('#asset-container .task-row')).map(row => ({
-            meeting_id: reportId, asset_date: row.querySelector('[name="asset_date[]"]').value,
-            item_detail: row.querySelector('[name="asset_item[]"]').value, step: row.querySelector('[name="asset_step[]"]').value
-        }))
+        asset_date: row.querySelector('[name="asset_date[]"]').value,
+        status: row.querySelector('select[name="asset_status[]"]').value, // แก้ตรงนี้ให้มี select
+        item_detail: row.querySelector('[name="asset_item[]"]').value
+        })),
     };
 }
 
