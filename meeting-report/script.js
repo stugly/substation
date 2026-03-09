@@ -3,24 +3,10 @@ const LIFF_ID = "2008876139-kiwCd2kF";
 
 let staffData = [];
 let rawAppData = null;
-let currentUserUnit = "";
-
-// แผนผังสำหรับระบบ Lock ปุ่ม (อ้างอิงตาม ID ใน HTML ของพี่)
-const taskMap = {
-    assignment: { container: 'assignment-container', btn: 'btn-add-assignment' },
-    plan: { container: 'plan-container', btn: 'btn-add-plan' },
-    power: { container: 'power-container', btn: 'btn-add-power' },
-    repair: { container: 'repair-container', btn: 'btn-add-repair' },
-    procure: { container: 'procure-container', btn: 'btn-add-procure' },
-    external: { container: 'external-container', btn: 'btn-add-external' },
-    asset: { container: 'asset-container', btn: 'btn-add-asset' },
-    km: { container: 'km-container', btn: 'btn-add-km' },
-    idea: { container: 'idea-container', btn: 'btn-add-idea' },
-    other: { container: 'other-container', btn: 'btn-add-other' }
-};
+let currentUserUnit = "ผจฟ.1"; // ค่าเริ่มต้นถ้าดึงจาก GAS ไม่ได้
 
 window.onload = function() {
-    // 1. เปิดฟอร์มทันทีกันเหนื่อยใจ
+    // 1. โชว์หน้าแอปทันที ไม่ต้องรออะไรทั้งนั้น
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     
@@ -34,13 +20,16 @@ function setupInitialUI() {
     const mDate = document.getElementById('meeting_date');
     if (mDate) {
         mDate.value = todayStr;
-        mDate.style.color = "#000000"; // วันที่สีดำชัวร์
+        mDate.style.color = "#000000"; 
     }
     const sTime = document.getElementById('start_time');
     if (sTime) {
         sTime.value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     }
     setCurrentYear();
+    
+    // โหลดข้อมูล "สำรอง" ไว้ก่อนเลย เผื่อ GAS พัง
+    renderBackupData();
 }
 
 async function initializeLiff() {
@@ -70,15 +59,34 @@ function fetchDataFromGAS(lineId) {
                     document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
                     document.getElementById('recorder_uid').value = data.user.uid;
                 }
-                
                 renderDynamicParts();
             }
         })
-        .catch(err => console.error("GAS Fetch Fail"));
+        .catch(err => {
+            console.warn("GAS Fetch Fail - ใช้ข้อมูลสำรองแทน");
+            // ถ้าดึงไม่ได้ ก็ไม่ต้องทำอะไร เพราะ renderBackupData ทำงานไปแล้ว
+        });
+}
+
+// ข้อมูลสำรองเผื่อเน็ตเน่าหรือ GAS มีปัญหา
+function renderBackupData() {
+    const locSel = document.getElementById('location');
+    if (locSel && locSel.options.length <= 1) {
+        locSel.innerHTML = `
+            <option value="">-- เลือกสถานที่ --</option>
+            <option value="สฟฟ.1">สฟฟ.1</option>
+            <option value="สฟฟ.2">สฟฟ.2</option>
+            <option value="สำนักงาน">สำนักงาน</option>
+        `;
+    }
+    
+    const unitList = document.getElementById('unit-staff-list');
+    if (unitList && unitList.innerHTML === "") {
+        unitList.innerHTML = "<p style='color:red; font-size:12px;'>ดึงรายชื่อไม่สำเร็จ กรุณาพิมพ์ในหมายเหตุแทน</p>";
+    }
 }
 
 function renderDynamicParts() {
-    // เติมสถานที่
     const locSel = document.getElementById('location');
     if (locSel && rawAppData.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
@@ -87,7 +95,6 @@ function renderDynamicParts() {
         });
     }
 
-    // เติมรายชื่อพนักงาน
     const unitList = document.getElementById('unit-staff-list');
     if (unitList && staffData.length > 0) {
         const uStaff = staffData.filter(s => s.unit === currentUserUnit);
@@ -95,47 +102,25 @@ function renderDynamicParts() {
             <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
         `).join('');
     }
-
     setupLeaveTable();
     setupSecuritySection();
 }
 
-// --- ฟังก์ชันจัดการแถว (Matching กับ HTML ของพี่) ---
+// --- ฟังก์ชันเพิ่มแถว (ตามที่ HTML เรียก) ---
 
-function validateRow(type) {
-    const config = taskMap[type];
-    if (!config) return;
-    const btn = document.getElementById(config.btn);
-    const container = document.getElementById(config.container);
-    const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { btn.disabled = false; btn.style.opacity = "1"; return; }
-
-    const lastRow = rows[rows.length - 1];
-    let isComplete = true;
-    lastRow.querySelectorAll('input:not([type="hidden"]), select').forEach(el => {
-        if (el.value.trim() === "") isComplete = false;
-    });
-    btn.disabled = !isComplete;
-    btn.style.opacity = isComplete ? "1" : "0.5";
-}
-
-// สำหรับข้อความทั่วไป (assignment, plan, km, idea, other)
 function addTaskRow(type) {
     const container = document.getElementById(type + '-container');
+    if(!container) return;
     const div = document.createElement('div');
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="${type}_detail[]" placeholder="..." style="flex:1;" oninput="validateRow('${type}')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('${type}-container'); validateRow('${type}')">🗑️</button>`;
+        <input type="text" name="${type}_detail[]" placeholder="..." style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('${type}-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow(type);
 }
 
-// สำหรับปุ่มใน HTML ที่เรียกชื่อ addSimpleTaskRow
-function addSimpleTaskRow(type) {
-    addTaskRow(type);
-}
+function addSimpleTaskRow(type) { addTaskRow(type); }
 
 function addPowerDynamicRow() {
     const container = document.getElementById('power-container');
@@ -143,27 +128,25 @@ function addPowerDynamicRow() {
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="power_station[]" placeholder="สถานี" style="width:80px;" oninput="validateRow('power')">
-        <input type="text" name="power_detail[]" placeholder="ปกติ" style="flex:1;" oninput="validateRow('power')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('power-container'); validateRow('power')">🗑️</button>`;
+        <input type="text" name="power_station[]" placeholder="สถานี" style="width:80px;">
+        <input type="text" name="power_detail[]" placeholder="ปกติ" style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('power-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow('power');
 }
 
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const div = document.createElement('div');
     div.className = "task-row";
-    const eqOpt = (rawAppData && rawAppData.settings_eq) ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '<option value="TR">TR</option>';
+    const eqOpt = (rawAppData && rawAppData.settings_eq) ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '<option value="TR">TR</option><option value="Breaker">Breaker</option>';
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="repair_id[]" placeholder="ID" style="width:60px;" oninput="validateRow('repair')">
-        <input type="date" name="repair_date[]" style="color:#000;" onchange="validateRow('repair')">
-        <select name="repair_item[]" onchange="validateRow('repair')">${eqOpt}</select>
-        <input type="text" name="repair_detail[]" style="flex:1;" oninput="validateRow('repair')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('repair-container'); validateRow('repair')">🗑️</button>`;
+        <input type="text" name="repair_id[]" placeholder="ID" style="width:60px;">
+        <input type="date" name="repair_date[]" style="color:#000;">
+        <select name="repair_item[]">${eqOpt}</select>
+        <input type="text" name="repair_detail[]" style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('repair-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow('repair');
 }
 
 function addProcureRow() {
@@ -172,12 +155,11 @@ function addProcureRow() {
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="procure_id[]" placeholder="PO" style="width:70px;" oninput="validateRow('procure')">
-        <input type="date" name="procure_date[]" style="color:#000;" onchange="validateRow('procure')">
-        <input type="text" name="procure_detail[]" style="flex:1;" oninput="validateRow('procure')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('procure-container'); validateRow('procure')">🗑️</button>`;
+        <input type="text" name="procure_id[]" placeholder="PO" style="width:70px;">
+        <input type="date" name="procure_date[]" style="color:#000;">
+        <input type="text" name="procure_detail[]" style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('procure-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow('procure');
 }
 
 function addExternalRow() {
@@ -186,12 +168,11 @@ function addExternalRow() {
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="date" name="ext_date[]" style="color:#000;" onchange="validateRow('external')">
-        <input type="text" name="ext_company[]" placeholder="บริษัท" oninput="validateRow('external')">
-        <input type="text" name="ext_detail[]" style="flex:1;" oninput="validateRow('external')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('external-container'); validateRow('external')">🗑️</button>`;
+        <input type="date" name="ext_date[]" style="color:#000;">
+        <input type="text" name="ext_company[]" placeholder="บริษัท">
+        <input type="text" name="ext_detail[]" style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('external-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow('external');
 }
 
 function addAssetRow() {
@@ -200,20 +181,15 @@ function addAssetRow() {
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="date" name="asset_date[]" style="color:#000;" onchange="validateRow('asset')">
-        <input type="text" name="asset_item[]" style="flex:1;" oninput="validateRow('asset')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('asset-container'); validateRow('asset')">🗑️</button>`;
+        <input type="date" name="asset_date[]" style="color:#000;">
+        <input type="text" name="asset_item[]" style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('asset-container')">🗑️</button>`;
     container.appendChild(div);
-    validateRow('asset');
 }
 
-// --- ฟังก์ชันเสริม ---
-
-function updateNumbers(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i + 1) + ".");
-    }
+function updateNumbers(id) {
+    const c = document.getElementById(id);
+    if(c) c.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i + 1) + ".");
 }
 
 function setCurrentYear() {
@@ -223,7 +199,7 @@ function setCurrentYear() {
 
 function setupLeaveTable() {
     const body = document.getElementById('leave-table-body');
-    if (!body) return;
+    if (!body || staffData.length === 0) return;
     const uStaff = staffData.filter(s => s.unit === currentUserUnit);
     body.innerHTML = uStaff.map(s => `
         <tr>
