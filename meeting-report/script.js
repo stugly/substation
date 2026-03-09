@@ -6,7 +6,6 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
-// แผนผังปุ่มและการล็อค (ต้องตรงกับ ID ใน HTML)
 const taskMap = {
     assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
     plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
@@ -34,8 +33,7 @@ async function initializeLiff() {
             checkUserAndLoadData(profile.userId);
         }
     } catch (err) {
-        console.error("LIFF Error:", err);
-        mockDataForTesting(); // ถ้าเทสบนคอมจะรันตัวนี้
+        mockDataForTesting();
     }
 }
 
@@ -49,6 +47,7 @@ async function checkUserAndLoadData(lineId) {
             rawAppData = data; 
             staffData = data.staff; 
             currentUserUnit = data.user.unit;
+            document.getElementById('recorder_uid').value = data.user.uid;
             if(spinner) spinner.style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
@@ -57,50 +56,54 @@ async function checkUserAndLoadData(lineId) {
             setupSecuritySection();
             setCurrentYear();
         } else {
-            alert("ไม่พบข้อมูลผู้ใช้");
+            alert("ไม่พบข้อมูลผู้ใช้ในระบบ");
             liff.closeWindow();
         }
     } catch (err) {
-        console.error("Fetch Error:", err);
-        if(spinner) spinner.style.display = 'none';
+        console.error(err);
     }
 }
 
 function setupMetadata(data) {
     const now = new Date();
+    const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
     const todayStr = now.toISOString().split('T')[0];
+
     const meetingDateEl = document.getElementById('meeting_date');
-    
-    // บังคับวันที่ประชุมให้เป็นสีดำทันที
     if (meetingDateEl) {
         meetingDateEl.value = todayStr;
-        meetingDateEl.style.color = "#000000";
+        meetingDateEl.style.color = "#000000"; // วันที่ประชุมดำทันที
         meetingDateEl.setAttribute('value', todayStr);
     }
 
+    if (document.getElementById('report-title')) document.getElementById('report-title').innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
     document.getElementById('unit').value = currentUserUnit;
+    document.getElementById('month').value = fullDateText;
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
-        data.stations.filter(s => s.unit === currentUserUnit).forEach(s => {
-            locSel.add(new Option("สฟฟ." + s.name, s.name));
-        });
+        data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
-    const attList = document.getElementById('attendance-list');
-    if (attList && staffData) {
+    const unitStaffList = document.getElementById('unit-staff-list');
+    const pjStaffList = document.getElementById('pj-staff-list');
+    if (staffData) {
+        const currentLoginUid = (data && data.user) ? String(data.user.uid) : "";
         const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
-        attList.innerHTML = unitStaff.map(s => `
-            <label class="check-item">
-                <input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span>
-            </label>`).join('');
+        const pjStaff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
+
+        if(unitStaffList) unitStaffList.innerHTML = unitStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${String(s.uid)===currentLoginUid?'checked':''}> <span>${s.name}</span></label>`).join('');
+        if(pjStaffList) pjStaffList.innerHTML = pjStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>`).join('');
     }
 }
 
-// ฟังก์ชันเพิ่มแถวแบบรวม (สำหรับหมวด 3, 9, 10)
-function addTaskRow(type) {
+// --- ฟังก์ชันเพิ่มแถวตามชื่อใน HTML ---
+function addTaskRow(type) { addSimpleTaskRow(type); }
+
+function addSimpleTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
     const div = document.createElement('div');
@@ -113,72 +116,107 @@ function addTaskRow(type) {
     validateTaskInput(type);
 }
 
-// ฟังก์ชันหมวด 4 (ชำรุด)
+function addPowerDynamicRow() {
+    const container = document.getElementById('power-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="text" name="power_station[]" placeholder="ชื่อสถานี" style="width:100px;" oninput="validateTaskInput('power')">
+        <input type="text" name="power_detail[]" placeholder="สภาพการจ่ายไฟ" style="flex:1;" oninput="validateTaskInput('power')">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('power-container'); validateTaskInput('power');"><i class="fa-solid fa-trash-can"></i></button>`;
+    container.appendChild(div);
+    validateTaskInput('power');
+}
+
 function addRepairRow() {
     const container = document.getElementById('repair-container');
     const div = document.createElement('div');
     div.className = "task-row";
-    const eqOpt = rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('');
+    const eqOpt = rawAppData.settings_eq ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '';
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="repair_id[]" placeholder="ID" style="width:70px;" oninput="validateTaskInput('repair')">
+        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="width:70px;" oninput="validateTaskInput('repair')">
         <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
-        <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOpt}</select>
-        <input type="text" name="repair_detail[]" placeholder="อาการชำรุด" style="flex:1;" oninput="validateTaskInput('repair')">
+        <select name="repair_item[]" onchange="validateTaskInput('repair')"><option value="">-- อุปกรณ์ --</option>${eqOpt}</select>
+        <input type="text" name="repair_detail[]" placeholder="อาการ..." style="flex:1;" oninput="validateTaskInput('repair')">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
     validateTaskInput('repair');
 }
 
-// ฟังก์ชันตรวจสอบการกรอกข้อมูลเพื่อปลดล็อคปุ่ม "+"
+function addProcureRow() {
+    const container = document.getElementById('procure-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="text" name="procure_id[]" placeholder="รหัส PO" style="width:70px;" oninput="validateTaskInput('procure')">
+        <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
+        <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex:1;" oninput="validateTaskInput('procure')">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>`;
+    container.appendChild(div);
+    validateTaskInput('procure');
+}
+
+function addExternalRow() {
+    const container = document.getElementById('external-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="date" name="ext_date[]" onchange="validateTaskInput('external')">
+        <input type="text" name="ext_company[]" placeholder="บริษัท/หน่วยงาน" oninput="validateTaskInput('external')">
+        <input type="text" name="ext_detail[]" placeholder="งานที่ทำ..." style="flex:1;" oninput="validateTaskInput('external')">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');"><i class="fa-solid fa-trash-can"></i></button>`;
+    container.appendChild(div);
+    validateTaskInput('external');
+}
+
+function addAssetRow() {
+    const container = document.getElementById('asset-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')">
+        <input type="text" name="asset_item[]" placeholder="รายการทรัพย์สิน" style="flex:1;" oninput="validateTaskInput('asset')">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container'); validateTaskInput('asset');"><i class="fa-solid fa-trash-can"></i></button>`;
+    container.appendChild(div);
+    validateTaskInput('asset');
+}
+
+// --- ฟังก์ชันเสริม ---
 function validateTaskInput(type) {
     const config = taskMap[type];
     if (!config) return;
     const btn = document.getElementById(config.btn);
     const container = document.getElementById(config.container);
     if (!btn || !container) return;
-
     const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        return;
-    }
-
+    if (rows.length === 0) { btn.disabled = false; btn.style.opacity = "1"; return; }
     const lastRow = rows[rows.length - 1];
     let isComplete = true;
-    const inputs = lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select');
-    
-    inputs.forEach(el => {
+    lastRow.querySelectorAll('input:not([type="hidden"]), select').forEach(el => {
         if (!el.disabled && el.value.trim().length === 0) isComplete = false;
     });
-
     btn.disabled = !isComplete;
     btn.style.opacity = isComplete ? "1" : "0.5";
 }
 
-function updateTaskNumbers(containerId) {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.querySelectorAll('.task-number').forEach((num, i) => {
-            num.innerText = (i + 1) + ".";
-        });
-    }
+function updateTaskNumbers(id) {
+    const container = document.getElementById(id);
+    if(container) container.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i+1) + ".");
 }
 
 function handleImageSelect(input) {
     const preview = document.getElementById('image-preview');
-    if(!preview) return;
     preview.innerHTML = ''; selectedImages = [];
     Array.from(input.files).slice(0, 5).forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
             selectedImages.push({ name: file.name, data: e.target.result });
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = "70px";
-            img.style.margin = "5px";
-            preview.appendChild(img);
+            const img = document.createElement('img'); img.src = e.target.result; preview.appendChild(img);
         };
         reader.readAsDataURL(file);
     });
@@ -189,12 +227,12 @@ function setupLeaveTable() {
     if (!body || !staffData) return;
     body.innerHTML = staffData.filter(s => s.unit === currentUserUnit).map(s => `
         <tr>
-            <td>${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
-            <td><input type="number" name="leave_sick[]" value="0"></td>
-            <td><input type="number" name="leave_personal[]" value="0"></td>
-            <td><input type="number" name="leave_vacation[]" value="0"></td>
-            <td><input type="number" name="leave_replace[]" value="0"></td>
-            <td><input type="text" name="leave_note[]"></td>
+            <td style="text-align:left;">${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
+            <td><input type="number" name="leave_sick[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_personal[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_vacation[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_replace[]" value="0" min="0"></td>
+            <td><input type="text" name="leave_note[]" placeholder="..."></td>
         </tr>`).join('');
 }
 
@@ -211,45 +249,67 @@ function setupSecuritySection() {
 }
 
 function setCurrentYear() {
-    const now = new Date();
-    document.querySelectorAll('.current-year').forEach(el => {
-        el.innerText = now.getFullYear() + 543;
-    });
+    const year = new Date().getFullYear() + 543;
+    document.querySelectorAll('.current-year').forEach(el => el.innerText = year);
 }
 
-// ตัวดักฟัง Event เพื่อแก้สีวันที่ให้ดำอัตโนมัติ
+// ดักฟังวันที่ให้ดำ
 document.addEventListener('input', function (e) {
     if (e.target.type === 'date') {
         if (e.target.value) {
             e.target.style.color = "#000000";
             e.target.setAttribute('value', e.target.value);
-        } else {
-            e.target.style.color = "";
         }
     }
 });
 
 function mockDataForTesting() {
     currentUserUnit = "ผจฟ.1";
-    rawAppData = {
+    rawAppData = { 
         stations: [{name: "นครศรีธรรมราช 1", unit: "ผจฟ.1"}],
-        settings_eq: ["TR", "CB", "DS"],
-        staff: [{name: "นายทดสอบ", uid: "U001", unit: "ผจฟ.1"}]
+        settings_eq: ["TR", "CB"],
+        staff: [{name: "นายทดสอบ", uid: "U123", unit: "ผจฟ.1"}]
     };
     staffData = rawAppData.staff;
     document.getElementById('main-app').style.display = 'block';
     setupMetadata(rawAppData);
     setupLeaveTable();
     setupSecuritySection();
+    setCurrentYear();
 }
 
-// ส่วนบันทึกข้อมูล
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
-    btn.disabled = true; btn.innerText = "กำลังบันทึก...";
+    btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
     
-    // ... ส่วนรวบรวมข้อมูล Payload (เดี๋ยวผมเติมให้ในขั้นตอน Save ข้อมูล) ...
-    alert("ระบบพร้อมบันทึก (ฟังก์ชัน Payload ทำงาน)");
-    btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+    
+    const arrayFields = [
+        'assignment_detail', 'plan_detail', 'power_station', 'power_detail',
+        'repair_id', 'repair_date', 'repair_item', 'repair_detail',
+        'procure_id', 'procure_date', 'procure_detail',
+        'ext_date', 'ext_company', 'ext_detail',
+        'asset_date', 'asset_item', 'km_detail', 'idea_detail', 'other_detail',
+        'leave_staff_name', 'leave_sick', 'leave_personal', 'leave_vacation', 'leave_replace', 'leave_note',
+        'sec_station', 'sec_detail', 'clean_date', 'clean_detail', 'weed_date', 'weed_detail'
+    ];
+
+    arrayFields.forEach(f => {
+        const name = (f.includes('leave_') || f.includes('sec_') || f.includes('clean_') || f.includes('weed_')) ? f : f + '[]';
+        payload[f] = formData.getAll(name);
+    });
+
+    payload.attendance = formData.getAll('attendance');
+    payload.images = selectedImages;
+
+    try {
+        const res = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        alert("✅ บันทึกรายงานสำเร็จ!");
+        liff.closeWindow();
+    } catch (err) {
+        alert("❌ บันทึกไม่สำเร็จ: " + err.message);
+        btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+    }
 };
