@@ -386,3 +386,15 @@ function mockDataForTesting() {
     setupSecuritySection();
     setCurrentYear(); 
 }
+
+document.addEventListener('input', function (e) {
+    if (e.target.type === 'date') {
+        if (e.target.value) {
+            e.target.style.color = "#333333"; // บังคับดำที่นี่ที่เดียว จบ!
+            e.target.setAttribute('value', e.target.value);
+        } else {
+            e.target.style.color = ""; // กลับเป็นสีจางถ้าลบข้อมูล
+            e.target.removeAttribute('value');
+        }
+    }
+});
