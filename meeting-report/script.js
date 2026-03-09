@@ -218,8 +218,13 @@ function addAssetRow() {
     const container = document.getElementById('asset-container');
     const div = document.createElement('div');
     div.className = "task-row";
-    let stepOpt = `<option value="">-- ขั้นตอน --</option>` + rawAppData.settings_asset_step.map(v => `<option value="${v}">${v}</option>`).join('');
-    div.innerHTML = `<div class="task-number">${container.children.length + 1}.</div><input type="date" name="asset_date[]"><input type="text" name="asset_item[]" placeholder="รายละเอียดทรัพย์สิน" style="flex:1;"><select name="asset_step[]">${stepOpt}</select><button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container');"><i class="fa-solid fa-trash-can"></i></button>`;
+    let statusOpt = `<option value="">-- สถานะ --</option>` + rawAppData.settings_asset_step.map(v => `<option value="${v}">${v}</option>`).join('');
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="date" name="asset_date[]">
+        <input type="text" name="asset_item[]" placeholder="รายละเอียดทรัพย์สิน" style="flex:1;">
+        <select name="asset_status[]">${statusOpt}</select> 
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
 }
 
@@ -359,35 +364,110 @@ function collectRoutine(prefix, label, reportId) {
 }
 
 // --- ฟังก์ชัน Submit (เปลี่ยนเป็น FETCH) ---
-document.getElementById('reportForm').onsubmit = async (e) => {
+document.getElementById('reportForm').onsubmit = function(e) {
     e.preventDefault();
-    const finalPayload = collectData();
+    
     if (!confirm("ยืนยันการบันทึกข้อมูลรายงานนี้?")) return;
 
     const btn = document.getElementById('btn-submit');
     const spinner = document.getElementById('spinner');
-    btn.disabled = true; btn.innerText = "⌛ กำลังบันทึก...";
+    
+    btn.disabled = true;
+    btn.innerText = "⌛ กำลังบันทึก (ห้ามปิดหน้าจอ)...";
     if(spinner) spinner.style.display = 'flex';
 
-    try {
-        // ส่งด้วย fetch + no-cors เพื่อความชัวร์ว่าไม่ติดปัญหา Browser
-        await fetch(GAS_WEBAPP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: "saveReport", data: finalPayload })
-        });
+    // 1. กวาดข้อมูลทั้งหมด
+    const finalData = collectFinalData();
 
-        // เนื่องจาก no-cors จะไม่คืนค่า json เราจึง alert สำเร็จได้เลยถ้าไม่มี error ใน network
-        if(spinner) spinner.style.display = 'none';
-        alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว!");
-        if (liff.isInClient()) { liff.closeWindow(); } else { location.reload(); }
+    // 2. นำข้อมูลใส่ใน Form ลับที่สร้างไว้
+    const hiddenForm = document.getElementById('hidden-form');
+    const hiddenDataInput = document.getElementById('hidden-data');
+    
+    hiddenDataInput.value = JSON.stringify(finalData);
 
-    } catch (err) {
-        console.error("Submit Error:", err);
-        alert("❌ เกิดข้อผิดพลาด: " + err.message);
-        btn.disabled = false; btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+    // 3. สั่ง Submit Form (วิธีนี้จะไม่ติด Failed to fetch)
+    hiddenForm.submit();
+
+    // 4. รอสัก 3-5 วินาทีแล้วแจ้งเตือน (เพราะเราดัก Response ไม่ได้เหมือน Fetch)
+    setTimeout(() => {
         if(spinner) spinner.style.display = 'none';
-    }
+        alert("✅ ส่งข้อมูลเรียบร้อยแล้ว!\n(กรุณาเช็คใน Sheet อีกครั้ง)");
+        
+        if (liff.isInClient()) {
+            liff.closeWindow();
+        } else {
+            btn.disabled = false;
+            btn.innerText = "✅ บันทึกรายงานทั้งหมด";
+        }
+    }, 4000); 
 };
+
+function collectFinalData() {
+    const reportId = "HELIOS-" + Date.now();
+    const currentYear = document.querySelector('.current-year')?.textContent || (new Date().getFullYear() + 543);
+    
+    return {
+        action: "saveReport", // ใส่เพื่อให้หลังบ้านรู้ว่าต้องทำอะไร
+        data: {
+            meeting: {
+                meeting_id: reportId,
+                unit_name: document.getElementById('unit').value,
+                meeting_year: currentYear,
+                meeting_month: document.getElementById('month').value,
+                meeting_date: document.getElementById('meeting_date').value,
+                start_time: document.getElementById('start_time').value,
+                location: document.getElementById('location').value,
+                method: document.getElementById('method').value,
+                recorder_uid: document.getElementById('recorder_uid').value
+            },
+            attendance: Array.from(document.querySelectorAll('input[name="attendance[]"]:checked')).map(cb => ({ uid: cb.value })),
+            grid: Array.from(document.querySelectorAll('#power-container .task-row')).map(row => ({
+                sname: row.querySelector('[name="power_station[]"]')?.value || "",
+                detail: row.querySelector('[name="power_detail[]"]')?.value || ""
+            })),
+            assets: [
+                ...Array.from(document.querySelectorAll('#repair-container .task-row')).map(row => ({
+                    type: 'REPAIR', id_code: row.querySelector('[name="repair_id[]"]').value,
+                    date: row.querySelector('[name="repair_date[]"]').value, item: row.querySelector('[name="repair_item[]"]').value,
+                    status: row.querySelector('[name="repair_status[]"]').value
+                })),
+                ...Array.from(document.querySelectorAll('#procure-container .task-row')).map(row => ({
+                    type: 'PROCURE', id_code: row.querySelector('[name="procure_id[]"]').value,
+                    date: row.querySelector('[name="procure_date[]"]').value, item: row.querySelector('[name="procure_item[]"]').value,
+                    status: row.querySelector('[name="procure_status[]"]').value
+                }))
+            ],
+            asset_transfer: Array.from(document.querySelectorAll('#asset-container .task-row')).map(row => ({
+                asset_date: row.querySelector('[name="asset_date[]"]').value,
+                status: row.querySelector('[name="asset_status[]"]').value, // เปลี่ยนจาก step เป็น status
+                item_detail: row.querySelector('[name="asset_item[]"]').value
+            })),
+            visitor: Array.from(document.querySelectorAll('#external-container .task-row')).map(row => ({
+                visit_date: row.querySelector('[name="ext_date[]"]').value,
+                wp_check: row.querySelector('[name="ext_wp_check[]"]')?.checked ? "YES" : "NO",
+                wp_no: row.querySelector('[name="ext_wp_no[]"]').value,
+                organization: row.querySelector('[name="ext_company[]"]').value,
+                detail: row.querySelector('[name="ext_detail[]"]').value
+            })),
+            task_plan: [
+                ...Array.from(document.querySelectorAll('#assignment-container input[type="text"]')).map(el => ({ type: "ASSIGNMENT", detail: el.value })),
+                ...Array.from(document.querySelectorAll('#plan-container input[type="text"]')).map(el => ({ type: "PLAN", detail: el.value })),
+                ...Array.from(document.querySelectorAll('#km-container input[type="text"]')).map(el => ({ type: "KM", detail: el.value })),
+                ...Array.from(document.querySelectorAll('#idea-container input[type="text"]')).map(el => ({ type: "IDEA", detail: el.value })),
+                ...Array.from(document.querySelectorAll('#other-container input[type="text"]')).map(el => ({ type: "OTHER", detail: el.value }))
+            ].filter(t => t.detail.trim() !== ""),
+            cleaning: [
+                ...collectRoutine('clean', 'Cleaning'),
+                ...collectRoutine('weed', 'Weeding')
+            ],
+            leave: Array.from(document.querySelectorAll('#leave-table-body tr')).map(row => ({
+                uid: row.getAttribute('data-uid'),
+                sick: row.querySelector('[name="leave_sick[]"]').value || 0,
+                personal: row.querySelector('[name="leave_personal[]"]').value || 0,
+                vacation: row.querySelector('[name="leave_vacation[]"]').value || 0,
+                substitute: row.querySelector('[name="leave_replace[]"]').value || 0,
+                remark: row.querySelector('[name="leave_note[]"]').value || ""
+            }))
+        }
+    };
+}
