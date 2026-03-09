@@ -25,7 +25,7 @@ async function initializeLiff() {
         }
     } catch (err) {
         console.error("LIFF Error:", err);
-        alert("เข้าสู่โหมดทดสอบ: " + err.message);
+        alert("Test mode: " + err.message);
         mockDataForTesting();
     }
 }
