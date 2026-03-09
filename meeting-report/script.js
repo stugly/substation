@@ -50,7 +50,15 @@ function checkUserAndLoadData(lineId) {
     document.body.appendChild(script);
 }
 
-// --- ส่วนที่ 2: บันทึกข้อมูล (Hidden Form Submission) ---
+// --- ฟังก์ชันบังคับสีวันที่ให้ดำสนิท ---
+function applyDateStyle(el) {
+    if (el && el.value) {
+        el.style.color = "#000000";
+        el.style.fontWeight = "500";
+    }
+}
+
+// --- ส่วนที่ 2: บันทึกข้อมูล ---
 document.getElementById('reportForm').onsubmit = function(e) {
     e.preventDefault(); 
     if (!confirm("ยืนยันการบันทึกรายงานข้อมูลทั้งหมด?")) return;
@@ -114,7 +122,7 @@ function setupMetadata(data) {
     const meetingDateEl = document.getElementById('meeting_date');
     
     meetingDateEl.value = now.toISOString().split('T')[0];
-    meetingDateEl.style.color = "#333333";
+    applyDateStyle(meetingDateEl); // ทำให้ดำทันที
     
     if (document.getElementById('report-title')) document.getElementById('report-title').innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
     document.getElementById('unit').value = currentUserUnit;
@@ -145,7 +153,38 @@ function setupMetadata(data) {
     if (typeof setupPowerTab === "function") setupPowerTab(data);
 }
 
-// ฟังก์ชันเพิ่มแถวแบบ "จบในตัว" (ทุกปุ่มจะเช็คค่าว่าง และรันเลขใหม่เสมอ)
+// ฟังก์ชันตรวจสอบค่าว่างเพื่อล็อคปุ่ม "+"
+function validateTaskInput(type) {
+    const config = taskMap[type];
+    if (!config) return;
+    const btn = document.getElementById(config.btn);
+    const container = document.getElementById(config.container);
+    const rows = container.getElementsByClassName('task-row');
+    
+    if (rows.length === 0) { 
+        btn.disabled = false; 
+        btn.style.opacity = "1"; 
+        return; 
+    }
+
+    const lastRow = rows[rows.length - 1];
+    let isComplete = true;
+    
+    // เช็คทุก input และ select ในแถวล่าสุด (ยกเว้น hidden และ checkbox)
+    lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select').forEach(el => {
+        if (!el.disabled && el.value.trim() === "") isComplete = false;
+    });
+
+    btn.disabled = !isComplete;
+    btn.style.opacity = isComplete ? "1" : "0.5";
+}
+
+function updateTaskNumbers(id) {
+    document.getElementById(id).querySelectorAll('.task-number').forEach((num, i) => { num.innerText = (i + 1) + "."; });
+}
+
+// --- ฟังก์ชันเพิ่มแถวแบบดักจับ Input ทุกหมวด ---
+
 function addTaskRow(type) {
     const config = taskMap[type];
     const container = document.getElementById(config.container);
@@ -172,7 +211,7 @@ function addRepairRow() {
         <div class="task-number">${container.children.length + 1}.</div>
         <div style="display: flex; gap: 5px; width: 100%;">
             <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="width: 80px;" oninput="validateTaskInput('repair')">
-            <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
+            <input type="date" name="repair_date[]" onchange="applyDateStyle(this); validateTaskInput('repair')">
             <select name="repair_item[]" onchange="validateTaskInput('repair')"><option value="">-- อุปกรณ์ --</option>${eq}</select>
             <select name="repair_status[]" onchange="validateTaskInput('repair')"><option value="">-- สถานะ --</option>${st}</select>
             <input type="text" name="repair_detail[]" placeholder="รายละเอียด..." style="flex: 1;" oninput="validateTaskInput('repair')">
@@ -194,7 +233,7 @@ function addProcureRow() {
         <div class="task-number">${container.children.length + 1}.</div>
         <div style="display: flex; gap: 5px; width: 100%;">
             <input type="text" name="procure_id[]" placeholder="รหัส PO" style="width: 80px;" oninput="validateTaskInput('procure')">
-            <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
+            <input type="date" name="procure_date[]" onchange="applyDateStyle(this); validateTaskInput('procure')">
             <select name="procure_item[]" onchange="validateTaskInput('procure')"><option value="">-- ประเภท --</option>${ty}</select>
             <select name="procure_status[]" onchange="validateTaskInput('procure')"><option value="">-- สถานะ --</option>${st}</select>
             <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex: 1;" oninput="validateTaskInput('procure')">
@@ -214,7 +253,7 @@ function addAssetRow() {
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <div style="display: flex; gap: 8px; width: 100%;">
-            <input type="date" name="asset_date[]" style="width: 130px;" onchange="validateTaskInput('asset')">
+            <input type="date" name="asset_date[]" style="width: 130px;" onchange="applyDateStyle(this); validateTaskInput('asset')">
             <input type="text" name="asset_item[]" placeholder="รายละเอียดจำหน่ายทรัพย์สิน" style="flex: 1;" oninput="validateTaskInput('asset')">
             <select name="asset_step[]" style="width: 150px;" onchange="validateTaskInput('asset')"><option value="">-- ขั้นตอน --</option>${st}</select>
         </div>
@@ -232,7 +271,7 @@ function addExternalRow() {
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <div style="display: flex; gap: 8px; width: 100%;">
-            <input type="date" name="ext_date[]" style="width: 130px;" onchange="validateTaskInput('external')">
+            <input type="date" name="ext_date[]" style="width: 130px;" onchange="applyDateStyle(this); validateTaskInput('external')">
             <input type="checkbox" onchange="toggleWP(this); validateTaskInput('external');"> 
             <input type="text" name="ext_wp_no[]" placeholder="เลขที่ WP" disabled style="width: 110px;" oninput="validateTaskInput('external')">
             <input type="text" name="ext_company[]" placeholder="บริษัท" style="width: 150px;" oninput="validateTaskInput('external')">
@@ -245,31 +284,7 @@ function addExternalRow() {
     validateTaskInput('external');
 }
 
-function toggleWP(chk) {
-    const wpInput = chk.parentElement.querySelector('input[name="ext_wp_no[]"]');
-    wpInput.disabled = !chk.checked;
-    if(!chk.checked) wpInput.value = "";
-}
-
-function validateTaskInput(type) {
-    const config = taskMap[type];
-    if (!config) return;
-    const btn = document.getElementById(config.btn);
-    const container = document.getElementById(config.container);
-    const rows = container.getElementsByClassName('task-row');
-    if (rows.length === 0) { btn.disabled = false; btn.style.opacity = "1"; return; }
-    const lastRow = rows[rows.length - 1];
-    let isComplete = true;
-    lastRow.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select').forEach(el => {
-        if (!el.disabled && el.value.trim() === "") isComplete = false;
-    });
-    btn.disabled = !isComplete;
-    btn.style.opacity = isComplete ? "1" : "0.5";
-}
-
-function updateTaskNumbers(id) {
-    document.getElementById(id).querySelectorAll('.task-number').forEach((num, i) => { num.innerText = (i + 1) + "."; });
-}
+// --- ฟังก์ชันอื่นๆ คงเดิม แต่เพิ่มจุดดัก validate ---
 
 function setupLeaveTable() {
     const leaveBody = document.getElementById('leave-table-body');
@@ -324,6 +339,12 @@ function addPowerDynamicRow() {
         </button>`;
     container.appendChild(div);
     validateTaskInput('power');
+}
+
+function toggleWP(chk) {
+    const wpInput = chk.parentElement.querySelector('input[name="ext_wp_no[]"]');
+    wpInput.disabled = !chk.checked;
+    if(!chk.checked) wpInput.value = "";
 }
 
 function handleImageSelect(input) {
