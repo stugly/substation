@@ -3,10 +3,10 @@ const LIFF_ID = "2008876139-kiwCd2kF";
 
 let staffData = [];
 let rawAppData = null;
-let currentUserUnit = "ผจฟ.1"; // ค่าเริ่มต้นถ้าดึงจาก GAS ไม่ได้
+let currentUserUnit = "ผจฟ.1";
 
 window.onload = function() {
-    // 1. โชว์หน้าแอปทันที ไม่ต้องรออะไรทั้งนั้น
+    // ปิด Loading และโชว์แอปทันที
     document.getElementById('spinner').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     
@@ -27,9 +27,7 @@ function setupInitialUI() {
         sTime.value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     }
     setCurrentYear();
-    
-    // โหลดข้อมูล "สำรอง" ไว้ก่อนเลย เผื่อ GAS พัง
-    renderBackupData();
+    renderBackupData(); // โหลดค่าพื้นฐานไว้ก่อน
 }
 
 async function initializeLiff() {
@@ -42,51 +40,46 @@ async function initializeLiff() {
             fetchDataFromGAS(profile.userId);
         }
     } catch (err) {
+        console.warn("LIFF Init Fail:", err);
         fetchDataFromGAS(""); 
     }
 }
 
+// --- ส่วน LOAD ข้อมูล (จบในฟังก์ชันเดียว) ---
 function fetchDataFromGAS(lineId) {
     fetch(`${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}`)
         .then(res => res.json())
         .then(data => {
-            if (data) {
+            console.log("Data loaded from GAS:", data);
+            if (data && data.staff) {
                 rawAppData = data;
-                staffData = data.staff || [];
+                staffData = data.staff;
                 currentUserUnit = (data.user && data.user.unit) ? data.user.unit : "ผจฟ.1";
                 
-                if (data.user) {
-                    document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
-                    document.getElementById('recorder_uid').value = data.user.uid;
+                // แสดงชื่อผู้ใช้
+                const welcomeEl = document.getElementById('welcome');
+                if (welcomeEl) {
+                    welcomeEl.innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
                 }
+                const recorderUidEl = document.getElementById('recorder_uid');
+                if (recorderUidEl) {
+                    recorderUidEl.value = data.user.uid;
+                }
+
+                // วาด UI ใหม่ด้วยข้อมูลจริงจาก GAS
                 renderDynamicParts();
             }
         })
         .catch(err => {
-            console.warn("GAS Fetch Fail - ใช้ข้อมูลสำรองแทน");
-            // ถ้าดึงไม่ได้ ก็ไม่ต้องทำอะไร เพราะ renderBackupData ทำงานไปแล้ว
+            console.error("Fetch Error:", err);
+            // ถ้าดึงไม่ได้ ระบบจะใช้ข้อมูลจาก renderBackupData ที่รันไปตอนแรก
         });
 }
 
-// ข้อมูลสำรองเผื่อเน็ตเน่าหรือ GAS มีปัญหา
-function renderBackupData() {
-    const locSel = document.getElementById('location');
-    if (locSel && locSel.options.length <= 1) {
-        locSel.innerHTML = `
-            <option value="">-- เลือกสถานที่ --</option>
-            <option value="สฟฟ.1">สฟฟ.1</option>
-            <option value="สฟฟ.2">สฟฟ.2</option>
-            <option value="สำนักงาน">สำนักงาน</option>
-        `;
-    }
-    
-    const unitList = document.getElementById('unit-staff-list');
-    if (unitList && unitList.innerHTML === "") {
-        unitList.innerHTML = "<p style='color:red; font-size:12px;'>ดึงรายชื่อไม่สำเร็จ กรุณาพิมพ์ในหมายเหตุแทน</p>";
-    }
-}
-
 function renderDynamicParts() {
+    if (!rawAppData) return;
+
+    // 1. วาด Dropdown สถานี
     const locSel = document.getElementById('location');
     if (locSel && rawAppData.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
@@ -95,106 +88,97 @@ function renderDynamicParts() {
         });
     }
 
+    // 2. วาดรายชื่อพนักงาน (Checkbox)
     const unitList = document.getElementById('unit-staff-list');
     if (unitList && staffData.length > 0) {
         const uStaff = staffData.filter(s => s.unit === currentUserUnit);
         unitList.innerHTML = uStaff.map(s => `
-            <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
+            <label class="check-item">
+                <input type="checkbox" name="attendance" value="${s.uid}"> 
+                <span>${s.name}</span>
+            </label>
         `).join('');
     }
+
+    // 3. วาดตารางลา และ ส่วน รปภ.
     setupLeaveTable();
     setupSecuritySection();
 }
 
-// --- ฟังก์ชันเพิ่มแถว (ตามที่ HTML เรียก) ---
+// --- ส่วนบันทึกข้อมูล (SAVE) ---
+function submitReport() {
+    const btn = document.querySelector('button[type="submit"]');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "กำลังบันทึก...";
+    }
 
-function addTaskRow(type) {
-    const container = document.getElementById(type + '-container');
-    if(!container) return;
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="${type}_detail[]" placeholder="..." style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('${type}-container')">🗑️</button>`;
-    container.appendChild(div);
+    // รวบรวมข้อมูลตามโครงสร้างที่ saveAllData ใน GAS ต้องการ
+    const payload = {
+        meeting: {
+            meeting_id: "MTG-" + Date.now(),
+            unit_name: currentUserUnit,
+            meeting_year: new Date().getFullYear() + 543,
+            meeting_month: new Date().getMonth() + 1,
+            meeting_date: document.getElementById('meeting_date').value,
+            start_time: document.getElementById('start_time').value,
+            location: document.getElementById('location').value,
+            method: "On-site",
+            recorder_uid: document.getElementById('recorder_uid').value
+        },
+        attendance: Array.from(document.querySelectorAll('input[name="attendance"]:checked')).map(cb => ({ uid: cb.value })),
+        grid: Array.from(document.querySelectorAll('#power-container .task-row')).map(row => ({
+            sname: row.querySelector('input[name="power_station[]"]').value,
+            detail: row.querySelector('input[name="power_detail[]"]').value
+        })),
+        leave: Array.from(document.querySelectorAll('#leave-table-body tr')).map(row => {
+            const name = row.cells[0].innerText.trim();
+            const staff = staffData.find(s => s.name === name);
+            return {
+                uid: staff ? staff.uid : "",
+                sick: row.querySelector('input[name="leave_sick[]"]').value,
+                personal: row.querySelector('input[name="leave_personal[]"]').value,
+                vacation: row.querySelector('input[name="leave_vacation[]"]').value,
+                substitute: row.querySelector('input[name="leave_replace[]"]').value,
+                remark: row.querySelector('input[name="leave_note[]"]').value
+            };
+        })
+    };
+
+    const finalBody = new URLSearchParams();
+    finalBody.append('jsonData', JSON.stringify(payload));
+
+    fetch(GAS_WEBAPP_URL, {
+        method: 'POST',
+        body: finalBody,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.status === "success") {
+            alert("บันทึกสำเร็จ: " + res.message);
+            liff.closeWindow();
+        } else {
+            alert("บันทึกไม่สำเร็จ: " + res.message);
+            if (btn) { btn.disabled = false; btn.innerText = "ส่งรายงานการประชุม"; }
+        }
+    })
+    .catch(err => {
+        alert("Error: " + err);
+        if (btn) { btn.disabled = false; btn.innerText = "ส่งรายงานการประชุม"; }
+    });
 }
 
-function addSimpleTaskRow(type) { addTaskRow(type); }
-
-function addPowerDynamicRow() {
-    const container = document.getElementById('power-container');
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="power_station[]" placeholder="สถานี" style="width:80px;">
-        <input type="text" name="power_detail[]" placeholder="ปกติ" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('power-container')">🗑️</button>`;
-    container.appendChild(div);
-}
-
-function addRepairRow() {
-    const container = document.getElementById('repair-container');
-    const div = document.createElement('div');
-    div.className = "task-row";
-    const eqOpt = (rawAppData && rawAppData.settings_eq) ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '<option value="TR">TR</option><option value="Breaker">Breaker</option>';
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="repair_id[]" placeholder="ID" style="width:60px;">
-        <input type="date" name="repair_date[]" style="color:#000;">
-        <select name="repair_item[]">${eqOpt}</select>
-        <input type="text" name="repair_detail[]" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('repair-container')">🗑️</button>`;
-    container.appendChild(div);
-}
-
-function addProcureRow() {
-    const container = document.getElementById('procure-container');
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="procure_id[]" placeholder="PO" style="width:70px;">
-        <input type="date" name="procure_date[]" style="color:#000;">
-        <input type="text" name="procure_detail[]" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('procure-container')">🗑️</button>`;
-    container.appendChild(div);
-}
-
-function addExternalRow() {
-    const container = document.getElementById('external-container');
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="date" name="ext_date[]" style="color:#000;">
-        <input type="text" name="ext_company[]" placeholder="บริษัท">
-        <input type="text" name="ext_detail[]" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('external-container')">🗑️</button>`;
-    container.appendChild(div);
-}
-
-function addAssetRow() {
-    const container = document.getElementById('asset-container');
-    const div = document.createElement('div');
-    div.className = "task-row";
-    div.innerHTML = `
-        <div class="task-number">${container.children.length + 1}.</div>
-        <input type="date" name="asset_date[]" style="color:#000;">
-        <input type="text" name="asset_item[]" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('asset-container')">🗑️</button>`;
-    container.appendChild(div);
-}
-
-function updateNumbers(id) {
-    const c = document.getElementById(id);
-    if(c) c.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i + 1) + ".");
-}
-
-function setCurrentYear() {
-    const year = new Date().getFullYear() + 543;
-    document.querySelectorAll('.current-year').forEach(el => el.innerText = year);
+// --- ฟังก์ชันเสริม UI ---
+function renderBackupData() {
+    const locSel = document.getElementById('location');
+    if (locSel && locSel.options.length <= 1) {
+        locSel.innerHTML = '<option value="">-- เลือกสถานที่ --</option><option value="สำนักงาน">สำนักงาน</option>';
+    }
+    const unitList = document.getElementById('unit-staff-list');
+    if (unitList && unitList.innerHTML === "") {
+        unitList.innerHTML = "<p style='color:gray; font-size:12px;'>กำลังโหลดรายชื่อจากระบบ...</p>";
+    }
 }
 
 function setupLeaveTable() {
@@ -224,6 +208,30 @@ function setupSecuritySection() {
             <input type="text" name="sec_detail[]" placeholder="ปกติ" style="flex:1;">
         </div>`).join('');
 }
+
+function updateNumbers(id) {
+    const c = document.getElementById(id);
+    if(c) c.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i + 1) + ".");
+}
+
+function setCurrentYear() {
+    const year = new Date().getFullYear() + 543;
+    document.querySelectorAll('.current-year').forEach(el => el.innerText = year);
+}
+
+// ฟังก์ชันเพิ่มแถว Task ทั่วไป
+function addTaskRow(type) {
+    const container = document.getElementById(type + '-container');
+    if(!container) return;
+    const div = document.createElement('div');
+    div.className = "task-row";
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="text" name="${type}_detail[]" placeholder="..." style="flex:1;">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateNumbers('${type}-container')">🗑️</button>`;
+    container.appendChild(div);
+}
+function addSimpleTaskRow(type) { addTaskRow(type); }
 
 document.addEventListener('input', function (e) {
     if (e.target.type === 'date') e.target.style.color = "#000000";
