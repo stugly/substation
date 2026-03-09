@@ -19,8 +19,35 @@ const taskMap = {
 };
 
 window.onload = function() {
+    // 1. สั่งเปิดหน้าฟอร์มทันที ไม่ต้องรอดึงข้อมูลเสร็จ
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    
+    // 2. ตั้งค่าพื้นฐาน (วันที่ดำ, ปี พ.ศ.) ทันที
+    setupBasicUI();
+    
+    // 3. ค่อยไปรันระบบ LIFF และดึงข้อมูลจาก GAS เบื้องหลัง
     initializeLiff(); 
 };
+
+function setupBasicUI() {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    // แก้วันที่ให้เป็นสีดำ
+    const mDate = document.getElementById('meeting_date');
+    if (mDate) {
+        mDate.value = todayStr;
+        mDate.style.color = "#000000"; 
+    }
+    
+    // ตั้งเวลา
+    if (document.getElementById('start_time')) {
+        document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    }
+    
+    setCurrentYear();
+}
 
 async function initializeLiff() {
     try {
@@ -29,17 +56,15 @@ async function initializeLiff() {
             liff.login();
         } else {
             const profile = await liff.getProfile();
-            // เมื่อได้ Profile แล้วให้รีบดึงข้อมูลทันที
-            checkUserAndLoadData(profile.userId);
+            fetchDataFromGAS(profile.userId);
         }
     } catch (err) {
-        console.error("LIFF Error");
-        // ถ้า LIFF พัง ยังไงก็ต้องเปิดหน้าฟอร์มให้พี่เห็น
-        showMainApp();
+        console.error("LIFF Fail");
+        fetchDataFromGAS(""); // ลองดึงแบบไม่มี ID
     }
 }
 
-async function checkUserAndLoadData(lineId) {
+async function fetchDataFromGAS(lineId) {
     try {
         const response = await fetch(`${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}`);
         const data = await response.json();
@@ -55,71 +80,48 @@ async function checkUserAndLoadData(lineId) {
                 if (recorderInput) recorderInput.value = data.user.uid;
             }
             
-            // เรียกฟังก์ชันจัดการ UI
-            setupMetadata(rawAppData);
-            setupLeaveTable(); 
-            setupSecuritySection();
+            // เติมข้อมูลลงใน List/Dropdown หลังจากโหลดเสร็จ
+            updateDataToUI();
         }
     } catch (err) {
-        console.error("Fetch error");
-    } finally {
-        showMainApp();
+        console.error("GAS Fetch Fail");
     }
 }
 
-function showMainApp() {
-    const spinner = document.getElementById('spinner');
-    if(spinner) spinner.style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    setCurrentYear();
-}
+function updateDataToUI() {
+    if (!rawAppData) return;
 
-function setupMetadata(data) {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    // --- วันที่สีดำ (เป้าหมายหลักของเรา) ---
-    const mDate = document.getElementById('meeting_date');
-    if (mDate) {
-        mDate.value = todayStr;
-        mDate.style.color = "#000000"; 
-    }
-
+    // เติมหน่วยงาน
     if (document.getElementById('unit')) document.getElementById('unit').value = currentUserUnit;
-    
-    // ตั้งเวลา
-    if (document.getElementById('start_time')) {
-        document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-    }
 
-    // เติมสถานที่ (ถ้ามีข้อมูล)
-    if (data && data.stations) {
-        const locSel = document.getElementById('location');
-        if (locSel) {
-            locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
-            data.stations.filter(s => s.unit === currentUserUnit).forEach(s => {
-                locSel.add(new Option("สฟฟ." + s.name, s.name));
-            });
-        }
+    // เติมสถานที่
+    const locSel = document.getElementById('location');
+    if (locSel && rawAppData.stations) {
+        locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
+        rawAppData.stations.filter(s => s.unit === currentUserUnit).forEach(s => {
+            locSel.add(new Option("สฟฟ." + s.name, s.name));
+        });
     }
     
     // รายชื่อพนักงาน
-    if (staffData && staffData.length > 0) {
-        const unitList = document.getElementById('unit-staff-list');
-        if (unitList) {
-            const uStaff = staffData.filter(s => s.unit === currentUserUnit);
-            unitList.innerHTML = uStaff.map(s => `
-                <label class="check-item">
-                    <input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span>
-                </label>`).join('');
-        }
+    const unitList = document.getElementById('unit-staff-list');
+    if (unitList && staffData.length > 0) {
+        const uStaff = staffData.filter(s => s.unit === currentUserUnit);
+        unitList.innerHTML = uStaff.map(s => `
+            <label class="check-item">
+                <input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span>
+            </label>`).join('');
     }
+    
+    // เรียกฟังก์ชันตารางที่ต้องใช้ข้อมูลจาก GAS
+    setupLeaveTable();
+    setupSecuritySection();
 }
 
-// --- ฟังก์ชันเสริม (Copy จากของเดิมพี่มาให้ครบ) ---
+// --- ฟังก์ชันเสริม (ปุ่มกด + ระบบ Lock) ---
+
 function validateTaskInput(type) {
     const config = taskMap[type];
-    if (!config) return;
     const btn = document.getElementById(config.btn);
     const container = document.getElementById(config.container);
     if (!btn || !container) return;
@@ -135,22 +137,33 @@ function validateTaskInput(type) {
 }
 
 function addTaskRow(type) {
-    const config = taskMap[type];
-    const container = document.getElementById(config.container);
+    const container = document.getElementById(taskMap[type].container);
     const div = document.createElement('div');
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <input type="text" name="${type}_detail[]" placeholder="ระบุรายละเอียด..." style="flex:1;" oninput="validateTaskInput('${type}')">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}')">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>`;
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${taskMap[type].container}'); validateTaskInput('${type}')">🗑️</button>`;
     container.appendChild(div);
     validateTaskInput(type);
 }
 
-// (เพิ่มฟังก์ชัน addPowerDynamicRow, addRepairRow... และอื่นๆ ต่อท้ายได้เลยครับ)
-// ทุกจุดที่มี input type="date" ผมจะใส่ style="color:#000;" ไว้ให้ใน HTML string ครับ
+// หมวด 6: ซ่อม (วันที่ต้องดำด้วย)
+function addRepairRow() {
+    const container = document.getElementById('repair-container');
+    const div = document.createElement('div');
+    div.className = "task-row";
+    const eqOpt = (rawAppData && rawAppData.settings_eq) ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '<option value="TR">TR</option>';
+    div.innerHTML = `
+        <div class="task-number">${container.children.length + 1}.</div>
+        <input type="text" name="repair_id[]" placeholder="ID" style="width:60px;" oninput="validateTaskInput('repair')">
+        <input type="date" name="repair_date[]" style="color:#000;" onchange="validateTaskInput('repair')">
+        <select name="repair_item[]" onchange="validateTaskInput('repair')">${eqOpt}</select>
+        <input type="text" name="repair_detail[]" style="flex:1;" oninput="validateTaskInput('repair')">
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); validateTaskInput('repair')">🗑️</button>`;
+    container.appendChild(div);
+    validateTaskInput('repair');
+}
 
 function updateTaskNumbers(id) {
     const container = document.getElementById(id);
@@ -162,6 +175,10 @@ function setCurrentYear() {
     document.querySelectorAll('.current-year').forEach(el => el.innerText = year);
 }
 
+// บังคับวันที่เลือกใหม่เป็นสีดำ
 document.addEventListener('input', function (e) {
     if (e.target.type === 'date') e.target.style.color = "#000000";
 });
+
+function setupLeaveTable() { /* โค้ดเดิมของพี่ */ }
+function setupSecuritySection() { /* โค้ดเดิมของพี่ */ }
