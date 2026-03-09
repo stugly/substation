@@ -119,22 +119,32 @@ function setupMetadata(data) {
     const now = new Date();
     const thMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    const todayStr = now.toISOString().split('T')[0];
+    
+    // 1. จัดการวันที่ประชุม (บังคับดำทันที)
     const meetingDateEl = document.getElementById('meeting_date');
-    
-    meetingDateEl.value = now.toISOString().split('T')[0];
-    applyDateStyle(meetingDateEl); // ทำให้ดำทันที
-    
-    if (document.getElementById('report-title')) document.getElementById('report-title').innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
+    if (meetingDateEl) {
+        meetingDateEl.value = todayStr;
+        meetingDateEl.style.color = "#000000"; // บังคับดำ
+        meetingDateEl.setAttribute('value', todayStr); // สะกิด CSS
+    }
+
+    // 2. ตั้งค่าหัวข้อและข้อมูลพื้นฐาน
+    if (document.getElementById('report-title')) {
+        document.getElementById('report-title').innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
+    }
     document.getElementById('unit').value = currentUserUnit;
     document.getElementById('month').value = fullDateText;
     document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
+    // 3. จัดการสถานที่
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
         locSel.innerHTML = '<option value="">-- สถานที่ --</option>';
         data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
+    // 4. รายชื่อผู้เข้าประชุม
     const attList = document.getElementById('attendance-list');
     const currentLoginUid = (data && data.user) ? String(data.user.uid) : null;
     if (attList && staffData) {
@@ -150,6 +160,7 @@ function setupMetadata(data) {
                 ${pj1Staff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${String(s.uid) === currentLoginUid ? 'checked' : ''}> <span>${s.name}</span></label>`).join('')}
             </div>`;
     }
+
     if (typeof setupPowerTab === "function") setupPowerTab(data);
 }
 
