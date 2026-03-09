@@ -6,17 +6,18 @@ let rawAppData = null;
 let currentUserUnit = "";
 let selectedImages = [];
 
+// แผนผังแมพปุ่มล็อค (ต้องตรงกับ ID ใน HTML)
 const taskMap = {
-    assignment: { container: 'assignment-container', btn: 'btn-add-assignment', label: 'มอบหมาย' },
-    plan: { container: 'plan-container', btn: 'btn-add-plan', label: 'แผนงาน' },
-    power: { container: 'power-container', btn: 'btn-add-power', label: 'สภาพจ่ายไฟ' },
-    repair: { container: 'repair-container', btn: 'btn-add-repair', label: 'อุปกรณ์ชำรุด' },
-    procure: { container: 'procure-container', btn: 'btn-add-procure', label: 'จัดซื้อจัดจ้าง' },
-    external: { container: 'external-container', btn: 'btn-add-external', label: 'บุคคลภายนอก' },
-    asset: { container: 'asset-container', btn: 'btn-add-asset', label: 'ทรัพย์สิน' },
-    km: { container: 'km-container', btn: 'btn-add-km', label: 'KM' },
-    idea: { container: 'idea-container', btn: 'btn-add-idea', label: 'ความคิดสร้างสรรค์' },
-    other: { container: 'other-container', btn: 'btn-add-other', label: 'อื่นๆ' }
+    assignment: { container: 'assignment-container', btn: 'btn-add-assignment' },
+    plan: { container: 'plan-container', btn: 'btn-add-plan' },
+    power: { container: 'power-container', btn: 'btn-add-power' },
+    repair: { container: 'repair-container', btn: 'btn-add-repair' },
+    procure: { container: 'procure-container', btn: 'btn-add-procure' },
+    external: { container: 'external-container', btn: 'btn-add-external' },
+    asset: { container: 'asset-container', btn: 'btn-add-asset' },
+    km: { container: 'km-container', btn: 'btn-add-km' },
+    idea: { container: 'idea-container', btn: 'btn-add-idea' },
+    other: { container: 'other-container', btn: 'btn-add-other' }
 };
 
 window.onload = function() {
@@ -33,34 +34,39 @@ async function initializeLiff() {
             checkUserAndLoadData(profile.userId);
         }
     } catch (err) {
-        mockDataForTesting();
+        console.error("LIFF Error:", err);
+        mockDataForTesting(); 
     }
 }
 
 async function checkUserAndLoadData(lineId) {
     const spinner = document.getElementById('spinner');
-    if(spinner) spinner.style.display = 'flex';
     try {
         const response = await fetch(`${GAS_WEBAPP_URL}?action=getUser&lineId=${lineId}`);
         const data = await response.json();
+        
         if (data && data.user) {
             rawAppData = data; 
             staffData = data.staff; 
             currentUserUnit = data.user.unit;
-            document.getElementById('recorder_uid').value = data.user.uid;
+            
+            // แก้ไขจุดที่ทำให้หน้าขาว (เช็คก่อนใส่ค่า)
+            const recorderInput = document.querySelector('input[name="recorder_uid"]');
+            if (recorderInput) recorderInput.value = data.user.uid;
+
             if(spinner) spinner.style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('welcome').innerText = `สวัสดี, ${data.user.name} (${currentUserUnit})`;
+            
             setupMetadata(rawAppData);
             setupLeaveTable(); 
             setupSecuritySection();
             setCurrentYear();
         } else {
-            alert("ไม่พบข้อมูลผู้ใช้ในระบบ");
-            liff.closeWindow();
+            alert("ไม่พบข้อมูลผู้ใช้ในฐานข้อมูล");
         }
     } catch (err) {
-        console.error(err);
+        console.error("Fetch Error:", err);
     }
 }
 
@@ -70,17 +76,17 @@ function setupMetadata(data) {
     const fullDateText = `${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
     const todayStr = now.toISOString().split('T')[0];
 
-    const meetingDateEl = document.getElementById('meeting_date');
-    if (meetingDateEl) {
-        meetingDateEl.value = todayStr;
-        meetingDateEl.style.color = "#000000"; // วันที่ประชุมดำทันที
-        meetingDateEl.setAttribute('value', todayStr);
+    const mDate = document.getElementById('meeting_date');
+    if (mDate) {
+        mDate.value = todayStr;
+        mDate.style.color = "#000000"; // วันที่ประชุมดำ
+        mDate.setAttribute('value', todayStr);
     }
 
     if (document.getElementById('report-title')) document.getElementById('report-title').innerText = `รายงานการประชุมประจำเดือน ${fullDateText}`;
-    document.getElementById('unit').value = currentUserUnit;
-    document.getElementById('month').value = fullDateText;
-    document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    if (document.getElementById('unit')) document.getElementById('unit').value = currentUserUnit;
+    if (document.getElementById('month')) document.getElementById('month').value = fullDateText;
+    if (document.getElementById('start_time')) document.getElementById('start_time').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
     
     const locSel = document.getElementById('location');
     if (locSel && data.stations) {
@@ -88,30 +94,28 @@ function setupMetadata(data) {
         data.stations.filter(s => s.unit === currentUserUnit).forEach(s => locSel.add(new Option("สฟฟ." + s.name, s.name)));
     }
 
-    const unitStaffList = document.getElementById('unit-staff-list');
-    const pjStaffList = document.getElementById('pj-staff-list');
+    // จัดการรายชื่อผู้เข้าประชุม
+    const unitList = document.getElementById('unit-staff-list');
+    const pjList = document.getElementById('pj-staff-list');
     if (staffData) {
-        const currentLoginUid = (data && data.user) ? String(data.user.uid) : "";
-        const unitStaff = staffData.filter(s => s.unit === currentUserUnit);
-        const pjStaff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
-
-        if(unitStaffList) unitStaffList.innerHTML = unitStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}" ${String(s.uid)===currentLoginUid?'checked':''}> <span>${s.name}</span></label>`).join('');
-        if(pjStaffList) pjStaffList.innerHTML = pjStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>`).join('');
+        const uStaff = staffData.filter(s => s.unit === currentUserUnit);
+        const pStaff = staffData.filter(s => s.unit === "ผจฟ.1" && s.unit !== currentUserUnit);
+        if(unitList) unitList.innerHTML = uStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>`).join('');
+        if(pjList) pjList.innerHTML = pStaff.map(s => `<label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>`).join('');
     }
 }
 
-// --- ฟังก์ชันเพิ่มแถวตามชื่อใน HTML ---
+// --- ฟังก์ชันปุ่มบวก (3-14) ตามที่เรียกใน HTML ---
 function addTaskRow(type) { addSimpleTaskRow(type); }
 
 function addSimpleTaskRow(type) {
-    const config = taskMap[type];
-    const container = document.getElementById(config.container);
+    const container = document.getElementById(taskMap[type].container);
     const div = document.createElement('div');
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <input type="text" name="${type}_detail[]" placeholder="ระบุรายละเอียด..." oninput="validateTaskInput('${type}')" style="flex:1;">
-        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${config.container}'); validateTaskInput('${type}');"><i class="fa-solid fa-trash-can"></i></button>`;
+        <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('${taskMap[type].container}'); validateTaskInput('${type}');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
     validateTaskInput(type);
 }
@@ -133,12 +137,12 @@ function addRepairRow() {
     const container = document.getElementById('repair-container');
     const div = document.createElement('div');
     div.className = "task-row";
-    const eqOpt = rawAppData.settings_eq ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '';
+    const eqOpt = (rawAppData && rawAppData.settings_eq) ? rawAppData.settings_eq.map(v => `<option value="${v}">${v}</option>`).join('') : '';
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="repair_id[]" placeholder="รหัส EQ" style="width:70px;" oninput="validateTaskInput('repair')">
+        <input type="text" name="repair_id[]" placeholder="ID" style="width:70px;" oninput="validateTaskInput('repair')">
         <input type="date" name="repair_date[]" onchange="validateTaskInput('repair')">
-        <select name="repair_item[]" onchange="validateTaskInput('repair')"><option value="">-- อุปกรณ์ --</option>${eqOpt}</select>
+        <select name="repair_item[]" onchange="validateTaskInput('repair')"><option value="">--อุปกรณ์--</option>${eqOpt}</select>
         <input type="text" name="repair_detail[]" placeholder="อาการ..." style="flex:1;" oninput="validateTaskInput('repair')">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('repair-container'); validateTaskInput('repair');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
@@ -151,9 +155,9 @@ function addProcureRow() {
     div.className = "task-row";
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
-        <input type="text" name="procure_id[]" placeholder="รหัส PO" style="width:70px;" oninput="validateTaskInput('procure')">
+        <input type="text" name="procure_id[]" placeholder="PO" style="width:70px;" oninput="validateTaskInput('procure')">
         <input type="date" name="procure_date[]" onchange="validateTaskInput('procure')">
-        <input type="text" name="procure_detail[]" placeholder="รายละเอียด..." style="flex:1;" oninput="validateTaskInput('procure')">
+        <input type="text" name="procure_detail[]" placeholder="รายละเอียด" style="flex:1;" oninput="validateTaskInput('procure')">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('procure-container'); validateTaskInput('procure');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
     validateTaskInput('procure');
@@ -166,8 +170,8 @@ function addExternalRow() {
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <input type="date" name="ext_date[]" onchange="validateTaskInput('external')">
-        <input type="text" name="ext_company[]" placeholder="บริษัท/หน่วยงาน" oninput="validateTaskInput('external')">
-        <input type="text" name="ext_detail[]" placeholder="งานที่ทำ..." style="flex:1;" oninput="validateTaskInput('external')">
+        <input type="text" name="ext_company[]" placeholder="บริษัท" oninput="validateTaskInput('external')">
+        <input type="text" name="ext_detail[]" placeholder="งาน" style="flex:1;" oninput="validateTaskInput('external')">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('external-container'); validateTaskInput('external');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
     validateTaskInput('external');
@@ -180,13 +184,31 @@ function addAssetRow() {
     div.innerHTML = `
         <div class="task-number">${container.children.length + 1}.</div>
         <input type="date" name="asset_date[]" onchange="validateTaskInput('asset')">
-        <input type="text" name="asset_item[]" placeholder="รายการทรัพย์สิน" style="flex:1;" oninput="validateTaskInput('asset')">
+        <input type="text" name="asset_item[]" placeholder="ทรัพย์สิน" style="flex:1;" oninput="validateTaskInput('asset')">
         <button type="button" class="btn-remove-task" onclick="this.parentElement.remove(); updateTaskNumbers('asset-container'); validateTaskInput('asset');"><i class="fa-solid fa-trash-can"></i></button>`;
     container.appendChild(div);
     validateTaskInput('asset');
 }
 
-// --- ฟังก์ชันเสริม ---
+// --- การจัดการรูปภาพ ---
+function handleImageSelect(input) {
+    const preview = document.getElementById('image-preview');
+    if(!preview) return;
+    preview.innerHTML = ''; selectedImages = [];
+    Array.from(input.files).slice(0, 5).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            selectedImages.push({ name: file.name, data: e.target.result });
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = "70px"; img.style.margin = "5px"; img.style.borderRadius = "5px";
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- ฟังก์ชันช่วยเหลืออื่นๆ ---
 function validateTaskInput(type) {
     const config = taskMap[type];
     if (!config) return;
@@ -209,29 +231,16 @@ function updateTaskNumbers(id) {
     if(container) container.querySelectorAll('.task-number').forEach((n, i) => n.innerText = (i+1) + ".");
 }
 
-function handleImageSelect(input) {
-    const preview = document.getElementById('image-preview');
-    preview.innerHTML = ''; selectedImages = [];
-    Array.from(input.files).slice(0, 5).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            selectedImages.push({ name: file.name, data: e.target.result });
-            const img = document.createElement('img'); img.src = e.target.result; preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
 function setupLeaveTable() {
     const body = document.getElementById('leave-table-body');
     if (!body || !staffData) return;
     body.innerHTML = staffData.filter(s => s.unit === currentUserUnit).map(s => `
         <tr>
             <td style="text-align:left;">${s.name}<input type="hidden" name="leave_staff_name[]" value="${s.name}"></td>
-            <td><input type="number" name="leave_sick[]" value="0" min="0"></td>
-            <td><input type="number" name="leave_personal[]" value="0" min="0"></td>
-            <td><input type="number" name="leave_vacation[]" value="0" min="0"></td>
-            <td><input type="number" name="leave_replace[]" value="0" min="0"></td>
+            <td><input type="number" name="leave_sick[]" value="0"></td>
+            <td><input type="number" name="leave_personal[]" value="0"></td>
+            <td><input type="number" name="leave_vacation[]" value="0"></td>
+            <td><input type="number" name="leave_replace[]" value="0"></td>
             <td><input type="text" name="leave_note[]" placeholder="..."></td>
         </tr>`).join('');
 }
@@ -253,7 +262,7 @@ function setCurrentYear() {
     document.querySelectorAll('.current-year').forEach(el => el.innerText = year);
 }
 
-// ดักฟังวันที่ให้ดำ
+// วันที่ในตารางทำความสะอาด/วัชพืช ต้องดำ
 document.addEventListener('input', function (e) {
     if (e.target.type === 'date') {
         if (e.target.value) {
@@ -281,7 +290,7 @@ function mockDataForTesting() {
 document.getElementById('reportForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-submit');
-    btn.disabled = true; btn.innerText = "⌛ กำลังบันทึกข้อมูล...";
+    btn.disabled = true; btn.innerText = "⌛ กำลังบันทึก...";
     
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
@@ -297,15 +306,14 @@ document.getElementById('reportForm').onsubmit = async (e) => {
     ];
 
     arrayFields.forEach(f => {
-        const name = (f.includes('leave_') || f.includes('sec_') || f.includes('clean_') || f.includes('weed_')) ? f : f + '[]';
-        payload[f] = formData.getAll(name);
+        payload[f] = formData.getAll(f + '[]');
     });
 
     payload.attendance = formData.getAll('attendance');
     payload.images = selectedImages;
 
     try {
-        const res = await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        await fetch(GAS_WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
         alert("✅ บันทึกรายงานสำเร็จ!");
         liff.closeWindow();
     } catch (err) {
