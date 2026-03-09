@@ -53,38 +53,55 @@ function fetchDataFromGAS(lineId) {
 }
 
 function renderDynamicParts() {
-    // 1. วาด Dropdown สถานที่ (สฟฟ. ในสังกัด)
+    if (!rawAppData || !staffData) {
+        console.error("Data not ready!");
+        return;
+    }
+
+    const targetUnit = currentUserUnit ? currentUserUnit.trim() : "ผจฟ.1";
+    console.log("Rendering for unit:", targetUnit);
+
+    // 1. วาด Dropdown สถานที่
     const locSel = document.getElementById('location');
     if (locSel && rawAppData.stations) {
         locSel.innerHTML = '<option value="">-- เลือกสถานที่ --</option>';
-        rawAppData.stations.filter(s => s.unit.trim() === currentUserUnit).forEach(s => {
+        rawAppData.stations.filter(s => s.unit.trim() === targetUnit).forEach(s => {
             locSel.add(new Option("สฟฟ." + s.name, s.name));
         });
         locSel.add(new Option("สำนักงาน", "สำนักงาน"));
     }
 
-    // 2. แยกรายชื่อพนักงาน (สำคัญมาก!)
+    // 2. วาดรายชื่อพนักงานในสังกัด (unit-staff-list)
     const unitListContainer = document.getElementById('unit-staff-list');
-    const saListContainer = document.getElementById('sa-staff-list');
-
     if (unitListContainer) {
-        // พนักงานในสังกัดตัวเอง (เช่น สฟฟ.สิชล)
-        const myStaff = staffData.filter(s => s.unit.trim() === currentUserUnit);
-        unitListContainer.innerHTML = myStaff.map(s => `
-            <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
-        `).join('') || "ไม่มีรายชื่อในหน่วยงาน";
+        const myStaff = staffData.filter(s => s.unit.trim() === targetUnit);
+        if (myStaff.length > 0) {
+            unitListContainer.innerHTML = myStaff.map(s => `
+                <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
+            `).join('');
+        } else {
+            unitListContainer.innerHTML = `<span style="color:gray; font-size:12px;">ไม่พบรายชื่อใน ${targetUnit}</span>`;
+        }
     }
 
+    // 3. วาดรายชื่อ ผจฟ.1 (sa-staff-list) - แก้จุดนี้ให้โชว์แน่นอน
+    const saListContainer = document.getElementById('sa-staff-list');
     if (saListContainer) {
-        // พนักงาน ผจฟ.1 (ที่ไม่ใช่คนในหน่วยงานตัวเอง เพื่อไม่ให้ซ้ำ)
-        const saStaff = staffData.filter(s => s.unit.trim() === "ผจฟ.1" && s.unit.trim() !== currentUserUnit);
-        saListContainer.innerHTML = saStaff.map(s => `
-            <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
-        `).join('') || "ไม่มีรายชื่อ ผจฟ.1";
+        // กรองเอาเฉพาะคนที่สังกัด ผจฟ.1
+        const saStaff = staffData.filter(s => s.unit.trim() === "ผจฟ.1");
+        
+        if (saStaff.length > 0) {
+            saListContainer.innerHTML = saStaff.map(s => `
+                <label class="check-item"><input type="checkbox" name="attendance" value="${s.uid}"> <span>${s.name}</span></label>
+            `).join('');
+        } else {
+            saListContainer.innerHTML = `<span style="color:red; font-size:12px;">ไม่พบรายชื่อกลุ่ม ผจฟ.1 ในระบบ</span>`;
+        }
     }
 
-    setupLeaveTable();
-    setupSecuritySection();
+    // เรียกฟังก์ชันถัดไป
+    if (typeof setupLeaveTable === "function") setupLeaveTable();
+    if (typeof setupSecuritySection === "function") setupSecuritySection();
 }
 
 function setupLeaveTable() {
