@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #f0f2f5;
+  --color-foreground: #333333;
+  --color-card: #ffffff;
+  --color-card-foreground: #333333;
+  --color-primary: #06C755;
+  --color-primary-foreground: #ffffff;
+  --color-primary-dark: #05a346;
+  --color-muted: #f9f9f9;
+  --color-muted-foreground: #666666;
+  --color-border: #e5e5e5;
+  --color-input: #f9f9f9;
+  --color-accent: #e8f5e9;
+  --color-accent-foreground: #06C755;
+  --color-destructive: #ef4444;
+  --radius: 0.75rem;
+  
+  --font-sans: "Kanit", sans-serif;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Form elements consistency */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+/* Number input hide spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
