@@ -76,7 +76,7 @@ function applyFilters() {
 
     const etcItems = targetDayData.filter(cp => {
         const job = (cp.job || "").toString().trim();
-        const mainShiftJobs = ["เข้าปฏิบัติงานกะ 1", "เข้าปฏิบัติงานกะ 2", "เข้าปฏิบัติงานกะ 3", "ศูนย์ฯสั่งเข้าปฏิบัติงาน", "Day Time", "งาน Patrol"];
+        const mainShiftJobs = ["เข้าปฏิบัติงานกะ 1", "เข้าปฏิบัติงานกะ 2", "เข้าปฏิบัติงานกะ 3", "Day Time", "งาน Patrol"];
         return !mainShiftJobs.includes(job);
     });
     renderETCCardList("ETCListContainer", etcItems, "#fd7e14");
