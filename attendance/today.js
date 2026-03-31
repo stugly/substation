@@ -1,7 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzT2U6Zf9q-ieWioQw5e1BohRYjTyqVb9mo3N6-O3-wF3U3QTYgg9LC8ia2A8oWtXwT/exec";
 let map, allCheckins = [], allStationsData = [], currentMarkers = L.featureGroup(), stationLayers = L.layerGroup(); 
 
-const targetSIDs = ["NTB", "TSA", "KCD", "PPA", "TRA", "KBB", "BKO", "PKA", "PKB", "PAT", "KMA", "KBA", "PKD", "KNA", "WSA", "TMG", "KTM"];
+const targetSIDs = ["NTB", "TSA", "KCD", "PPB", "TRA", "KBB", "BKO", "PKA", "PKB", "PAT", "KMA", "KBA", "PKD", "KNA", "WSA", "TMG", "KTM"];
 
 function toggleTestSettings() {
     const panel = document.getElementById('testSettings');
